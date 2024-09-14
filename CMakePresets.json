@@ -1,0 +1,18 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "GCC 13.1.0 x86_64-w64-mingw32 (ucrt64)",
+            "displayName": "GCC 13.1.0 x86_64-w64-mingw32 (ucrt64)",
+            "description": "Usando los compiladores: C = C:\\msys64\\ucrt64\\bin\\gcc.exe, CXX = C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}",
+                "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+                "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ]
+}
