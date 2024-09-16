@@ -3,11 +3,11 @@
 #include "../include/json.hpp"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <fstream>
 
-#include "Camera.hpp"
+#include "PlayerCamera.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 
 #define LABELS_DATA_FILE "./resources/labels.json"
@@ -19,18 +19,17 @@ struct Label {
     float size;
 };
 
-class LabelManager: public GameObject {
+class LabelManager {
 private:
-    std::map<std::string, Label> labels;
-    const Camera& camera;
+    std::unordered_map<std::string, Label> labels;
 
 public:
-    LabelManager(const Camera& cam): camera(cam) {}
+    LabelManager() = default;
 
-    void handleEvents(const Event& event) override {}
-    void update() override {}
-    void render(const Renderer& renderer) override;
-    void load(const Renderer& renderer) override;
+    void handleEvents(const SystemEvent& event) {}
+    void update() {}
+    void render(const Renderer& renderer, const PlayerCamera& camera);
+    void load(const Renderer& renderer);
 };
 
 void LabelManager::load(const Renderer& renderer) {
@@ -53,14 +52,11 @@ void LabelManager::load(const Renderer& renderer) {
     }
 }
 
-void LabelManager::render(const Renderer& renderer) {
+void LabelManager::render(const Renderer& renderer, const PlayerCamera& camera) {
     for(auto& [k, label]: labels) {
-        auto sz = label.size * camera.getZoom();
-
-        //if(label.texture.getHeight() * sz > 12) {    
-            auto v = camera.coordsToScreen(label.coord);
-            auto dv = glm::rotate(glm::vec2(label.texture.getWidth()/2.f, label.texture.getHeight()/2.f) * sz, glm::radians(label.angle));
-            label.texture.render(*renderer.getSDL(), v.x - dv.x, v.y - dv.y, sz, label.angle, SDL_BLENDMODE_ADD);
-        //}
+        auto sz = label.size * camera.getZoom(); 
+        auto v = camera.coordsToScreen(label.coord);
+        auto dv = glm::rotate(glm::vec2(label.texture.getWidth()/2.f, label.texture.getHeight()/2.f) * sz, glm::radians(label.angle));
+        label.texture.render(*renderer.getSDL(), v.x - dv.x, v.y - dv.y, sz, label.angle, SDL_BLENDMODE_ADD);
     }
 }

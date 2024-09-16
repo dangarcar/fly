@@ -3,52 +3,56 @@
 #include "../include/json.hpp"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <fstream>
-#include <iostream>
-#include <optional>
 
-#include "Camera.hpp"
+#include "PlayerCamera.hpp"
 #include "Country.hpp"
 #include "LabelManager.hpp"
+#include "CitySpawner.hpp"
 
 #define COUNTRIES_DATA_FILE "./resources/countries.json"
 #define MESH_DATA_FILE "./resources/mesh.bin"
-#define AIRPORTS_DATA_FILE "./resources/airports.json"
 
-class Map: public GameObject {
+class Map {
 public:
-    Map(const Camera& cam): camera(cam), labelManager(cam) {}
+    Map() = default;
 
-    void projectVertices();
+    void projectVertices(const PlayerCamera& camera);
 
-    void handleEvents(const Event& event) override;
-    void update() override;
-    void render(const Renderer& renderer) override;
-    void load(const Renderer& renderer) override;
+    void handleEvents(const SystemEvent& event, const Player& player);
+    void update(const Player& player);
+    void render(const Renderer& renderer, const PlayerCamera& camera);
+    void load(const Renderer& renderer, const Player& player);
 
     bool isIntersecting(const Polygon& p, const glm::vec2& v) const;
-    std::optional<City> getRandomCity();
+
+    void unlockCountry(std::string country);
+
+    CitySpawner& getCitySpawner() { return citySpawner; };
 
 private:
+    //DATA
     std::vector<float> vertices;
-    std::vector<int32_t> triangles;
-    std::map<std::string, Country> countries;
-    
     std::vector<float> projectedVertices;
+    std::vector<int32_t> triangles;
+    std::unordered_map<std::string, Country> countries;
 
+    //SYSTEMS
     LabelManager labelManager;
-    const Camera& camera;
+    CitySpawner citySpawner;
     
+    //MORE DATA
     bool renderBoxes = false;
-    Country* targetCountry = nullptr;
+    std::string targetCountry;
     SDL_Point mousePos;
 };
 
 //Returns number of triangles loaded
-void Map::load(const Renderer& renderer) {
+void Map::load(const Renderer& renderer, const Player& player) {
     labelManager.load(renderer);
+    citySpawner.load(player.getCamera());
 
     //COUNTRY MESH
     using json = nlohmann::json;
@@ -66,31 +70,12 @@ void Map::load(const Renderer& renderer) {
             auto box = e["box"].template get<std::vector<std::vector<float>>>(); //It was not compatible with Bounding box type
             p.vertexIndex = e["vertexIndex"].template get<std::pair<int, int>>();
             p.triangleIndex = e["triangleIndex"].template get<std::pair<int, int>>();
-            p.boundingBox = createBoundingBox({box[0][0], box[0][1]}, {box[1][0], box[1][1]}, camera);
+            p.boundingBox = createBoundingBox({box[0][0], box[0][1]}, {box[1][0], box[1][1]}, player.getCamera());
 
             c.mesh.push_back(p);
         }
 
         countries[k] = std::move(c);
-    }
-
-    //CITIES
-    std::ifstream airportFile(AIRPORTS_DATA_FILE);
-    json airportData = json::parse(airportFile);
-
-    for(auto& [k, v]: airportData.items()) {
-        for(auto& e: v) {
-            City c;
-
-            c.name = e["name"].template get<std::string>();
-            c.population = e["population"].template get<int>();
-            c.zoom = e["zoom"].template get<float>();
-            auto coord = e["coords"].template get<std::vector<float>>();
-            c.proj = camera.coordsToProj({coord[0], coord[1]});
-            c.capital = e["capital"].template get<bool>();
-
-            countries[k].cities.push_back(c);
-        }
     }
 
     //MESH LOADING
@@ -109,10 +94,10 @@ void Map::load(const Renderer& renderer) {
     triangles.resize(triSize * 3);
     meshFile.read(reinterpret_cast<char*>(&triangles[0]), triSize * 3 * sizeof(int32_t));
 
-    projectVertices();
+    projectVertices(player.getCamera());
 }
 
-void Map::projectVertices() {
+void Map::projectVertices(const PlayerCamera& camera) {
     projectedVertices.resize(vertices.size());
     
     for(int i=0; i*2<vertices.size(); ++i) {
@@ -122,7 +107,7 @@ void Map::projectVertices() {
     }
 }
 
-void Map::render(const Renderer& renderer) {
+void Map::render(const Renderer& renderer, const PlayerCamera& camera) {
     SDL_SetRenderDrawColor(renderer.getSDL(), SEA_COLOR.r, SEA_COLOR.g, SEA_COLOR.b, SEA_COLOR.a);
     SDL_Rect rect = camera.getScreenViewportRect();
     SDL_RenderFillRect(renderer.getSDL(), &rect);
@@ -157,7 +142,7 @@ void Map::render(const Renderer& renderer) {
 
     SDL_RenderGeometry(renderer.getSDL(), nullptr, vertexArray.data(), vertexArray.size(), triangles.data(), triangles.size());
 
-    labelManager.render(renderer);
+    labelManager.render(renderer, camera);
 
     SDL_SetRenderDrawColor(renderer.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
     for(auto& l: lines) {
@@ -171,7 +156,7 @@ void Map::render(const Renderer& renderer) {
     renderer.renderText(str, 0, 64, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
-void Map::handleEvents(const Event& event) {
+void Map::handleEvents(const SystemEvent& event, const Player& player) {
     if(auto keyevent = std::get_if<KeyPressedEvent>(&event)) {
         if(keyevent->keycode == SDLK_q)
             renderBoxes = !renderBoxes;
@@ -179,16 +164,16 @@ void Map::handleEvents(const Event& event) {
 
     else if(auto clickevent = std::get_if<ClickEvent>(&event)) {
         if(clickevent->button == SDL_BUTTON_LEFT) {
-            if(targetCountry && targetCountry->state != CountryState::BANNED) {
-                if(targetCountry->state != CountryState::UNLOCKED) {
-                    targetCountry->state = CountryState::UNLOCKED;
+            if(!targetCountry.empty() && countries[targetCountry].state != CountryState::BANNED) {
+                if(countries[targetCountry].state != CountryState::UNLOCKED) {
+                    this->unlockCountry(targetCountry);
                 }
             }
         }
     }
 
     else if(auto resizedevent = std::get_if<WindowResizedEvent>(&event)) {
-        projectVertices();
+        projectVertices(player.getCamera());
     }
 
     else if(auto moveevent = std::get_if<MouseMoveEvent>(&event)) {
@@ -200,9 +185,9 @@ void Map::handleEvents(const Event& event) {
     }
 }
 
-void Map::update() {
-    auto mouseProj = camera.screenToProj(mousePos);
-    targetCountry = nullptr;
+void Map::update(const Player& player) {
+    auto mouseProj = player.getCamera().screenToProj(mousePos);
+    targetCountry.clear();
 
     Polygon* hoveredPolygon = nullptr; //There can be more than one at a time (Thanks Lesotho)
     for(auto& [name, country]: countries) {
@@ -213,15 +198,15 @@ void Map::update() {
             if(isIntersecting(pol, mouseProj)) {
                 if(hoveredPolygon && hoveredPolygon->boundingBox.area() < pol.boundingBox.area())
                     continue;
-                targetCountry = &country;
+                targetCountry = name;
                 hoveredPolygon = &pol;
                 break;
             }
         }
     }
 
-    if(targetCountry && targetCountry->state == CountryState::LOCKED)
-        targetCountry->state = CountryState::HOVERED;
+    if(!targetCountry.empty() && countries[targetCountry].state == CountryState::LOCKED)
+        countries[targetCountry].state = CountryState::HOVERED;
 }
 
 bool Map::isIntersecting(const Polygon& p, const glm::vec2& v) const {
@@ -253,19 +238,7 @@ bool Map::isIntersecting(const Polygon& p, const glm::vec2& v) const {
     return inside;
 }
 
-std::optional<City> Map::getRandomCity() {
-    std::optional<City> city;
-    int tries = 0;
-
-    do {
-        auto it = countries.begin();
-        std::advance(it, rand() % countries.size());
-
-        if(it->second.state == CountryState::UNLOCKED && it->second.currentCity < it->second.cities.size()) {
-            city = it->second.cities[it->second.currentCity];
-            it->second.currentCity++;
-        }
-    } while(!city.has_value() && tries++ < 100);
-
-    return city;
+void Map::unlockCountry(std::string country) {
+    countries[country].state = CountryState::UNLOCKED;
+    citySpawner.addCountry(country);
 }

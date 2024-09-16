@@ -66,7 +66,6 @@ def airportCities():
         city = {
             'name': feat.properties['NAMEASCII'],
             'population': feat.properties['POP_MAX'],
-            'zoom': feat.properties['MIN_ZOOM'],
             'capital': bool(feat.properties['ADM0CAP']),
             'coords': feat.geometry['coordinates'],
             'country': feat.properties['ADM0_A3']
@@ -147,18 +146,14 @@ def countriesMesh():
             polygonIndexes[i]['vertexIndex'] = (pairs, pairs + len(v))
             pairs = pairs + len(v)
 
-        label = (feat.properties['LABEL_X'], feat.properties['LABEL_Y'], feat.properties['POP_EST'])
         if not code in countries:
             countries[code] = {
                 'banned': countryBanned(code),
                 'name': name,
                 'mesh': polygonIndexes,
-                'center': label
             }
         else:
             countries[code]['mesh'] = countries[code]['mesh'] + polygonIndexes
-            if label[2] > countries[code]['center'][2]:
-                countries[code]['center'] = label
 
     return (countries, vertices, triangles)
 

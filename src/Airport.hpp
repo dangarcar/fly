@@ -21,15 +21,15 @@ public:
     const City& getCity() const { return city; }
 
     void update();
-    void render(const Renderer& renderer, const Camera& camera) const;
+    void render(const Renderer& renderer, const PlayerCamera& camera) const;
 };
 
-void Airport::render(const Renderer& renderer, const Camera& camera) const {
+void Airport::render(const Renderer& renderer, const PlayerCamera& camera) const {
     auto& t = renderer.getTextureManager().getTexture("CITY_CIRCLE");
 
     auto pos = camera.projToScreen(city.proj);
     auto rad = radius * std::clamp(camera.getZoom(), 2.0f, 12.0f) / 10;
-    SDL_Rect clip = {0, 0, (int)2*rad, (int)2*rad};
+    SDL_Rect clip = {0, 0, int(2.0*rad), int(2.0*rad)};
     pos.x -= rad; pos.y -= rad;
 
     auto color = gradient.getColor(0.5);

@@ -10,8 +10,9 @@
 #include <cassert>
 
 #include "Log.hpp"
-#include "GameObject.hpp"
+#include "Scene.hpp"
 #include "Event.hpp"
+#include "Timer.hpp"
 
 class Window {
 private:
@@ -32,16 +33,16 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
-    void setScene(std::unique_ptr<GameObject> object) { 
-        scene = std::move(object); 
-        scene->load(renderer);
+    void setScene(std::unique_ptr<Scene> scene) { 
+        this->scene = std::move(scene); 
+        this->scene->load(renderer);
     }
 
 private:
-    void handleEvents(const Event& event);
+    void handleEvents(const SystemEvent& event);
 
 private:
-    std::unique_ptr<GameObject> scene;
+    std::unique_ptr<Scene> scene;
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
     
     Renderer renderer;
@@ -81,6 +82,8 @@ void Window::run() {
     assert(scene != nullptr);
 
     SDL_Event sdlEvent;
+    Timer updateTimer;
+    const float msPerTick = 1000.0 / scene->getTicksPerSecond();
     while (alive) {
         while (SDL_PollEvent(&sdlEvent)) {
             auto event = eventHandler.getEvent(sdlEvent, *window);
@@ -91,7 +94,10 @@ void Window::run() {
             scene->handleEvents(event);
         }
 
-        scene->update();
+        if(updateTimer.elapsedMillis() > msPerTick) {
+            scene->update();
+            updateTimer.reset();
+        }
 
         renderer.clearScreen();
 
@@ -117,7 +123,7 @@ void Window::timeFPS() {
     }
 }
 
-void Window::handleEvents(const Event& event) {
+void Window::handleEvents(const SystemEvent& event) {
     if(auto quitEvent = std::get_if<QuitEvent>(&event)){
         alive = false;
     } 

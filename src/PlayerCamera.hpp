@@ -18,7 +18,7 @@ struct Coord {
     float lon, lat;
 };
 
-class Camera {
+class PlayerCamera {
 private:
     static constexpr float MAX_ZOOM = 24.0f;
     static constexpr float ZOOM_SPEED = 0.15f;
@@ -26,7 +26,7 @@ private:
     static constexpr Coord INITIAL_POS = {0, 30};
 
 public:
-    Camera(int w, int h): width(w), height(h) {
+    PlayerCamera(int w, int h): width(w), height(h) {
         pos = coordsToProj(INITIAL_POS);
     }
 
@@ -39,9 +39,9 @@ public:
     SDL_FPoint coordsToScreen(Coord coords) const { return projToScreen(coordsToProj(coords)); }
     Coord screenToCoords(SDL_Point p) const { return projToCoords(screenToProj(p)); }
 
-    void handleEvents(const Event& event);
+    void handleEvents(const SystemEvent& event);
 
-    void moveCamera(glm::vec2 v);
+    void move(glm::vec2 v);
 
     SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }
 
@@ -54,7 +54,7 @@ private:
     int width, height;
 };
 
-glm::vec2 Camera::coordsToProj(Coord coords) const {
+glm::vec2 PlayerCamera::coordsToProj(Coord coords) const {
     glm::vec2 proj;
     const double M_1_2PI = 1.0 / (2.0 * M_PI);
     proj.x = width * M_1_2PI * (M_PI + glm::radians(coords.lon));
@@ -62,28 +62,28 @@ glm::vec2 Camera::coordsToProj(Coord coords) const {
     return proj;
 }
 
-Coord Camera::projToCoords(glm::vec2 proj) const {
+Coord PlayerCamera::projToCoords(glm::vec2 proj) const {
     Coord c;
     c.lon = glm::degrees(2.0 * M_PI * proj.x / width - M_PI); 
     c.lat = glm::degrees(2.0 * (atan(exp(M_PI - 2.0 * M_PI * proj.y / width)) - M_PI_4));
     return c;
 }
 
-SDL_FPoint Camera::projToScreen(glm::vec2 proj) const {
+SDL_FPoint PlayerCamera::projToScreen(glm::vec2 proj) const {
     SDL_FPoint p;
     p.x = (proj.x - pos.x + width/2) * zoom; 
     p.y = (proj.y - pos.y + height/2) * zoom;
     return p;
 }
 
-glm::vec2 Camera::screenToProj(SDL_Point p) const {
+glm::vec2 PlayerCamera::screenToProj(SDL_Point p) const {
     glm::vec2 proj;
     proj.x = p.x / zoom + pos.x - width/2; 
     proj.y = p.y / zoom + pos.y - height/2;
     return proj;
 }
 
-void Camera::handleEvents(const Event& event) {
+void PlayerCamera::handleEvents(const SystemEvent& event) {
     if(auto wheelevent = std::get_if<MouseWheelEvent>(&event)) {
         float newZoom;
         if(wheelevent->direction < 0)
@@ -93,13 +93,13 @@ void Camera::handleEvents(const Event& event) {
         auto dz = (zoom - newZoom) / (zoom * newZoom);
         zoom = newZoom;
                 
-        moveCamera(glm::vec2(wheelevent->mousePos.x, wheelevent->mousePos.y) * dz);
+        move(glm::vec2(wheelevent->mousePos.x, wheelevent->mousePos.y) * dz);
     }
 
     else if(auto dragevent = std::get_if<DragEvent>(&event)) {
         auto p1 = screenToProj(dragevent->oldPos);
         auto p2 = screenToProj(dragevent->newPos);
-        moveCamera(p2 - p1);
+        move(p2 - p1);
     }
 
     else if(auto resizedevent = std::get_if<WindowResizedEvent>(&event)) {
@@ -115,7 +115,7 @@ void Camera::handleEvents(const Event& event) {
     }
 }
 
-void Camera::moveCamera(glm::vec2 v) {
+void PlayerCamera::move(glm::vec2 v) {
     pos = {pos.x - v.x, pos.y - v.y};
 
     auto top = screenToProj({0, 0});

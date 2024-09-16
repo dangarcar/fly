@@ -6,8 +6,7 @@ int main(int argc, char *argv[]) {
     if(window.start() != 0)
         return -1;
 
-    Camera camera(window.getWidth(), window.getHeight());
-    auto game = std::make_unique<Game>(Game(camera));
+    auto game = Game::createGame(window);
     window.setScene(std::move(game));
 
     window.run();

@@ -12,11 +12,11 @@ struct MouseMoveEvent { SDL_Point oldPos, newPos; };
 struct MouseWheelEvent { int direction; SDL_Point mousePos; };
 struct WindowResizedEvent { int width, height, oldWidth, oldHeight; };
 
-using Event = std::variant<
+using SystemEvent = std::variant<
     std::monostate, QuitEvent, KeyPressedEvent, ClickEvent, DragEvent, MouseMoveEvent, MouseWheelEvent, WindowResizedEvent
 >;
 
-std::string stringEventType(const Event& event) {
+std::string stringEventType(const SystemEvent& event) {
     const std::string types[] = {
         "std::monostate", "QuitEvent", "KeyPressedEvent", "ClickEvent", "DragEvent", "MouseMoveEvent", "MouseWheelEvent", "WindowResizedEvent"
     };
@@ -29,7 +29,7 @@ public:
         leftDown = false;
     }
 
-    Event getEvent(const SDL_Event& event, SDL_Window& window);
+    SystemEvent getEvent(const SDL_Event& event, SDL_Window& window);
 
 private:
     SDL_Point mousePos, oldMousePos;
@@ -39,8 +39,8 @@ private:
     int width, height;
 };
 
-Event EventHandler::getEvent(const SDL_Event& event, SDL_Window& window) {
-    Event result = std::monostate();
+SystemEvent EventHandler::getEvent(const SDL_Event& event, SDL_Window& window) {
+    SystemEvent result = std::monostate();
     
     switch (event.type) {
         case SDL_QUIT:

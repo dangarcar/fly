@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "Camera.hpp"
+#include "PlayerCamera.hpp"
 #include "engine/Gradient.hpp"
 
 struct BoundingBox {
@@ -15,7 +15,7 @@ struct BoundingBox {
     }
 };
 
-BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam) {
+BoundingBox createBoundingBox(Coord c1, Coord c2, const PlayerCamera& cam) {
     auto v1 = cam.coordsToProj(c1);
     auto v2 = cam.coordsToProj(c2);
 
@@ -30,20 +30,10 @@ struct Polygon {
 
 enum class CountryState { LOCKED, UNLOCKED, BANNED, HOVERED };
 
-struct City {
-    std::string name;
-    int population;
-    float zoom;
-    glm::vec2 proj;
-    bool capital;
-};
-
 struct Country {
     std::string name;
     CountryState state;
     std::vector<Polygon> mesh;
-    std::vector<City> cities;
-    int currentCity = 0;
 };
 
 inline SDL_Color getCountryColor(const Country& country) {

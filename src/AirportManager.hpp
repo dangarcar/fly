@@ -1,32 +1,31 @@
 #pragma once
 
-#include "Map.hpp"
+#include "CitySpawner.hpp"
 #include "Airport.hpp"
 
-class AirportManager: GameObject {
+class AirportManager {
 public:
-    AirportManager(Camera& cam): camera(cam), map(cam) {}
+    AirportManager() = default;
 
-    void handleEvents(const Event& event) override;
-    void update() override;
-    void render(const Renderer& renderer) override;
-    void load(const Renderer& renderer) override { map.load(renderer); }
+    void handleEvents(const SystemEvent& event);
+    void update(CitySpawner& citySpawner);
+    void render(const Renderer& renderer, const PlayerCamera& camera);
+    void load(const Renderer& renderer) {}
 
 private:
     std::vector<Airport> airports;
-    Map map;
 
-    const Camera& camera;
 };
 
-void AirportManager::handleEvents(const Event& event) {
-    map.handleEvents(event);
+void AirportManager::handleEvents(const SystemEvent& event) {
+    /*if(auto clickevent = std::get_if<ClickEvent>(&event)) {
+        clickevent->clickPoint
+    }*/
+    //NOTHING HERE!!
 }
 
-void AirportManager::update() {
-    map.update();
-    
-    if(auto city = map.getRandomCity()) {
+void AirportManager::update(CitySpawner& citySpawner) {
+    if(auto city = citySpawner.getRandomCity()) {
         airports.push_back(city.value());
     }
 
@@ -35,9 +34,7 @@ void AirportManager::update() {
     }
 }
 
-void AirportManager::render(const Renderer& renderer) {
-    map.render(renderer);
-
+void AirportManager::render(const Renderer& renderer, const PlayerCamera& camera) {
     for(auto& air: airports) {
         air.render(renderer, camera);
     }
