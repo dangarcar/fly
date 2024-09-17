@@ -3,7 +3,7 @@
 #include <cstdarg>
 #include <cstdio>
 
-void writeLog(const char* format, ...) {
+inline void writeLog(const char* format, ...) {
     va_list args;
     va_start(args, format);
 
@@ -12,7 +12,7 @@ void writeLog(const char* format, ...) {
     va_end(args);
 }
 
-void writeError(const char* format, ...) {
+inline void writeError(const char* format, ...) {
     va_list args;
     va_start(args, format);
 

@@ -7,7 +7,7 @@ class AirportManager {
 public:
     AirportManager() = default;
 
-    void handleEvents(const SystemEvent& event);
+    void registerEvents(Event::EventManager& manager);
     void update(CitySpawner& citySpawner);
     void render(const Renderer& renderer, const PlayerCamera& camera);
     void load(const Renderer& renderer) {}
@@ -17,7 +17,7 @@ private:
 
 };
 
-void AirportManager::handleEvents(const SystemEvent& event) {
+void AirportManager::registerEvents(Event::EventManager& manager) {
     /*if(auto clickevent = std::get_if<ClickEvent>(&event)) {
         clickevent->clickPoint
     }*/

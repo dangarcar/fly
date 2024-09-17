@@ -26,7 +26,7 @@ private:
 public:
     LabelManager() = default;
 
-    void handleEvents(const SystemEvent& event) {}
+    void registerEvents(Event::EventManager& manager) {}
     void update() {}
     void render(const Renderer& renderer, const PlayerCamera& camera);
     void load(const Renderer& renderer);

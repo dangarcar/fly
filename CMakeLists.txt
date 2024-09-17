@@ -22,7 +22,8 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mconsole")
 
 add_subdirectory(include/SDL_FontCache)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} 
     SDL2::SDL2main 
     SDL2::SDL2 

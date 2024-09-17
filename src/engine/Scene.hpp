@@ -2,12 +2,12 @@
 
 #include <SDL.h>
 
-#include "Event.hpp"
+#include "event/EventManager.hpp"
 #include "Renderer.hpp"
 
 class Scene {
 public:
-    virtual void handleEvents(const SystemEvent& event) = 0;
+    virtual void registerEvents(Event::EventManager& manager) = 0;
     
     virtual void update() = 0;
     

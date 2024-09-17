@@ -21,7 +21,7 @@ public:
 
     void projectVertices(const PlayerCamera& camera);
 
-    void handleEvents(const SystemEvent& event, const Player& player);
+    void registerEvents(Event::EventManager& manager, const Player& player);
     void update(const Player& player);
     void render(const Renderer& renderer, const PlayerCamera& camera);
     void load(const Renderer& renderer, const Player& player);
@@ -156,33 +156,33 @@ void Map::render(const Renderer& renderer, const PlayerCamera& camera) {
     renderer.renderText(str, 0, 64, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
-void Map::handleEvents(const SystemEvent& event, const Player& player) {
-    if(auto keyevent = std::get_if<KeyPressedEvent>(&event)) {
-        if(keyevent->keycode == SDLK_q)
+void Map::registerEvents(Event::EventManager& manager, const Player& player) {
+    manager.listen<Event::KeyPressedEvent>([this](Event::KeyPressedEvent::data e){
+        if(e.keycode == SDLK_q)
             renderBoxes = !renderBoxes;
-    }
+    });
 
-    else if(auto clickevent = std::get_if<ClickEvent>(&event)) {
-        if(clickevent->button == SDL_BUTTON_LEFT) {
+    manager.listen<Event::ClickEvent>([this](Event::ClickEvent::data e){
+        if(e.button == SDL_BUTTON_LEFT) {
             if(!targetCountry.empty() && countries[targetCountry].state != CountryState::BANNED) {
                 if(countries[targetCountry].state != CountryState::UNLOCKED) {
                     this->unlockCountry(targetCountry);
                 }
             }
         }
-    }
+    });
 
-    else if(auto resizedevent = std::get_if<WindowResizedEvent>(&event)) {
+    manager.listen<Event::WindowResizedEvent>([this, player](Event::WindowResizedEvent::data _){
         projectVertices(player.getCamera());
-    }
+    });
 
-    else if(auto moveevent = std::get_if<MouseMoveEvent>(&event)) {
-       mousePos = moveevent->newPos;
-    }
+    manager.listen<Event::MouseMoveEvent>([this](Event::MouseMoveEvent::data e){
+       mousePos = e.newPos;
+    });
 
-    else if(auto dragevent = std::get_if<DragEvent>(&event)) {
-       mousePos = dragevent->newPos;
-    }
+    manager.listen<Event::DragEvent>([this](Event::DragEvent::data e){
+       mousePos = e.newPos;
+    });
 }
 
 void Map::update(const Player& player) {
@@ -239,6 +239,7 @@ bool Map::isIntersecting(const Polygon& p, const glm::vec2& v) const {
 }
 
 void Map::unlockCountry(std::string country) {
+    //EventManager::publish<Event::UnlockCountry>(std::format("{} uploaded", country), 24);
     countries[country].state = CountryState::UNLOCKED;
     citySpawner.addCountry(country);
 }

@@ -12,7 +12,7 @@ public:
 
     const PlayerCamera& getCamera() const { return camera; }
 
-    void handleEvents(const SystemEvent& event);
+    void registerEvents(Event::EventManager& manager);
     void render(const Renderer& renderer);
 
     long getCash() const { return cash; }
@@ -25,8 +25,8 @@ private:
 
 };
 
-void Player::handleEvents(const SystemEvent& event) {
-    camera.handleEvents(event);
+void Player::registerEvents(Event::EventManager& manager) {
+    camera.registerEvents(manager);
 }
 
 void Player::render(const Renderer& renderer) {

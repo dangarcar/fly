@@ -39,7 +39,7 @@ public:
     SDL_FPoint coordsToScreen(Coord coords) const { return projToScreen(coordsToProj(coords)); }
     Coord screenToCoords(SDL_Point p) const { return projToCoords(screenToProj(p)); }
 
-    void handleEvents(const SystemEvent& event);
+    void registerEvents(Event::EventManager& manager);
 
     void move(glm::vec2 v);
 
@@ -83,36 +83,31 @@ glm::vec2 PlayerCamera::screenToProj(SDL_Point p) const {
     return proj;
 }
 
-void PlayerCamera::handleEvents(const SystemEvent& event) {
-    if(auto wheelevent = std::get_if<MouseWheelEvent>(&event)) {
+void PlayerCamera::registerEvents(Event::EventManager& manager) {
+    manager.listen<Event::MouseWheelEvent>([this](Event::MouseWheelEvent::data e) {
         float newZoom;
-        if(wheelevent->direction < 0)
+        if(e.direction < 0)
             newZoom = std::max(1.0f, zoom - zoom*ZOOM_SPEED);
         else
             newZoom = std::min(MAX_ZOOM, zoom + zoom*ZOOM_SPEED);
         auto dz = (zoom - newZoom) / (zoom * newZoom);
         zoom = newZoom;
                 
-        move(glm::vec2(wheelevent->mousePos.x, wheelevent->mousePos.y) * dz);
-    }
+        move(glm::vec2(e.mousePos.x, e.mousePos.y) * dz);
+    });
 
-    else if(auto dragevent = std::get_if<DragEvent>(&event)) {
-        auto p1 = screenToProj(dragevent->oldPos);
-        auto p2 = screenToProj(dragevent->newPos);
+    manager.listen<Event::DragEvent>([this](Event::DragEvent::data e){
+        auto p1 = screenToProj(e.oldPos);
+        auto p2 = screenToProj(e.newPos);
         move(p2 - p1);
-    }
+    });
 
-    else if(auto resizedevent = std::get_if<WindowResizedEvent>(&event)) {
+    manager.listen<Event::WindowResizedEvent>([this](Event::WindowResizedEvent::data e) {
         auto normPos = pos / float(width);
-        width = resizedevent->width;
-        height = resizedevent->height;
+        width = e.width;
+        height = e.height;
         pos = normPos * float(width);
-    }
-
-    else if(auto keyevent = std::get_if<KeyPressedEvent>(&event)) {
-        if(keyevent->keycode == SDLK_0) //DEBUG:
-            zoom = 10.0f;
-    }
+    });
 }
 
 void PlayerCamera::move(glm::vec2 v) {

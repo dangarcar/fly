@@ -15,7 +15,7 @@ private:
 public:
     static std::unique_ptr<Game> createGame(const Window& window);
 
-    void handleEvents(const SystemEvent& event) override;
+    void registerEvents(Event::EventManager& manager) override;
 
     void update() override;
 
@@ -42,10 +42,10 @@ std::unique_ptr<Game> Game::createGame(const Window& window) {
     return std::unique_ptr<Game>(new Game(camera));
 }
 
-void Game::handleEvents(const SystemEvent& event) {
-    player.handleEvents(event);
-    map.handleEvents(event, player);
-    airManager.handleEvents(event);
+void Game::registerEvents(Event::EventManager& manager) {
+    player.registerEvents(manager);
+    map.registerEvents(manager, player);
+    airManager.registerEvents(manager);
 }
 
 void Game::update() {

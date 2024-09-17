@@ -86,6 +86,11 @@
         "xtree": "cpp",
         "condition_variable": "cpp",
         "semaphore": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "executor": "cpp",
+        "io_context": "cpp",
+        "netfwd": "cpp",
+        "timer": "cpp",
+        "future": "cpp"
     }
 }

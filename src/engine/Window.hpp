@@ -11,8 +11,10 @@
 
 #include "Log.hpp"
 #include "Scene.hpp"
-#include "Event.hpp"
+#include "event/Event.hpp"
 #include "Timer.hpp"
+
+#include "event/EventManager.hpp"
 
 class Window {
 private:
@@ -39,14 +41,14 @@ public:
     }
 
 private:
-    void handleEvents(const SystemEvent& event);
+    void registerEvents();
 
 private:
     std::unique_ptr<Scene> scene;
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
     
     Renderer renderer;
-    EventHandler eventHandler{DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT};
+    Event::EventManager eventManager{DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT};
     
     Timer fpsTimer;
     int framesDrawn = 0;
@@ -81,17 +83,15 @@ int Window::start() {
 void Window::run() {
     assert(scene != nullptr);
 
+    registerEvents();
+    scene->registerEvents(eventManager);
+
     SDL_Event sdlEvent;
     Timer updateTimer;
     const float msPerTick = 1000.0 / scene->getTicksPerSecond();
     while (alive) {
         while (SDL_PollEvent(&sdlEvent)) {
-            auto event = eventHandler.getEvent(sdlEvent, *window);
-            if(event.index() == 0) //Empty type
-                continue;
-
-            this->handleEvents(event);
-            scene->handleEvents(event);
+            eventManager.launchEvent(sdlEvent, *window);
         }
 
         if(updateTimer.elapsedMillis() > msPerTick) {
@@ -123,19 +123,19 @@ void Window::timeFPS() {
     }
 }
 
-void Window::handleEvents(const SystemEvent& event) {
-    if(auto quitEvent = std::get_if<QuitEvent>(&event)){
-        alive = false;
-    } 
+void Window::registerEvents() {
+    eventManager.listen<Event::QuitEvent>([this](auto _){
+        alive = false; 
+    });
 
-    else if(auto keyevent = std::get_if<KeyPressedEvent>(&event)) {
-        if(keyevent->keycode == SDLK_ESCAPE)
+    eventManager.listen<Event::KeyPressedEvent>([this](Event::KeyPressedEvent::data e){
+        if(e.keycode == SDLK_ESCAPE)
             alive = false;
-    }
+    });
 
-    else if(auto resizedevent = std::get_if<WindowResizedEvent>(&event)) {
-        width = resizedevent->width;
-        height = resizedevent->height;
+    eventManager.listen<Event::WindowResizedEvent>([this](Event::WindowResizedEvent::data e) {
+        width = e.width;
+        height = e.height;
         renderer.presentScreen();
-    }
+    });
 }
