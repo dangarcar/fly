@@ -2,7 +2,8 @@
 
 #include <memory>
 
-#include "../engine/Scene.hpp"
+#include "../engine/Scene.h"
+
 #include "../Player.hpp"
 #include "../map/Map.hpp"
 #include "../Airport.hpp"
@@ -19,7 +20,7 @@ public:
     Game(int width, int height): camera(width, height) {}
     ~Game() = default;
 
-    void registerEvents(Event::EventManager& manager) override;
+    void handleInput(const InputEvent& event) override;
     
     void start(const Window& window) override;
     void update() override;

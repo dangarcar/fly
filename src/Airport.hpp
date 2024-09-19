@@ -1,7 +1,8 @@
 #pragma once
 
 #include "map/Map.hpp"
-#include "engine/Gradient.hpp"
+#include "engine/Gradient.h"
+#include "engine/InputEvent.h"
 
 class Airport {
 private:
@@ -26,7 +27,7 @@ public:
 
 class AirportManager {
 public:
-    void registerEvents(Event::EventManager& manager);
+    void handleInput(const InputEvent& event);
     void update(CitySpawner& citySpawner);
     void render(const Camera& camera);
 

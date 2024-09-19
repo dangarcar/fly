@@ -2,10 +2,10 @@
 
 #include <SDL.h>
 #include <memory>
+#include <variant>
 
-#include "Scene.hpp"
-#include "../event/Event.hpp"
-#include "Timer.hpp"
+#include "Timer.h"
+#include "Scene.h"
 
 class Window {
 private:
@@ -26,25 +26,23 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
-    void setScene(std::unique_ptr<Scene> scene) { 
-        this->scene = std::move(scene);
-        this->scene->start(*this);   
-    }
+    void setScene(std::unique_ptr<Scene> scene);
 
     SDL_Window& getSDL() const { return *window; }
 
 private:
-    void registerEvents();
+    InputEvent getInputEvent();
 
 private:
     std::unique_ptr<Scene> scene;
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
-    
-    Event::EventManager eventManager{DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT};
     
     Timer fpsTimer;
     int framesDrawn = 0;
     
     bool alive = true;
     int width = DEFAULT_SCREEN_WIDTH, height = DEFAULT_SCREEN_HEIGHT;
+
+    bool leftDown = false;
+    SDL_Point mousePos, oldMousePos;
 };

@@ -7,10 +7,11 @@
 #include "LabelManager.hpp"
 #include "CitySpawner.hpp"
 
+#include "../engine/InputEvent.h"
+
 #define COUNTRIES_DATA_FILE "./resources/countries.json"
 #define MESH_DATA_FILE "./resources/mesh.bin"
 
-namespace Event { class EventManager; };
 class Camera;
 
 class Map {
@@ -19,7 +20,7 @@ public:
 
     void projectVertices(const Camera& camera);
 
-    void registerEvents(Event::EventManager& manager, const Camera& camera);
+    void handleInput(const InputEvent& event, Camera& camera);
     void update(const Camera& camera);
     void render(const Camera& camera);
     void load(const Camera& camera);

@@ -3,10 +3,9 @@
 #include <format>
 #include <SDL_FontCache.h>
 
-#include "event/Event.hpp"
 #include "game/Camera.hpp"
 
-void Player::registerEvents(Event::EventManager& manager) {
+void Player::handleInput(const InputEvent& event) {
     //TODO:::
 }
 

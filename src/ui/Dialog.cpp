@@ -1,6 +1,6 @@
 #include "Dialog.hpp"
 
-#include "../engine/Gradient.hpp"
+#include "../engine/Gradient.h"
 #include "../game/Camera.hpp"
 
 #include <format>

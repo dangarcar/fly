@@ -28,10 +28,7 @@ void Airport::update() {
     //TODO: 
 }
 
-void AirportManager::registerEvents(Event::EventManager& manager) {
-    /*if(auto clickevent = std::get_if<ClickEvent>(&event)) {
-        clickevent->clickPoint
-    }*/
+void AirportManager::handleInput(const InputEvent& event) {
     //TODO: 
 }
 

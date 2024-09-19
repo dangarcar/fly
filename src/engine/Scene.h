@@ -1,12 +1,13 @@
 #pragma once
 
-namespace Event { class EventManager; };
+#include "InputEvent.h"
+
 class Renderer;
 class Window;
 
 class Scene {
 public:
-    virtual void registerEvents(Event::EventManager& manager) = 0;
+    virtual void handleInput(const InputEvent& event) = 0;
     
     virtual void start(const Window& window) = 0;
     virtual void update() = 0;

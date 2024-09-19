@@ -1,14 +1,16 @@
 #pragma once
 
 #include "Dialog.hpp"
-#include "../engine/Log.hpp"
+#include "../engine/Log.h"
 #include <memory>
 #include <vector>
 
 class UIManager {
 public:
-    void registerEvents(Event::EventManager& manager) {
-        manager.listen<Event::ClickEvent>([this, &manager](Event::ClickEvent::data e){
+    bool handleInput(const InputEvent& event) {
+        
+
+        /*manager.listen<Event::ClickEvent>([this, &manager](Event::ClickEvent::data e){ //TODO:
             if(!dialog)
                 return true;
 
@@ -32,7 +34,9 @@ public:
         manager.listen<Event::UnlockCountryRequest>([this](Event::UnlockCountryRequest::data e){
             dialog = std::make_unique<UnlockCountryDialog>(e.country, e.code);
             return false;
-        }, 1000);
+        }, 1000);*/
+
+        return false;
     }
 
     void render(const Camera& camera) {

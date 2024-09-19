@@ -1,7 +1,7 @@
 #include "Renderer.hpp"
 
-#include "Log.hpp"
-#include "Gradient.hpp"
+#include "Log.h"
+#include "Gradient.h"
 
 TextRenderer::TextRenderer() {
     for(int i=0; i<=MAX_FONT_SIZE; ++i)

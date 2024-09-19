@@ -4,8 +4,7 @@
 #include <fstream>
 #include <format>
 
-#include "../event/Event.hpp"
-#include "../engine/Gradient.hpp"
+#include "../engine/Gradient.h"
 #include "../game/Camera.hpp"
 #include "../Player.hpp"
 
@@ -140,44 +139,33 @@ void Map::render(const Camera& camera) {
     camera.renderText(str, 0, 64, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
-void Map::registerEvents(Event::EventManager& manager, const Camera& camera) {
-    manager.listen<Event::UnlockedCountry>([this](Event::UnlockedCountry::data e){
-        unlockCountry(e.country);
-        return true;
-    });
-    
-    manager.listen<Event::KeyPressedEvent>([this](Event::KeyPressedEvent::data e){
-        if(e.keycode == SDLK_q)
-            renderBoxes = !renderBoxes;
-        
-        return true;
-    });
+void Map::handleInput(const InputEvent& event, Camera& camera) {
+    if(auto* keyevent = std::get_if<KeyPressedEvent>(&event)) {
+        if(keyevent->keycode == SDLK_q)
+            renderBoxes = ! renderBoxes;
+    }
 
-    manager.listen<Event::ClickEvent>([this, &manager](Event::ClickEvent::data e){
-        if(e.button == SDL_BUTTON_LEFT) {
+    if(auto* clickEvent = std::get_if<ClickEvent>(&event)) {
+        if(clickEvent->button == SDL_BUTTON_LEFT) {
             if(!targetCountry.empty() && countries[targetCountry].state != CountryState::BANNED)
-                if(countries[targetCountry].state != CountryState::UNLOCKED)
-                    manager.publish<Event::UnlockCountryRequest>({ countries[targetCountry].name, targetCountry });
+                if(countries[targetCountry].state != CountryState::UNLOCKED) {
+                    auto mouseProj = camera.screenToProj(clickEvent->clickPoint);
+                    auto rect = camera.getScreenViewportRect();
+                    auto centerProj = camera.screenToProj({rect.w/2, rect.h/2});
+                    camera.move(centerProj - mouseProj);
+                    //unlockCountry(targetCountry); //FIXME:
+                    //manager.publish<Event::UnlockCountryRequest>({ countries[targetCountry].name, targetCountry });
+                }
         }
+    }
 
-        return true;
-    });
-
-    manager.listen<Event::WindowResizedEvent>([this, &camera](Event::WindowResizedEvent::data _){
+    if(auto* resizedevent = std::get_if<WindowResizedEvent>(&event)) {
         projectVertices(camera);
-        
-        return true;
-    });
+    }
 
-    manager.listen<Event::MouseMoveEvent>([this](Event::MouseMoveEvent::data e){
-       mousePos = e.newPos;
-       return true;
-    });
-
-    manager.listen<Event::DragEvent>([this](Event::DragEvent::data e){
-       mousePos = e.newPos;
-       return true;
-    });
+    if(auto* moveevent = std::get_if<MouseMoveEvent>(&event)) {
+        mousePos = moveevent->newPos;
+    }
 }
 
 void Map::update(const Camera& camera) {

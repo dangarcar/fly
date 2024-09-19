@@ -2,13 +2,15 @@
 
 #include "../engine/Window.hpp"
 
-void Game::registerEvents(Event::EventManager& manager) {
-    camera.registerEvents(manager);
+void Game::handleInput(const InputEvent& event) {
+    camera.handleInput(event);
 
-    uiManager.registerEvents(manager);
-    player.registerEvents(manager);
-    map.registerEvents(manager, camera);
-    airManager.registerEvents(manager);
+    if(uiManager.handleInput(event)) 
+        return;
+    
+    player.handleInput(event);
+    map.handleInput(event, camera);
+    airManager.handleInput(event);
 }
 
 void Game::update() {

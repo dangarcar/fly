@@ -1,13 +1,14 @@
 #pragma once
 
-#include "../event/Event.hpp"
+#include <string>
+#include "../engine/InputEvent.h"
 
 class Camera;
 
 class Dialog {
 public:
     virtual void render(const Camera& camera) = 0;
-    virtual bool update(SDL_Point p, bool leftClick, Event::EventManager& manager) = 0;
+    virtual bool update(SDL_Point p, bool leftClick, const InputEvent& event) = 0;
 
     SDL_Rect getRect() const { return dialog; }
 
@@ -21,7 +22,7 @@ public:
         dialog = SDL_Rect {0, 0, 450, 300};
     }
 
-    bool update(SDL_Point p, bool leftClick, Event::EventManager& manager) override {
+    bool update(SDL_Point p, bool leftClick, const InputEvent& event) override {
         return true;
     }
 

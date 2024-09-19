@@ -1,7 +1,5 @@
 #include "Camera.hpp"
 
-#include "../event/Event.hpp"
-
 glm::vec2 Camera::coordsToProj(Coord coords) const {
     glm::vec2 proj;
     const double M_1_2PI = 1.0 / (2.0 * M_PI);
@@ -31,37 +29,33 @@ glm::vec2 Camera::screenToProj(SDL_Point p) const {
     return proj;
 }
 
-void Camera::registerEvents(Event::EventManager& manager) {
-    manager.listen<Event::MouseWheelEvent>([this](Event::MouseWheelEvent::data e) {
+void Camera::handleInput(const InputEvent& event) {
+    if(auto* wheelevent = std::get_if<MouseWheelEvent>(&event)) {
         float newZoom;
-        if(e.direction < 0)
+        if(wheelevent->direction < 0)
             newZoom = std::max(1.0f, zoom - zoom*ZOOM_SPEED);
         else
             newZoom = std::min(MAX_ZOOM, zoom + zoom*ZOOM_SPEED);
         auto dz = (zoom - newZoom) / (zoom * newZoom);
         zoom = newZoom;
                 
-        move(glm::vec2(e.mousePos.x, e.mousePos.y) * dz);
-        
-        return true;
-    });
+        move(glm::vec2(wheelevent->mousePos.x, wheelevent->mousePos.y) * dz);
+    }
 
-    manager.listen<Event::DragEvent>([this](Event::DragEvent::data e){
-        auto p1 = screenToProj(e.oldPos);
-        auto p2 = screenToProj(e.newPos);
-        move(p2 - p1);
+    if(auto* moveevent = std::get_if<MouseMoveEvent>(&event)) {
+        if(moveevent->leftDown) {
+            auto p1 = screenToProj(moveevent->oldPos);
+            auto p2 = screenToProj(moveevent->newPos);
+            move(p2 - p1);
+        }
+    }
 
-        return true;
-    });
-
-    manager.listen<Event::WindowResizedEvent>([this](Event::WindowResizedEvent::data e) {
+    if(auto* resizedevent = std::get_if<WindowResizedEvent>(&event)) {
         auto normPos = pos / float(width);
-        width = e.width;
-        height = e.height;
+        width = resizedevent->width;
+        height = resizedevent->height;
         pos = normPos * float(width);
-
-        return true;
-    });
+    }
 }
 
 void Camera::move(glm::vec2 v) {

@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <string>
 #include <functional>
+#include <variant>
 
 //This looks like shit but I think it's cleaner
 
@@ -14,15 +15,6 @@ namespace Event {
         using handler = std::function<bool(T)>; //Return true if element should propagate
         using data = T;
     };
-
-    //SYSTEM EVENTS
-    MAKE_EVENT(QuitEvent, {});
-    MAKE_EVENT(KeyPressedEvent, { SDL_Keycode keycode; });
-    MAKE_EVENT(ClickEvent, { SDL_Point clickPoint; int button; });
-    MAKE_EVENT(DragEvent, { SDL_Point oldPos; SDL_Point newPos; });
-    MAKE_EVENT(MouseMoveEvent, { SDL_Point oldPos; SDL_Point newPos; });
-    MAKE_EVENT(MouseWheelEvent, { int direction; SDL_Point mousePos; });
-    MAKE_EVENT(WindowResizedEvent, { int width; int height; int oldWidth; int oldHeight; });
 
     //GAME EVENTS
     MAKE_EVENT(UnlockCountryRequest, { std::string country; std::string code; });
@@ -59,10 +51,7 @@ namespace Event {
         }
     };
 
-    class EventManager: public Shouter<
-        QuitEvent, KeyPressedEvent, ClickEvent, DragEvent, MouseMoveEvent, MouseWheelEvent, WindowResizedEvent, 
-        UnlockCountryRequest, UnlockedCountry
-    > {
+    class EventManager: public Shouter<UnlockCountryRequest, UnlockedCountry> {
     public:
         EventManager(int width, int height): width(width), height(height) {
             leftDown = false;

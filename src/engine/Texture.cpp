@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include <fstream>
 
-#include "Log.hpp"
+#include "Log.h"
 
 bool Texture::createBlank(SDL_Renderer& rend, int w, int h, SDL_TextureAccess acc) {
     texture.reset(SDL_CreateTexture(&rend, SDL_PIXELFORMAT_RGBA8888, acc, w, h));

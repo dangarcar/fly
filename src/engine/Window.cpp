@@ -3,8 +3,14 @@
 #include <SDL_image.h>
 #include <cassert>
 
-#include "Log.hpp"
+#include "Log.h"
+#include "Scene.h"
 #include "Renderer.hpp"
+
+void Window::setScene(std::unique_ptr<Scene> ptr) {
+    scene = std::move(ptr);
+    scene->start(*this);   
+}
 
 int Window::start() {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -29,15 +35,13 @@ int Window::start() {
 void Window::run() {
     assert(scene != nullptr);
 
-    registerEvents();
-    scene->registerEvents(eventManager);
-
     SDL_Event sdlEvent;
     Timer updateTimer;
     const float msPerTick = 1000.0 / scene->getTicksPerSecond();
     while (alive) {
-        while (SDL_PollEvent(&sdlEvent)) {
-            eventManager.launchEvent(sdlEvent, *window);
+        InputEvent event;
+        while(event = getInputEvent(), event.index() != 0) {
+            scene->handleInput(event);
         }
 
         if(updateTimer.elapsedMillis() > msPerTick) {
@@ -68,24 +72,59 @@ void Window::timeFPS() {
     }
 }
 
-void Window::registerEvents() {
-    eventManager.listen<Event::QuitEvent>([this](auto _){
-        alive = false; 
-        return false;
-    });
+InputEvent Window::getInputEvent() {
+    InputEvent event;
+    SDL_Event sdl;
+    SDL_PollEvent(&sdl);
 
-    eventManager.listen<Event::KeyPressedEvent>([this](Event::KeyPressedEvent::data e){
-        if(e.keycode == SDLK_ESCAPE)
+    switch(sdl.type) {
+        case SDL_QUIT:
             alive = false;
-        
-        return true;
-    });
+        break;
 
-    eventManager.listen<Event::WindowResizedEvent>([this](Event::WindowResizedEvent::data e) {
-        width = e.width;
-        height = e.height;
-        scene->getRenderer().presentScreen();
+        case SDL_KEYDOWN:
+            event = KeyPressedEvent { sdl.key.keysym.sym };
+        break;
 
-        return true;
-    });
+        case SDL_WINDOWEVENT:
+            switch(sdl.window.event) {
+                case SDL_WINDOWEVENT_RESIZED:
+                case SDL_WINDOWEVENT_MAXIMIZED: {
+                    int oldW = width, oldH = height;
+                    SDL_GetWindowSize(window.get(), &width, &height);
+                    event = WindowResizedEvent{ width, height, oldW, oldH };
+                } break;
+            } 
+        break;
+
+        case SDL_MOUSEWHEEL:
+            event = MouseWheelEvent{ sdl.wheel.y, mousePos };
+        break;
+
+        case SDL_MOUSEMOTION: {
+            auto newPos = SDL_Point { sdl.motion.x, sdl.motion.y };
+            event = MouseMoveEvent{ mousePos, newPos, leftDown };
+
+            mousePos = newPos;
+        } break;
+
+        case SDL_MOUSEBUTTONUP:
+            if(oldMousePos.x == mousePos.x && oldMousePos.y == mousePos.y)
+                event = ClickEvent{ mousePos, sdl.button.button };
+
+            oldMousePos = mousePos;
+            if(sdl.button.button == SDL_BUTTON_LEFT)
+                leftDown = false;
+        break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            oldMousePos = mousePos;
+            if(sdl.button.button == SDL_BUTTON_LEFT)
+                leftDown = true;
+        break;
+
+        default: break;
+    }
+
+    return event;
 }
