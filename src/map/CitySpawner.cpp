@@ -1,41 +1,11 @@
-#pragma once
+#include "CitySpawner.hpp"
 
-#include "../include/json.hpp"
-
+#include "../../include/json.hpp"
 #include <fstream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <optional>
 
-#include "PlayerCamera.hpp"
+#include "../game/Camera.hpp"
 
-#define AIRPORTS_DATA_FILE "./resources/airports.json"
-
-struct City {
-    std::string name;
-    int population;
-    glm::vec2 proj;
-    bool capital;
-};
-
-class CitySpawner {
-public:
-    CitySpawner() = default;
-
-    void load(const PlayerCamera& camera);
-
-    std::optional<City> getRandomCity();
-    void addCountry(std::string country) { possibleCountries.push_back(country); }
-
-private:
-    std::unordered_map<std::string, std::vector<City>> cities;
-    std::unordered_map<std::string, int> currentCities;
-    std::vector<std::string> possibleCountries;
-
-};
-
-void CitySpawner::load(const PlayerCamera& camera) {
+void CitySpawner::load(const Camera& camera) {
     using json = nlohmann::json;
 
     std::ifstream airportFile(AIRPORTS_DATA_FILE);

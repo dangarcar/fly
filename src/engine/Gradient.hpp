@@ -6,7 +6,7 @@
 constexpr SDL_Color SDL_WHITE = {0xFF, 0xFF, 0xFF, 0xFF};
 constexpr SDL_Color SDL_BLACK = {0, 0, 0, 0xFF};
 
-float lerp(float a, float b, float t) {
+constexpr inline float lerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
