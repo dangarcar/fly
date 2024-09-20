@@ -1,52 +1,40 @@
 #pragma once
 
 #include "Dialog.hpp"
-#include "../engine/Log.h"
 #include <memory>
-#include <vector>
+#include <list>
+#include <type_traits>
 
 class UIManager {
 public:
+    template<typename T, typename ... Args>
+    requires std::is_base_of_v<Dialog, T>
+    void addDialog(Args&&... args) {
+        dialogs.push_back(std::make_unique<T>(std::forward<Args>(args)...));
+    }
+
     bool handleInput(const InputEvent& event) {
-        
+        bool consumed = false;
+        for(auto& d: dialogs) {
+            consumed |= d->handleInput(event);
+        }
 
-        /*manager.listen<Event::ClickEvent>([this, &manager](Event::ClickEvent::data e){ //TODO:
-            if(!dialog)
-                return true;
-
-            auto rect = dialog->getRect();
-            if(SDL_PointInRect(&e.clickPoint, &rect) == SDL_FALSE 
-            || dialog->update(e.clickPoint, e.button == SDL_BUTTON_LEFT, manager) == false)
-                dialog.reset(nullptr);
-
-            return false;
-        }, 1000);
-
-        manager.listen<Event::MouseMoveEvent>([this, &manager](Event::MouseMoveEvent::data e){
-            if(!dialog)
-                return true;
-
-            dialog->update(e.newPos, false, manager);
-
-            return false;
-        }, 1000);
-
-        manager.listen<Event::UnlockCountryRequest>([this](Event::UnlockCountryRequest::data e){
-            dialog = std::make_unique<UnlockCountryDialog>(e.country, e.code);
-            return false;
-        }, 1000);*/
-
-        return false;
+        return consumed;
     }
 
     void render(const Camera& camera) {
-        if(!dialog) 
-            return;
+        for(auto& dialog: dialogs)
+            dialog->render(camera);
+    }
 
-        dialog->render(camera);
+    void update() {
+        for(auto it=dialogs.begin(); it!=dialogs.end(); ++it) {
+            if((*it)->mustDie())
+                it = dialogs.erase(it);
+        }
     }
 
 private:
-    std::unique_ptr<Dialog> dialog;
+    std::list<std::unique_ptr<Dialog>> dialogs;
 
 };

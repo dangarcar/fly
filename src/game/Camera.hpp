@@ -8,10 +8,10 @@
 
 class Camera : public Renderer {
 private:
-    static constexpr float MAX_ZOOM = 24.0f;
+    static constexpr float MAX_ZOOM = 33.0f;
     static constexpr float ZOOM_SPEED = 0.15f;
 
-    static constexpr Coord INITIAL_POS = {0, 30};
+    static constexpr Coord INITIAL_POS = {0, 33};
 
 public:
     Camera(int w, int h): width(w), height(h) {
@@ -33,6 +33,11 @@ public:
     SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }
 
     float getZoom() const { return zoom; }
+    void setZoom(float z) { 
+        assert(z >= 1 && z <= MAX_ZOOM);
+        move(glm::vec2(width/2, height/2) * ((zoom - z) / (zoom * z))); 
+        zoom = z;
+    }
 
 private:
     float zoom = 1.0f;

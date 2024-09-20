@@ -7,6 +7,7 @@
 #include "../engine/Gradient.h"
 #include "../game/Camera.hpp"
 #include "../Player.hpp"
+#include "../ui/UIManager.hpp"
 
 constexpr SDL_Color SEA_COLOR = {0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE};
 
@@ -57,6 +58,8 @@ void Map::load(const Camera& camera) {
 
             c.mesh.push_back(p);
         }
+
+        std::sort(c.mesh.begin(), c.mesh.end(), [](Polygon& a, Polygon& b){ return a.boundingBox.area() > b.boundingBox.area(); });
 
         countries[k] = std::move(c);
     }
@@ -111,15 +114,6 @@ void Map::render(const Camera& camera) {
             }
 
             lines.push_back(line);
-
-            //BOX RENDER
-            if(renderBoxes) {
-                auto x1 = pol.boundingBox.topLeft.x, y1 = pol.boundingBox.topLeft.y;
-                auto x2 = pol.boundingBox.bottomRight.x, y2 = pol.boundingBox.bottomRight.y;
-                std::vector box = { camera.projToScreen({x1, y1}), camera.projToScreen({x1, y2}), camera.projToScreen({x2, y2}), camera.projToScreen({x2, y1}), camera.projToScreen({x1, y1}) };
-                SDL_SetRenderDrawColor(camera.getSDL(), 0, 0xFF, 0xFF, 0xFF);
-                SDL_RenderDrawLinesF(camera.getSDL(), box.data(), box.size());
-            }
         }
     }
 
@@ -132,6 +126,18 @@ void Map::render(const Camera& camera) {
         SDL_RenderDrawLines(camera.getSDL(), l.data(), l.size());
     }
 
+    //BOX RENDER
+    if(renderBoxes) {
+        for(auto [k, c]: countries) {
+            auto& pol = c.mesh[0];
+            auto x1 = pol.boundingBox.topLeft.x, y1 = pol.boundingBox.topLeft.y;
+            auto x2 = pol.boundingBox.bottomRight.x, y2 = pol.boundingBox.bottomRight.y;
+            std::vector box = { camera.projToScreen({x1, y1}), camera.projToScreen({x1, y2}), camera.projToScreen({x2, y2}), camera.projToScreen({x2, y1}), camera.projToScreen({x1, y1}) };
+            SDL_SetRenderDrawColor(camera.getSDL(), 0, 0xFF, 0xFF, 0xFF);
+            SDL_RenderDrawLinesF(camera.getSDL(), box.data(), box.size());
+        }
+    }
+
     auto str = std::format("Countries left: {}\nUnlocked: {}\n",
         std::accumulate(countries.begin(), countries.end(), 0, [&](int a, auto& b){ return a + (b.second.state != CountryState::BANNED); }),
         std::accumulate(countries.begin(), countries.end(), 0, [&](int a, auto& b){ return a + (b.second.state == CountryState::UNLOCKED); })
@@ -139,7 +145,7 @@ void Map::render(const Camera& camera) {
     camera.renderText(str, 0, 64, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
-void Map::handleInput(const InputEvent& event, Camera& camera) {
+void Map::handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player) {
     if(auto* keyevent = std::get_if<KeyPressedEvent>(&event)) {
         if(keyevent->keycode == SDLK_q)
             renderBoxes = ! renderBoxes;
@@ -149,12 +155,9 @@ void Map::handleInput(const InputEvent& event, Camera& camera) {
         if(clickEvent->button == SDL_BUTTON_LEFT) {
             if(!targetCountry.empty() && countries[targetCountry].state != CountryState::BANNED)
                 if(countries[targetCountry].state != CountryState::UNLOCKED) {
-                    auto mouseProj = camera.screenToProj(clickEvent->clickPoint);
-                    auto rect = camera.getScreenViewportRect();
-                    auto centerProj = camera.screenToProj({rect.w/2, rect.h/2});
-                    camera.move(centerProj - mouseProj);
-                    //unlockCountry(targetCountry); //FIXME:
-                    //manager.publish<Event::UnlockCountryRequest>({ countries[targetCountry].name, targetCountry });
+                    moveToCountry(countries[targetCountry], camera);
+
+                    uiManager.addDialog<UnlockCountryDialog>(countries[targetCountry].name, targetCountry, *this, player);
                 }
         }
     }
@@ -221,7 +224,27 @@ bool Map::isIntersecting(const Polygon& p, const glm::vec2& v) const {
     return inside;
 }
 
-void Map::unlockCountry(std::string country) {
+void Map::unlockCountry(const std::string& country, Player& player) {
     countries[country].state = CountryState::UNLOCKED;
     citySpawner.addCountry(country);
+
+    long price = long( double(DEFAULT_CITY_PRICE) * player.getDifficulty() );
+    player.spend(price);
+}
+
+void Map::moveToCountry(const Country& country, Camera& camera) {
+    auto bb = country.mesh[0].boundingBox; //Biggest polygon bb
+    camera.setZoom(20.0f);
+
+    auto countryProj = (bb.topLeft + bb.bottomRight) * 0.5f;
+    auto rect = camera.getScreenViewportRect();
+    auto centerProj = camera.screenToProj({rect.w/2, rect.h/2});
+    camera.move(centerProj - countryProj);
+    
+    centerProj = camera.screenToProj({rect.w/2, rect.h/2}); //It's not the same anymore
+    auto dv = centerProj - bb.topLeft;
+    auto zoom = std::min((rect.w/2.0f) / dv.x, (rect.h/2.0f) / dv.y);
+    zoom = SDL_clamp(zoom * 0.7f, 1.0f, 12.0f);
+    camera.setZoom(zoom);
+    camera.move({0.0f, 0.0f}); //To correct out of bounds errors
 }

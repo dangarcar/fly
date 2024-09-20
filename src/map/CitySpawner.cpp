@@ -29,19 +29,34 @@ void CitySpawner::load(const Camera& camera) {
 std::optional<City> CitySpawner::getRandomCity() {
     std::optional<City> city;
 
-    if(possibleCountries.empty())
+    if(!pendingCities.empty()) {
+        auto c = pendingCities.front();
+        pendingCities.pop();
+        return c;
+    }
+
+    if(possibleCountries.empty() || rand() % SPAWN_FREQUENCY != 0)
         return city;
     
-    int tries = 0;
-    do {
-        int i = rand() % possibleCountries.size();
-        auto country = possibleCountries[i];
+    std::vector<int> populations(possibleCountries.size());
+    for(int i=0; i<populations.size(); ++i)
+        populations[i] = possibleCountries[i].population;
+    std::discrete_distribution<int> distribution(populations.begin(), populations.end());
 
-        if(currentCities[country] < cities[country].size()) {
-            city = cities[country][currentCities[country]];
-            currentCities[country]++;
-        }
-    } while(!city.has_value() && tries++ < 10);
+    auto countryIndex = distribution(generator);
+    auto i = possibleCountries[countryIndex].currentCity;
+    auto country = possibleCountries[countryIndex].name;
+    if(i < cities[country].size()) {  
+        city = cities[country][i];
+
+        possibleCountries[countryIndex].population = city.value().population;
+        possibleCountries[countryIndex].currentCity++;
+    }
 
     return city;
+}
+
+void CitySpawner::addCountry(const std::string& country) { 
+    possibleCountries.push_back({country, 1, cities[country][0].population});
+    pendingCities.push(cities[country][0]);
 }

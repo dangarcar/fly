@@ -3,6 +3,8 @@
 #include <string>
 #include <glm/glm.hpp>
 
+constexpr long DEFAULT_CITY_PRICE = 2000;
+
 struct City {
     std::string name;
     int population;

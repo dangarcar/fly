@@ -1,21 +1,26 @@
 #include "Game.hpp"
 
+#include "../engine/Log.h"
 #include "../engine/Window.hpp"
 
 void Game::handleInput(const InputEvent& event) {
-    camera.handleInput(event);
-
     if(uiManager.handleInput(event)) 
         return;
     
+    camera.handleInput(event);
     player.handleInput(event);
-    map.handleInput(event, camera);
+
     airManager.handleInput(event);
+
+    map.handleInput(event, camera, uiManager, player);
 }
 
 void Game::update() {
+    uiManager.update();
+    
     if(paused) return;
 
+    player.update();
     map.update(camera);
     airManager.update(map.getCitySpawner());
 }

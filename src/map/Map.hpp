@@ -13,6 +13,8 @@
 #define MESH_DATA_FILE "./resources/mesh.bin"
 
 class Camera;
+class UIManager;
+class Player;
 
 class Map {
 public:
@@ -20,14 +22,14 @@ public:
 
     void projectVertices(const Camera& camera);
 
-    void handleInput(const InputEvent& event, Camera& camera);
+    void handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player);
     void update(const Camera& camera);
     void render(const Camera& camera);
     void load(const Camera& camera);
 
     bool isIntersecting(const Polygon& p, const glm::vec2& v) const;
-
-    void unlockCountry(std::string country);
+    void unlockCountry(const std::string& country, Player& player);
+    void moveToCountry(const Country& country, Camera& camera);
 
     CitySpawner& getCitySpawner() { return citySpawner; };
 
