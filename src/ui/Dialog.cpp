@@ -19,16 +19,16 @@ void Dialog::renderButton(const Button& btn, const Camera& camera) const {
 UnlockCountryDialog::UnlockCountryDialog(const std::string& name, const std::string& code, Map& map, Player& player): 
     map(map), player(player), countryName(name), countryCode(code) 
 {
-    dialog = SDL_Rect {0, 0, 450, 300};
+    dialog = SDL_Rect {0, 0, 450, 320};
     
-    yesButton.localRect = SDL_Rect{25, dialog.h -80, 180, 50};
+    yesButton.localRect = SDL_Rect{25, dialog.h - 70, 180, 50};
     yesButton.globalRect = getBB(yesButton);
     yesButton.color = FC_MakeColor(46, 128, 42, SDL_ALPHA_OPAQUE);
     yesButton.hoverColor = FC_MakeColor(36, 102, 33, SDL_ALPHA_OPAQUE);
     yesButton.text = "YES";
     yesButton.fontSize = 40;
 
-    noButton.localRect = SDL_Rect{dialog.w - 205, dialog.h -80, 180, 50};
+    noButton.localRect = SDL_Rect{dialog.w - 205, dialog.h - 70, 180, 50};
     noButton.globalRect = getBB(noButton);
     noButton.color = FC_MakeColor(128, 42, 42, SDL_ALPHA_OPAQUE);
     noButton.hoverColor = FC_MakeColor(102, 34, 34, SDL_ALPHA_OPAQUE);
@@ -53,8 +53,20 @@ void UnlockCountryDialog::render(const Camera& camera) {
     renderButton(yesButton, camera);
     renderButton(noButton, camera);
 
-    auto text = std::format("Buy {}?\nPrice: ${}", countryName, long(double(DEFAULT_CITY_PRICE) * player.getDifficulty()));
+    auto text = std::format("Buy {}?", countryName);
     camera.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 32, FC_ALIGN_CENTER, SDL_WHITE);
+
+    auto& cir = camera.getTextureManager().getTexture("CIRCLE");
+    cir.setColorMod(FC_MakeColor(0, 0, 0, SDL_ALPHA_OPAQUE));
+    auto rect = SDL_Rect { dialog.x + dialog.w/2 - 70, dialog.y + 52, 140, 140 };
+    cir.render(*camera.getSDL(), rect.x, rect.y, &rect);
+
+    auto& t = camera.getTextureManager().getTexture(countryCode);
+    rect = SDL_Rect { dialog.x + dialog.w/2 - 64, dialog.y + 58, 128, 128 };
+    t.render(*camera.getSDL(), rect.x, rect.y, &rect);
+
+    text = std::format("Price: ${}", long(double(DEFAULT_CITY_PRICE) * player.getDifficulty()));
+    camera.renderText(text, dialog.x + dialog.w/2, dialog.y + 207, 26, FC_ALIGN_CENTER, SDL_WHITE);
 }
 
 bool UnlockCountryDialog::handleInput(const InputEvent& event) {

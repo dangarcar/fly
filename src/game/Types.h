@@ -10,6 +10,7 @@ struct City {
     int population;
     glm::vec2 proj;
     bool capital;
+    std::string country;
 };
 
 struct Coord { float lon, lat; };

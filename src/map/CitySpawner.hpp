@@ -9,13 +9,12 @@
 
 #include "../game/Types.h"
 
-#define AIRPORTS_DATA_FILE "./resources/airports.json"
-
 class Camera;
 
 class CitySpawner {
 private:
-    static constexpr int SPAWN_FREQUENCY = 20;
+    static constexpr int SPAWN_FREQUENCY = 30;
+    static constexpr auto AIRPORTS_DATA_FILE = "./resources/airports.json";
 
 public:
     CitySpawner(): generator(std::random_device{}()) {}

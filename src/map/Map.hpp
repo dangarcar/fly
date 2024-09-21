@@ -9,14 +9,16 @@
 
 #include "../engine/InputEvent.h"
 
-#define COUNTRIES_DATA_FILE "./resources/countries.json"
-#define MESH_DATA_FILE "./resources/mesh.bin"
-
 class Camera;
 class UIManager;
 class Player;
 
 class Map {
+private:
+    static constexpr auto COUNTRIES_DATA_FILE = "./resources/countries.json";
+    static constexpr auto MESH_DATA_FILE = "./resources/mesh.bin";
+    static constexpr auto FLAGS_DATA_FILE = "./resources/flags.json";
+
 public:
     Map() = default;
 
@@ -25,7 +27,7 @@ public:
     void handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player);
     void update(const Camera& camera);
     void render(const Camera& camera);
-    void load(const Camera& camera);
+    void load(Camera& camera);
 
     bool isIntersecting(const Polygon& p, const glm::vec2& v) const;
     void unlockCountry(const std::string& country, Player& player);

@@ -46,6 +46,7 @@ public:
     void renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const;
 
     SDL_Renderer* getSDL() const { return renderer.get(); }
+    TextureManager& getTextureManager() { return textureManager; }
     const TextureManager& getTextureManager() const { return textureManager; }
     const TextRenderer& getTextRenderer() const { return textRenderer; }
 

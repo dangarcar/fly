@@ -7,8 +7,6 @@
 #include "../game/Types.h"
 #include "../engine/Texture.hpp"
 
-#define LABELS_DATA_FILE "./resources/labels.json"
-
 struct Label {
     Texture texture;
     Coord coord;
@@ -21,6 +19,7 @@ class Camera;
 
 class LabelManager {
 private:
+    static constexpr auto LABELS_DATA_FILE = "./resources/labels.json";
     std::unordered_map<std::string, Label> labels;
 
 public:

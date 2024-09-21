@@ -34,7 +34,7 @@ BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam) {
     return BoundingBox { glm::min(v1, v2), glm::max(v1, v2) };
 }
 
-void Map::load(const Camera& camera) {
+void Map::load(Camera& camera) {
     labelManager.load(camera);
     citySpawner.load(camera);
 
@@ -81,6 +81,17 @@ void Map::load(const Camera& camera) {
     meshFile.read(reinterpret_cast<char*>(&triangles[0]), triSize * 3 * sizeof(int32_t));
 
     projectVertices(camera);
+
+    //FLAG LOADING
+    std::ifstream flagFile(FLAGS_DATA_FILE);
+    json flagData = json::parse(flagFile);
+    for(auto& [k, v]: flagData.items()) {
+        auto svg = v.template get<std::string>();
+        Texture t;
+        t.loadSVG(*camera.getSDL(), svg);
+        t.applyMask(*camera.getSDL(), camera.getTextureManager().getTexture("CIRCLE"));
+        camera.getTextureManager().loadTexture(k, std::move(t));
+    }
 }
 
 void Map::projectVertices(const Camera& camera) {

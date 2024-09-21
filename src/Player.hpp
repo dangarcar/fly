@@ -6,8 +6,8 @@ class Camera;
 
 class Player {
 private:
-    static constexpr long INITIAL_CASH = 3000;
-    //static constexpr long INITIAL_CASH = 1000000000;
+    //static constexpr long INITIAL_CASH = 3000;
+    static constexpr long INITIAL_CASH = 1000000000;
 
 public:
     void handleInput(const InputEvent& event);

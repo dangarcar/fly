@@ -46,6 +46,7 @@ bool TextureManager::loadTexture(SDL_Renderer& renderer, const std::string& name
         return false;
     return true;
 }
+
 bool Texture::loadFromFile(SDL_Renderer& renderer, const std::string& path) {
     auto surface = IMG_Load(path.c_str());
     if(!surface) {
@@ -65,6 +66,36 @@ bool Texture::loadFromFile(SDL_Renderer& renderer, const std::string& path) {
     return true;
 }
 
+bool Texture::loadSVG(SDL_Renderer& renderer, const std::string& svg) {
+    auto rw = SDL_RWFromConstMem(svg.c_str(), svg.size());
+    auto surface = IMG_Load_RW(rw, 1);
+    
+    texture.reset(SDL_CreateTextureFromSurface(&renderer, surface));
+    SDL_FreeSurface(surface);
+    if(!texture) {
+        writeError("Unable to create texture %s. SDL error: %s", svg.c_str(), SDL_GetError());
+        return false;
+    }
+
+    SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height);
+
+    return true;
+}
+
+void Texture::applyMask(SDL_Renderer& renderer, const Texture& mask) {    
+    Texture canvas;
+    canvas.createBlank(renderer, this->width, this->height, SDL_TEXTUREACCESS_TARGET);
+    canvas.setAsRenderTarget(renderer);
+    
+    mask.render(renderer, 0, 0, nullptr);
+    
+    SDL_SetTextureBlendMode(this->texture.get(), SDL_BLENDMODE_MUL);
+    SDL_RenderCopy(&renderer, this->texture.get(), nullptr, nullptr);
+
+    SDL_SetRenderTarget(&renderer, nullptr);
+    *this = std::move(canvas);
+}
+
 bool TextureManager::loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath) {
     using json = nlohmann::json;
 
@@ -78,4 +109,8 @@ bool TextureManager::loadTexturePack(SDL_Renderer& renderer, const std::string& 
     }
 
     return correct;
+}
+
+void TextureManager::loadTexture(const std::string& name, Texture&& texture) {
+    textureMap[name] = std::forward<Texture>(texture);
 }

@@ -105,6 +105,7 @@ def countriesMesh():
         polygons = []
         name = str(feat.properties['ADMIN'])
         code = feat.properties['ADM0_A3']
+        iso = feat.properties['ISO_A2_EH']
         if not countryExists(code):
             continue
         elif code == 'SDS':
@@ -112,11 +113,14 @@ def countriesMesh():
         elif code == 'CYN':
             code = 'CYP'
             name = 'Cyprus'
+            iso = 'CY'
         elif feat.properties['SOV_A3'] in ['GB1', 'US1', 'FR1', 'CH1', 'AU1', 'NL1', 'NZ1', 'FI1'] and code not in ['FLK']: #Why island think they are independent?
             tradCode = {'GB1': 'GBR', 'US1': 'USA', 'FR1': 'FRA', 'CH1': 'CHN', 'AU1': 'AUS', 'NL1': 'NLD', 'NZ1': 'NZL', 'FI1': 'FIN'}
             tradName = {'GB1': 'United Kingdom', 'US1': 'United States of America', 'FR1': 'France', 'CH1': 'China', 'AU1': 'Australia', 'NL1': 'Netherlands', 'NZ1': 'New Zealand', 'FI1': 'Finland'}
+            tradIso = {'GB1': 'GB', 'US1': 'US', 'FR1': 'FR', 'CH1': 'CN', 'AU1': 'AU', 'NL1': 'NL', 'NZ1': 'NZ', 'FI1': 'FI'}
             code = tradCode[feat.properties['SOV_A3']]
             name = tradName[feat.properties['SOV_A3']]
+            iso = tradIso[feat.properties['SOV_A3']]
 
         if feat.geometry['type'] == 'MultiPolygon':
             polygons = [e[0] for e in feat.geometry['coordinates']]
@@ -150,6 +154,7 @@ def countriesMesh():
             countries[code] = {
                 'banned': countryBanned(code),
                 'name': name,
+                'iso': iso,
                 'mesh': polygonIndexes,
             }
         else:
@@ -183,19 +188,26 @@ def main():
         vertNP.tofile(f)
         triNP.tofile(f)
 
-def readFile():
+def getFlags():
     countries = {}
     with open('resources/countries.json', 'r') as c:
         countries = json.load(c)
 
-    airports = {}
-    with open('resources/airports.json', 'r') as a:
-        airports = json.load(a)
+    flags = {}
+    for i in countries:
+        code = countries[i]['iso'].lower()
+        if i == 'SOL': code = 'somaliland'
+        elif i == 'KAS': code = 'pk-jk'
+        url = f"https://hatscripts.github.io/circle-flags/flags/{code}.svg"
+        response = requests.get(url)
+        if response.status_code != 200:
+            print("no", countries[i]['name'])
+        else:
+            flags[i] = response.text
     
-    for k in countries:
-        if k not in airports:
-            print(k, countries[k]['name'])
+    with open('resources/flags.json', 'w', encoding='utf-8') as f:
+        json.dump(flags, f)
 
 if __name__ == '__main__':
     main()
-    #readFile()
+    getFlags()
