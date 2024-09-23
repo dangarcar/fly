@@ -22,7 +22,7 @@ private:
 public:
     Map() = default;
 
-    void projectVertices(const Camera& camera);
+    void projectMap(const Camera& camera);
 
     void handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player);
     void update(const Camera& camera);
@@ -41,6 +41,10 @@ private:
     std::vector<float> projectedVertices;
     std::vector<int32_t> triangles;
     std::unordered_map<std::string, Country> countries;
+
+    //CACHED RENDERING ARRAYS
+    std::vector<SDL_Vertex> vertexArray;
+    std::vector<std::vector<SDL_Point>> lineArray;
 
     //SYSTEMS
     LabelManager labelManager;

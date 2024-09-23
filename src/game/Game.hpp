@@ -14,7 +14,7 @@ class Window;
 
 class Game : public Scene {
 private:
-    static constexpr int TICKS_PER_SECOND = 15;
+    static constexpr int TICKS_PER_SECOND = 150; //TODO: must change
 
 public:
     Game(int width, int height): camera(width, height) {}
@@ -31,6 +31,9 @@ public:
     Renderer& getRenderer() override { return camera; }
 
 private:
+    void timeFps();
+
+private:
     Camera camera;
     
     UIManager uiManager;
@@ -40,4 +43,8 @@ private:
 
     int ticksPerSecond = TICKS_PER_SECOND;
     bool paused = false;
+
+    Timer fpsTimer;
+    int framesDrawn = 0;
+    float framesPerMs = 0.0;
 };

@@ -3,13 +3,16 @@
 #include <SDL_image.h>
 #include <cassert>
 
-#include "Log.h"
 #include "Scene.h"
 #include "Renderer.hpp"
 
 void Window::setScene(std::unique_ptr<Scene> ptr) {
+    Timer timer;
+
     scene = std::move(ptr);
-    scene->start(*this);   
+    scene->start(*this);
+
+    writeLog("Scene load time: %.1fms", timer.elapsedMillis());
 }
 
 int Window::start() {
@@ -23,11 +26,16 @@ int Window::start() {
         return -1;
     }
 
-    window.reset(SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE));
+    window.reset(SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN));
     if(!window) {
         writeError("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return -1;
     }
+
+    /*SDL_DisplayMode dm;
+    SDL_GetDisplayMode(0, 0, &dm);
+    width = dm.w;
+    height = dm.h;*/
 
     return 0;
 }
@@ -35,7 +43,6 @@ int Window::start() {
 void Window::run() {
     assert(scene != nullptr);
 
-    SDL_Event sdlEvent;
     Timer updateTimer;
     const float msPerTick = 1000.0 / scene->getTicksPerSecond();
     while (alive) {
@@ -52,23 +59,6 @@ void Window::run() {
         scene->getRenderer().clearScreen();
         scene->render();
         scene->getRenderer().presentScreen();
-        
-        timeFPS();
-    }
-}
-
-void Window::timeFPS() {
-    framesDrawn++;
-
-    if(fpsTimer.elapsedMillis() >= 500) {
-        auto fpms = framesDrawn / fpsTimer.elapsedMillis();
-
-        char str[32];
-        sprintf(str, "%.02f -> %fms\n", fpms * 1000, 1/fpms); //FIXME::
-        SDL_SetWindowTitle(window.get(), str);
-
-        fpsTimer.reset();
-        framesDrawn = 0;
     }
 }
 
@@ -111,7 +101,9 @@ InputEvent Window::getInputEvent() {
         case SDL_MOUSEBUTTONUP:
             if(oldMousePos.x == mousePos.x && oldMousePos.y == mousePos.y)
                 event = ClickEvent{ mousePos, sdl.button.button };
-
+            else
+                event = MouseUpEvent{ mousePos, sdl.button.button };
+            
             oldMousePos = mousePos;
             if(sdl.button.button == SDL_BUTTON_LEFT)
                 leftDown = false;

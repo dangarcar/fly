@@ -8,7 +8,9 @@
 #include "../engine/Texture.hpp"
 
 struct Label {
-    Texture texture;
+    static constexpr int NUMBER_TEXTURE = 10;
+
+    std::array<Texture, NUMBER_TEXTURE> texture;
     Coord coord;
     float angle;
     float size;
@@ -23,6 +25,7 @@ private:
     std::unordered_map<std::string, Label> labels;
 
 public:
+    void load(Camera& camera);
+    
     void render(const Camera& camera);
-    void load(const Camera& camera);
 };

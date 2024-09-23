@@ -20,17 +20,32 @@ public:
     }
 
     const City& getCity() const { return city; }
+    float getRelativeRadius(float zoom) const { return radius * std::clamp(zoom, 2.0f, 15.0f) / 10; }
 
     void update();
     void render(const Camera& camera) const;
 };
 
+struct Route {
+    int a, b;
+};
+
 class AirportManager {
 public:
-    void handleInput(const InputEvent& event);
-    void update(CitySpawner& citySpawner);
+    bool handleInput(const InputEvent& event);
+    void update(CitySpawner& citySpawner, Camera& camera);
     void render(const Camera& camera);
+
+    void addRoute(const Route& route);
+
+private:
+    void renderRoute(const Camera& camera, const Route& route) const;
 
 private:
     std::vector<Airport> airports;
+    std::vector<Route> routes;
+
+    SDL_Point mousePos;
+    bool leftDown;
+    Route currentRoute = {-1, -1};
 };

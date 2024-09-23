@@ -7,10 +7,11 @@
 #include "../engine/InputEvent.h"
 
 class Camera : public Renderer {
-private:
-    static constexpr float MAX_ZOOM = 33.0f;
-    static constexpr float ZOOM_SPEED = 0.15f;
+public:
+    static constexpr float MAX_ZOOM = 40.0f;
 
+private:
+    static constexpr float ZOOM_SPEED = 0.15f;
     static constexpr Coord INITIAL_POS = {0, 33};
 
 public:
@@ -31,6 +32,8 @@ public:
     void move(glm::vec2 v);
 
     SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
 
     float getZoom() const { return zoom; }
     void setZoom(float z) { 

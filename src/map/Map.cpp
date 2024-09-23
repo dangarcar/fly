@@ -11,28 +11,9 @@
 
 constexpr SDL_Color SEA_COLOR = {0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE};
 
-SDL_Color getCountryColor(const Country& country) {
-    switch (country.state) {
-        case CountryState::UNLOCKED:
-            return {0xeb, 0xb6, 0x60, SDL_ALPHA_OPAQUE};
-        
-        case CountryState::LOCKED:
-            return {0x4f, 0x46, 0x39, SDL_ALPHA_OPAQUE};
-        
-        case CountryState::HOVERED:
-            return {0x99, 0x77, 0x3f, SDL_ALPHA_OPAQUE};
-
-        default:
-            return {0x25, 0x21, 0x1b, SDL_ALPHA_OPAQUE};
-    }
-}
-
-BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam) {
-    auto v1 = cam.coordsToProj(c1);
-    auto v2 = cam.coordsToProj(c2);
-
-    return BoundingBox { glm::min(v1, v2), glm::max(v1, v2) };
-}
+SDL_Color getCountryColor(const Country& country);
+BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam);
+Texture createFlag(Camera& camera, const std::string& svg);
 
 void Map::load(Camera& camera) {
     labelManager.load(camera);
@@ -80,27 +61,42 @@ void Map::load(Camera& camera) {
     triangles.resize(triSize * 3);
     meshFile.read(reinterpret_cast<char*>(&triangles[0]), triSize * 3 * sizeof(int32_t));
 
-    projectVertices(camera);
+    this->projectMap(camera);
 
     //FLAG LOADING
     std::ifstream flagFile(FLAGS_DATA_FILE);
     json flagData = json::parse(flagFile);
     for(auto& [k, v]: flagData.items()) {
         auto svg = v.template get<std::string>();
-        Texture t;
-        t.loadSVG(*camera.getSDL(), svg);
-        t.applyMask(*camera.getSDL(), camera.getTextureManager().getTexture("CIRCLE"));
-        camera.getTextureManager().loadTexture(k, std::move(t));
+        camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
+    }
+
+    //FIXME:
+    for(auto& [k, c]: countries) {
+        if(c.state == CountryState::BANNED)
+            continue;
+
+        c.state = CountryState::UNLOCKED;
+        citySpawner.addCountry(k);
     }
 }
 
-void Map::projectVertices(const Camera& camera) {
+void Map::projectMap(const Camera& camera) {
     projectedVertices.resize(vertices.size());
     
-    for(int i=0; i*2<vertices.size(); ++i) {
+    for(size_t i=0; i*2<vertices.size(); ++i) {
         auto proj = camera.coordsToProj({vertices[2*i], vertices[2*i + 1]});
         projectedVertices[2*i] = proj.x;
         projectedVertices[2*i + 1] = proj.y;
+    }
+
+    vertexArray = std::vector<SDL_Vertex>(vertices.size() / 2);
+    lineArray.clear();
+    for(auto& [name, country]: countries) {
+        for(auto& pol: country.mesh) {
+            auto [begV, endV] = pol.vertexIndex;            
+            lineArray.push_back(std::vector<SDL_Point>(endV - begV));
+        }
     }
 }
 
@@ -109,22 +105,21 @@ void Map::render(const Camera& camera) {
     SDL_Rect rect = camera.getScreenViewportRect();
     SDL_RenderFillRect(camera.getSDL(), &rect);
 
-    std::vector<SDL_Vertex> vertexArray(vertices.size() / 2);
-    std::vector<std::vector<SDL_Point>> lines;
+    int lineIndex = 0;
     for(auto& [name, country]: countries) {
-        for(auto pol: country.mesh) {
-            std::vector<SDL_Point> line;
+        auto countryColor = getCountryColor(country);
 
+        for(auto pol: country.mesh) {
             auto [begV, endV] = pol.vertexIndex;
             for(auto i=begV; i!=endV; ++i) {
                 SDL_Vertex v;
-                v.color = getCountryColor(country);
+                v.color = countryColor;
                 v.position = camera.projToScreen({projectedVertices[2*i], projectedVertices[2*i + 1]});
                 vertexArray[i] = v;
-                line.push_back(SDL_Point{int(v.position.x), int(v.position.y)});
+                lineArray[lineIndex][i - begV] = SDL_Point{int(v.position.x), int(v.position.y)};
             }
 
-            lines.push_back(line);
+            lineIndex++;
         }
     }
 
@@ -133,7 +128,7 @@ void Map::render(const Camera& camera) {
     labelManager.render(camera);
 
     SDL_SetRenderDrawColor(camera.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
-    for(auto& l: lines) {
+    for(auto& l: lineArray) {
         SDL_RenderDrawLines(camera.getSDL(), l.data(), l.size());
     }
 
@@ -173,8 +168,8 @@ void Map::handleInput(const InputEvent& event, Camera& camera, UIManager& uiMana
         }
     }
 
-    if(auto* resizedevent = std::get_if<WindowResizedEvent>(&event)) {
-        projectVertices(camera);
+    if([[maybe_unused]] auto* resizedevent = std::get_if<WindowResizedEvent>(&event)) {
+        this->projectMap(camera);
     }
 
     if(auto* moveevent = std::get_if<MouseMoveEvent>(&event)) {
@@ -258,4 +253,36 @@ void Map::moveToCountry(const Country& country, Camera& camera) {
     zoom = SDL_clamp(zoom * 0.7f, 1.0f, 12.0f);
     camera.setZoom(zoom);
     camera.move({0.0f, 0.0f}); //To correct out of bounds errors
+}
+
+SDL_Color getCountryColor(const Country& country) {
+    switch (country.state) {
+        case CountryState::UNLOCKED:
+            return {0xeb, 0xb6, 0x60, SDL_ALPHA_OPAQUE};
+        
+        case CountryState::LOCKED:
+            return {0x4f, 0x46, 0x39, SDL_ALPHA_OPAQUE};
+        
+        case CountryState::HOVERED:
+            return {0x99, 0x77, 0x3f, SDL_ALPHA_OPAQUE};
+
+        default:
+            return {0x25, 0x21, 0x1b, SDL_ALPHA_OPAQUE};
+    }
+}
+
+BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam) {
+    auto v1 = cam.coordsToProj(c1);
+    auto v2 = cam.coordsToProj(c2);
+
+    return BoundingBox { glm::min(v1, v2), glm::max(v1, v2) };
+}
+
+Texture createFlag(Camera& camera, const std::string& svg) {
+    auto& circle = camera.getTextureManager().getTexture("CIRCLE");
+    Texture country;
+    country.loadSVG(*camera.getSDL(), svg);
+    country.applyMask(*camera.getSDL(), circle);
+
+    return country;
 }

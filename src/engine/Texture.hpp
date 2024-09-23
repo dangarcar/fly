@@ -13,7 +13,7 @@ public:
     bool loadFromFile(SDL_Renderer& renderer, const std::string& path);
     bool loadSVG(SDL_Renderer& renderer, const std::string& svg);
 
-    void render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip) const;
+    void render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
     void render(SDL_Renderer& renderer, int x, int y, float scale, float angle, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
     void setColorMod(SDL_Color color) const { SDL_SetTextureColorMod(texture.get(), color.r, color.g, color.b); }
 

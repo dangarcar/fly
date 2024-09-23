@@ -40,7 +40,7 @@ std::optional<City> CitySpawner::getRandomCity() {
         return city;
     
     std::vector<int> populations(possibleCountries.size());
-    for(int i=0; i<populations.size(); ++i)
+    for(size_t i=0; i<populations.size(); ++i)
         populations[i] = possibleCountries[i].population;
     std::discrete_distribution<int> distribution(populations.begin(), populations.end());
 

@@ -5,9 +5,11 @@
 #include <functional>
 #include <variant>
 
+//UNUSED:::
+
 //This looks like shit but I think it's cleaner
 
-#define MAKE_EVENT(name, elems) struct name ## Data elems; struct name: Shoutable<name ## Data> {}
+/*#define MAKE_EVENT(name, elems) struct name ## Data elems; struct name: Shoutable<name ## Data> {}
 
 namespace Event {
     template<typename T>
@@ -64,4 +66,5 @@ namespace Event {
         bool leftDown;
         int width, height;
     };
-};
+};*/
+

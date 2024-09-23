@@ -4,7 +4,7 @@
 #include <memory>
 #include <variant>
 
-#include "Timer.h"
+#include "Utils.h"
 #include "Scene.h"
 
 class Window {
@@ -19,8 +19,6 @@ public:
     int start();
     
     void run();
-    
-    void timeFPS();
 
     bool isAlive() const { return alive; }
     int getWidth() const { return width; }
@@ -36,9 +34,6 @@ private:
 private:
     std::unique_ptr<Scene> scene;
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
-    
-    Timer fpsTimer;
-    int framesDrawn = 0;
     
     bool alive = true;
     int width = DEFAULT_SCREEN_WIDTH, height = DEFAULT_SCREEN_HEIGHT;

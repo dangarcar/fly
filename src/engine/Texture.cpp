@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include <fstream>
 
-#include "Log.h"
+#include "Utils.h"
 
 bool Texture::createBlank(SDL_Renderer& rend, int w, int h, SDL_TextureAccess acc) {
     texture.reset(SDL_CreateTexture(&rend, SDL_PIXELFORMAT_RGBA8888, acc, w, h));
@@ -18,7 +18,7 @@ bool Texture::createBlank(SDL_Renderer& rend, int w, int h, SDL_TextureAccess ac
     return true;
 }
 
-void Texture::render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip) const {
+void Texture::render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode) const {
 	SDL_Rect renderQuad = { x, y, width, height };
 
 	if(clip) {
@@ -26,6 +26,7 @@ void Texture::render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip) const
 		renderQuad.h = clip->h;
 	}
 
+    SDL_SetTextureBlendMode(texture.get(), blendMode);
     SDL_RenderCopy(&renderer, texture.get(), nullptr, &renderQuad);
 }
 

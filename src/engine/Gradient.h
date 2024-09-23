@@ -1,16 +1,11 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <SDL.h>
+#include "Utils.h"
 
 constexpr SDL_Color SDL_WHITE = {0xFF, 0xFF, 0xFF, 0xFF};
 constexpr SDL_Color SDL_BLACK = {0, 0, 0, 0xFF};
 constexpr SDL_Color SDL_GOLD = {0xD4, 0xAF, 0x37, 0xFF};
 constexpr SDL_Color SDL_SILVER = {0xAA, 0xA9, 0xAD, 0xFF};
-
-constexpr inline float lerp(float a, float b, float t) {
-    return a + (b - a) * t;
-}
 
 class Gradient {
 private:
