@@ -1,0 +1,13 @@
+{
+    "textures": {
+        "CIRCLE": "./assets/circle.png",
+        "PLANE": "./assets/plane.png",
+        "CLOCK": "./assets/clock.png"
+    },
+
+    "SEA_COLOR": "#031940",
+    "BANNED_COLOR": "#1c1917",
+    "UNLOCKED_COLOR": "#358F5D",
+    "LOCKED_COLOR": "#35738F",
+    "HOVERED_COLOR": "#768F35"
+}

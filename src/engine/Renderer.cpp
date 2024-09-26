@@ -26,6 +26,8 @@ Texture TextRenderer::renderToTexture(SDL_Renderer& renderer, const std::string&
 bool Renderer::start(SDL_Window& window) {
     renderer.reset(SDL_CreateRenderer(&window, -1, SDL_RENDERER_ACCELERATED));
     
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+
     if(!renderer) {
         writeError("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return false;
@@ -33,11 +35,6 @@ bool Renderer::start(SDL_Window& window) {
     
     if(!textRenderer.start(*renderer)) {
         writeError("Fonts couldn't be loaded from the files");
-        return false;
-    }
-
-    if(!textureManager.loadTexturePack(*renderer, DEFAULT_TEXTURE_PACK)) {
-        writeError("Textures couldn't be loaded from the files");
         return false;
     }
 

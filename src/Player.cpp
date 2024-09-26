@@ -3,22 +3,58 @@
 #include <format>
 #include <SDL_FontCache.h>
 
+#define GLM_ENABLE_EXPERIMENTAL 1
+#include <glm/gtx/rotate_vector.hpp>
+
 #include "game/Camera.hpp"
+#include "engine/Gradient.h"
+
+constexpr int TICKS_PER_CLOCK_CYCLE = 250;
 
 void Player::handleInput(const InputEvent& event) {
     //TODO:::
 }
 
-void Player::render(const Camera& camera) {
+void renderClockHand(const Camera& camera, SDL_Point center, int w, int h, float angle, SDL_Color color) {
+    const int indices[] = {0, 1, 2, 1, 2, 3};
+    
+    std::vector<SDL_Vertex> minuteVertices = {
+        SDL_Vertex { .position = {float(center.x - w/2), float(center.y)}, .color = color, .tex_coord = {0,0}},
+        SDL_Vertex { .position = {float(center.x + w/2), float(center.y)}, .color = color, .tex_coord = {0,0}},
+        SDL_Vertex { .position = {float(center.x - w/2), float(center.y - h)}, .color = color, .tex_coord = {0,0}},
+        SDL_Vertex { .position = {float(center.x + w/2), float(center.y - h)}, .color = color, .tex_coord = {0,0}}
+    };
+
+    for(auto& p: minuteVertices) {
+        auto vCenter = glm::vec2(float(center.x), float(center.y));
+        auto a = glm::vec2(p.position.x, p.position.y) - vCenter;
+        auto v = vCenter + glm::rotate(a, angle);
+        p.position = SDL_FPoint {v.x, v.y};
+    }
+
+    SDL_RenderGeometry(camera.getSDL(), nullptr, minuteVertices.data(), minuteVertices.size(), indices, 6);
+}
+
+void Player::render(const Camera& camera, int currentTick) {
     auto screen = camera.getScreenViewportRect();
-    auto text = std::format("${} -> Diff.:{:.5f}", cash, difficulty);
+    auto text = std::format("${}", cash);
     auto bounds = camera.getTextRenderer().getTextBounds(text, 36);
     
-    auto rect = SDL_Rect {screen.w - bounds.w - 30, 0, bounds.w + 20, bounds.h + 20};
+    auto rect = SDL_Rect {screen.w - bounds.w - 112, 0, bounds.w + 102, 92};
     SDL_SetRenderDrawColor(camera.getSDL(), 0xE0, 0xE0, 0xE0, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(camera.getSDL(), &rect);
 
-    camera.renderText(text, screen.w - bounds.w - 20, 10, 36, FC_ALIGN_LEFT, FC_MakeColor(0, 0, 0, SDL_ALPHA_OPAQUE));
+    camera.renderText(text, screen.w - bounds.w - 102, 28, 36, FC_ALIGN_LEFT, FC_MakeColor(0, 0, 0, SDL_ALPHA_OPAQUE));
+
+    float minuteAngle = 2*M_PI / TICKS_PER_CLOCK_CYCLE * (currentTick % TICKS_PER_CLOCK_CYCLE);
+    renderClockHand(camera, SDL_Point(screen.w-56, 46), 2, 30, minuteAngle, SDL_SILVER);
+
+    float hourAngle = 2*M_PI / (24*TICKS_PER_CLOCK_CYCLE) * (currentTick % (24*TICKS_PER_CLOCK_CYCLE));
+    renderClockHand(camera, SDL_Point(screen.w-56, 46), 4, 20, hourAngle, SDL_GOLD);
+
+    auto& t = camera.getTextureManager().getTexture("CLOCK");
+    rect.w = rect.h = 72;
+    t.render(*camera.getSDL(), screen.w - 92, 10, &rect);
 }
 
 void Player::update() {

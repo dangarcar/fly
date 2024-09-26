@@ -30,6 +30,13 @@ void Texture::render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip, SDL_B
     SDL_RenderCopy(&renderer, texture.get(), nullptr, &renderQuad);
 }
 
+void Texture::renderCenter(SDL_Renderer& renderer, float x, float y, float scale, float angle) const {
+    float w = width * scale, h = height * scale;
+    SDL_FRect renderQuad = { x - w/2 , y - h/2 , w, h };
+
+    SDL_RenderCopyExF(&renderer, texture.get(), nullptr, &renderQuad, angle, nullptr, SDL_FLIP_NONE);
+}
+
 void Texture::render(SDL_Renderer& renderer, int x, int y, float scale, float angle, SDL_BlendMode blendMode) const {
     int w = width * scale, h = height * scale;
     SDL_Rect renderQuad = { x, y, w, h };
@@ -97,11 +104,11 @@ void Texture::applyMask(SDL_Renderer& renderer, const Texture& mask) {
     *this = std::move(canvas);
 }
 
-bool TextureManager::loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath) {
+/*bool TextureManager::loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath) {
     using json = nlohmann::json;
 
     std::ifstream file(jsonPath);
-    json data = json::parse(file);
+    json data = json::parse(file)["textures"];
 
     bool correct = true;
     for(auto& [k, v]: data.items()) {
@@ -110,7 +117,7 @@ bool TextureManager::loadTexturePack(SDL_Renderer& renderer, const std::string& 
     }
 
     return correct;
-}
+}*/
 
 void TextureManager::loadTexture(const std::string& name, Texture&& texture) {
     textureMap[name] = std::forward<Texture>(texture);

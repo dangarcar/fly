@@ -15,7 +15,7 @@ void Window::setScene(std::unique_ptr<Scene> ptr) {
     writeLog("Scene load time: %.1fms", timer.elapsedMillis());
 }
 
-int Window::start() {
+int Window::start(bool fullscreen) {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         writeError("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return -1;
@@ -26,16 +26,21 @@ int Window::start() {
         return -1;
     }
 
-    window.reset(SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN));
+    int flags = SDL_WINDOW_SHOWN;
+    if(fullscreen) {
+        SDL_DisplayMode dm;
+        SDL_GetDisplayMode(0, 0, &dm);
+        this->width = dm.w;
+        this->height = dm.h;
+        
+        flags |= SDL_WINDOW_FULLSCREEN;
+    }
+
+    window.reset(SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags));
     if(!window) {
         writeError("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return -1;
     }
-
-    /*SDL_DisplayMode dm;
-    SDL_GetDisplayMode(0, 0, &dm);
-    width = dm.w;
-    height = dm.h;*/
 
     return 0;
 }
@@ -51,13 +56,13 @@ void Window::run() {
             scene->handleInput(event);
         }
 
-        if(updateTimer.elapsedMillis() > msPerTick) {
+        if(updateTimer.elapsedMillis() >= msPerTick) {
             scene->update();
             updateTimer.reset();
         }
 
         scene->getRenderer().clearScreen();
-        scene->render();
+        scene->render(updateTimer.elapsedMillis() / msPerTick);
         scene->getRenderer().presentScreen();
     }
 }

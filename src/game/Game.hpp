@@ -14,7 +14,8 @@ class Window;
 
 class Game : public Scene {
 private:
-    static constexpr int TICKS_PER_SECOND = 150; //TODO: must change
+    static constexpr auto DEFAULT_GAME_FILE = "./resources/game.json";
+    static constexpr int TICKS_PER_SECOND = 15; //TODO: must change
 
 public:
     Game(int width, int height): camera(width, height) {}
@@ -24,9 +25,10 @@ public:
     
     void start(const Window& window) override;
     void update() override;
-    void render() override;
+    void render(float frameProgress) override;
 
-    int getTicksPerSecond() const override { return ticksPerSecond; }
+    long getTicksPerSecond() const override { return ticksPerSecond; }
+    long getCurrentTick() const override { return currentTick; }
 
     Renderer& getRenderer() override { return camera; }
 
@@ -41,6 +43,7 @@ private:
     AirportManager airManager;
     Map map;
 
+    long currentTick = 0L;
     int ticksPerSecond = TICKS_PER_SECOND;
     bool paused = false;
 

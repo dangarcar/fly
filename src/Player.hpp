@@ -11,7 +11,7 @@ private:
 
 public:
     void handleInput(const InputEvent& event);
-    void render(const Camera& camera);
+    void render(const Camera& camera, int currentTick);
     void update();
 
     long getCash() const { return cash; }

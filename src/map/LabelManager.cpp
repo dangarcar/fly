@@ -8,6 +8,7 @@
 #include <fstream>
 #include "../game/Camera.hpp"
 #include "../Player.hpp"
+#include "../engine/Window.hpp"
 
 void LabelManager::load(Camera& camera) {
     for(int i=0; i<Label::NUMBER_TEXTURE; ++i) {
@@ -21,7 +22,7 @@ void LabelManager::load(Camera& camera) {
 
     for(auto& [k, v]: labelData.items()) {
         Label label;
-        label.size = v["size"].template get<float>() * 128.0f; //128 was the default size when this file was made
+        label.size = v["size"].template get<float>() * 128.0f * (float(camera.getHeight()) / Window::DEFAULT_SCREEN_HEIGHT); //128 was the default size when this file was made
         label.angle = v["angle"].template get<float>();
         auto center = v["coord"].template get<std::vector<float>>();
         label.coord = {center[0], center[1]};
@@ -51,6 +52,6 @@ void LabelManager::render(const Camera& camera) { //FIXME: Probably overkill
         auto v = camera.coordsToScreen(label.coord);
         auto centre = glm::vec2(label.texture[textureIndex].getWidth()/2.f, label.texture[textureIndex].getHeight()/2.f);
         auto dv = glm::rotate(centre * sz, glm::radians(label.angle));
-        label.texture[textureIndex].render(*camera.getSDL(), v.x - dv.x, v.y - dv.y, sz, label.angle, SDL_BLENDMODE_ADD);
+        label.texture[textureIndex].render(*camera.getSDL(), int(v.x - dv.x), int(v.y - dv.y), sz, label.angle, SDL_BLENDMODE_ADD);
     }
 }

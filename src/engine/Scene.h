@@ -11,9 +11,10 @@ public:
     
     virtual void start(const Window& window) = 0;
     virtual void update() = 0;
-    virtual void render() = 0;
+    virtual void render(float frameProgress) = 0;
 
-    virtual int getTicksPerSecond() const = 0;
+    virtual long getTicksPerSecond() const = 0;
+    virtual long getCurrentTick() const = 0;
     virtual Renderer& getRenderer() = 0; 
 
     virtual ~Scene() {}

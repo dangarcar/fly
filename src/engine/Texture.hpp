@@ -15,6 +15,7 @@ public:
 
     void render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
     void render(SDL_Renderer& renderer, int x, int y, float scale, float angle, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
+    void renderCenter(SDL_Renderer& renderer, float x, float y, float scale, float angle) const;
     void setColorMod(SDL_Color color) const { SDL_SetTextureColorMod(texture.get(), color.r, color.g, color.b); }
 
     void setAsRenderTarget(SDL_Renderer& renderer) { 
@@ -40,7 +41,7 @@ private:
 public:
     void loadTexture(const std::string& name, Texture&& texture);
     bool loadTexture(SDL_Renderer& renderer, const std::string& name, const std::string& path);
-    bool loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath);
+    //bool loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath);
 
     const Texture& getTexture(const std::string& name) const { return textureMap.at(name); }
 };

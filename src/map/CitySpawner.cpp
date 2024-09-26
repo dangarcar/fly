@@ -18,7 +18,8 @@ void CitySpawner::load(const Camera& camera) {
             c.name = e["name"].template get<std::string>();
             c.population = e["population"].template get<int>();
             auto coord = e["coords"].template get<std::vector<float>>();
-            c.proj = camera.coordsToProj({coord[0], coord[1]});
+            c.coord = {coord[0], coord[1]};
+            c.proj = camera.coordsToProj(c.coord);
             c.capital = e["capital"].template get<bool>();
             c.country = k;
 

@@ -8,7 +8,7 @@
 #include "Scene.h"
 
 class Window {
-private:
+public:
     static constexpr int DEFAULT_SCREEN_WIDTH = 1280;
     static constexpr int DEFAULT_SCREEN_HEIGHT = 720;
 
@@ -16,7 +16,7 @@ public:
     Window(): window(nullptr, &SDL_DestroyWindow) {}
     ~Window() { SDL_Quit(); }
     
-    int start();
+    int start(bool fullscreen);
     
     void run();
 

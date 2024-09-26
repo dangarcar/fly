@@ -14,6 +14,9 @@ class UIManager;
 class Player;
 
 class Map {
+public:
+    SDL_Color seaColor, lockedColor, unlockedColor, bannedColor, hoveredColor;
+
 private:
     static constexpr auto COUNTRIES_DATA_FILE = "./resources/countries.json";
     static constexpr auto MESH_DATA_FILE = "./resources/mesh.bin";

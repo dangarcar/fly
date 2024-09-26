@@ -1,5 +1,8 @@
 #include "Game.hpp"
 
+#include "../../include/json.hpp"
+#include <fstream>
+
 #include "../engine/Utils.h"
 #include "../engine/Window.hpp"
 
@@ -17,19 +20,20 @@ void Game::handleInput(const InputEvent& event) {
 }
 
 void Game::update() {
+    currentTick++;
     uiManager.update();
     
     if(paused) return;
 
     player.update();
     map.update(camera);
-    airManager.update(map.getCitySpawner(), camera);
+    airManager.update(map.getCitySpawner(), camera, player);
 }
 
-void Game::render() {
+void Game::render(float frameProgress) {
     map.render(camera);
-    airManager.render(camera);
-    player.render(camera);
+    airManager.render(camera, frameProgress);
+    player.render(camera, currentTick);
 
     uiManager.render(camera);
 
@@ -51,6 +55,22 @@ void Game::timeFps() {
 void Game::start(const Window& window) {
     if(!camera.start(window.getSDL()))
         writeError("Renderer couldn't start: %s\n", SDL_GetError());
+
+    using json = nlohmann::json;
+    std::ifstream file(DEFAULT_GAME_FILE);
+    auto data = json::parse(file);
+
+    auto textures = data["textures"];
+    for(auto& [k, v]: textures.items()) {
+        auto path = v.template get<std::string>();
+        camera.getTextureManager().loadTexture(*camera.getSDL(), k, path);
+    }
+
+    map.seaColor = hexCodeToColor(data["SEA_COLOR"].template get<std::string>());
+    map.bannedColor = hexCodeToColor(data["BANNED_COLOR"].template get<std::string>());
+    map.unlockedColor = hexCodeToColor(data["UNLOCKED_COLOR"].template get<std::string>());
+    map.lockedColor = hexCodeToColor(data["LOCKED_COLOR"].template get<std::string>());
+    map.hoveredColor = hexCodeToColor(data["HOVERED_COLOR"].template get<std::string>());
 
     map.load(camera);
 }

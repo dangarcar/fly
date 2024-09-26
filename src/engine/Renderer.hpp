@@ -42,8 +42,6 @@ private:
 
 class Renderer {
 private:
-    static constexpr auto DEFAULT_TEXTURE_PACK = "./resources/textures.json";
-
     std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> renderer;
     TextureManager textureManager;
     TextRenderer textRenderer;

@@ -9,9 +9,7 @@
 #include "../Player.hpp"
 #include "../ui/UIManager.hpp"
 
-constexpr SDL_Color SEA_COLOR = {0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE};
-
-SDL_Color getCountryColor(const Country& country);
+SDL_Color getCountryColor(const Map& map, const Country& country);
 BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam);
 Texture createFlag(Camera& camera, const std::string& svg);
 
@@ -101,13 +99,13 @@ void Map::projectMap(const Camera& camera) {
 }
 
 void Map::render(const Camera& camera) {
-    SDL_SetRenderDrawColor(camera.getSDL(), SEA_COLOR.r, SEA_COLOR.g, SEA_COLOR.b, SEA_COLOR.a);
+    SDL_SetRenderDrawColor(camera.getSDL(), seaColor.r, seaColor.g, seaColor.b, seaColor.a);
     SDL_Rect rect = camera.getScreenViewportRect();
     SDL_RenderFillRect(camera.getSDL(), &rect);
 
     int lineIndex = 0;
     for(auto& [name, country]: countries) {
-        auto countryColor = getCountryColor(country);
+        auto countryColor = getCountryColor(*this, country);
 
         for(auto pol: country.mesh) {
             auto [begV, endV] = pol.vertexIndex;
@@ -255,19 +253,12 @@ void Map::moveToCountry(const Country& country, Camera& camera) {
     camera.move({0.0f, 0.0f}); //To correct out of bounds errors
 }
 
-SDL_Color getCountryColor(const Country& country) {
+SDL_Color getCountryColor(const Map& map, const Country& country) {
     switch (country.state) {
-        case CountryState::UNLOCKED:
-            return {0xeb, 0xb6, 0x60, SDL_ALPHA_OPAQUE};
-        
-        case CountryState::LOCKED:
-            return {0x4f, 0x46, 0x39, SDL_ALPHA_OPAQUE};
-        
-        case CountryState::HOVERED:
-            return {0x99, 0x77, 0x3f, SDL_ALPHA_OPAQUE};
-
-        default:
-            return {0x25, 0x21, 0x1b, SDL_ALPHA_OPAQUE};
+        case CountryState::UNLOCKED: return map.unlockedColor;
+        case CountryState::LOCKED: return map.lockedColor;
+        case CountryState::HOVERED: return map.hoveredColor;
+        default: return map.bannedColor;
     }
 }
 

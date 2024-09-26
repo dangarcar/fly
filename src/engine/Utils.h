@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <SDL.h>
 
 constexpr inline float lerp(float a, float b, float t) {
@@ -40,4 +41,13 @@ inline void writeError(const char* format, ...) {
     vfprintf(stderr, format, args);
 
     va_end(args);
+}
+
+inline SDL_Color hexCodeToColor(const std::string& str) {
+    long n = std::strtoul(str.c_str() + 1, nullptr, 16);
+    uint8_t r = (n & 0xFF0000) >> 16;
+    uint8_t g = (n & 0x00FF00) >> 8;
+    uint8_t b = n & 0x0000FF;
+
+    return SDL_Color { r, g, b, SDL_ALPHA_OPAQUE };
 }
