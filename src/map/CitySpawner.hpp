@@ -5,6 +5,7 @@
 #include <vector>
 #include <queue>
 #include <optional>
+#include <chrono>
 #include <random>
 
 #include "../game/Types.h"
@@ -18,7 +19,8 @@ private:
     static constexpr auto AIRPORTS_DATA_FILE = "./resources/airports.json";
 
 public:
-    CitySpawner(): generator(std::random_device{}()) {}
+    //Time is more random in MinGW than the random_device
+    CitySpawner(): generator(std::chrono::system_clock::now().time_since_epoch().count()) {}
 
     void load(const Camera& camera);
 

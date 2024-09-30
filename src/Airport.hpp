@@ -5,64 +5,34 @@
 #include "engine/InputEvent.h"
 
 constexpr float PRICE_PER_METER_ROUTE = 0.0003;
-constexpr double MTS_PER_TICK = 500;
+constexpr float MTS_PER_TICK = 500;
+constexpr Gradient FULL_GRADIENT = {{0x55, 0xBF, 0x40, SDL_ALPHA_OPAQUE}, {0x7D, 0x40, 0xBF, SDL_ALPHA_OPAQUE}};
 
 class AirportManager;
 
 struct Plane {
-    double t;
-    double speed;
+    float t;
+    float speed;
+
+    int routeIndex;
 
     int capacity;
 };
 
-class Airport {
-    friend class AirportManager;
+struct Route {
+    int a, b;
+    float lenght;
+    std::vector<glm::vec2> points;
 
-private:
-    static constexpr Gradient gradient = {{0x55, 0xBF, 0x40, SDL_ALPHA_OPAQUE}, {0x7D, 0x40, 0xBF, SDL_ALPHA_OPAQUE}};
+    Route(int a, int b): a(a), b(b) {}
+};
 
-    City city;
+
+struct AirportData {
     int level;
     int radius;
 
-    std::vector<size_t> routeIndexes, connectedAirports;
-
-public:
-    Airport(City city): city(city), level(0) {
-        if(city.capital) radius = 20;
-        else if(city.population > 1e6) radius = 16;
-        else radius = 12;
-    }
-
-    const City& getCity() const { return city; }
-    float getRelativeRadius(float zoom) const { return radius * std::clamp(zoom, 2.0f, 15.0f) / 10; }
-
-    void update();
-    void render(const Camera& camera) const;
-};
-
-struct Route {
-    int a, b;
-
-    float lenght;
-    std::vector<glm::vec2> points;
-    std::vector<Plane> planes;
-
-    Route(int a, int b): a(a), b(b) {}
-    
-    std::pair<glm::vec2, float> getPointAndAngle(float t) const {
-        float fi = t * (points.size() - 1);
-        int i1 = std::floor(fi), i2 = std::ceil(fi);
-        
-        auto v = glm::normalize(points[i1] - points[i2]);
-        auto angle = glm::degrees( std::acos(glm::dot(glm::vec2(0.0f, 1.0f), v)) );
-
-        if(points[i1].x > points[i2].x)
-            angle = 360 - angle;
-
-        return std::make_pair(glm::mix(points[i1], points[i2], fi - i1), angle);
-    }
+    std::vector<size_t> routeIndexes;
 };
 
 class AirportManager {
@@ -72,15 +42,27 @@ public:
     void render(const Camera& camera, float frameProgress);
 
 private:
+    void updatePaths();
+
+    void addAirport(City&& city);
     void addRoute(Route&& route, Player& player);
+    void addPlane(Plane&& plane, Player& player);
+    
+    void renderAirport(const Camera& camera, int airportIndex) const;
+    void renderPlane(const Camera& camera, const Plane& plane, float frameProgress) const;
     void renderRoute(const Camera& camera, const Route& route) const;
 
 private:
-    std::vector<Airport> airports;
+    std::vector<City> cities;
+    std::vector<AirportData> airports;
     std::vector<Route> routes;
+    std::vector<Plane> planes;
+
+    std::vector<std::vector<int>> networkAdjList;
+    std::vector<std::vector<int>> parentTree;
 
     SDL_Point mousePos;
-    bool leftDown;
+    bool leftDown = false, clicked = false;
     Route currentRoute {-1, -1};
     long currentPrice = 0;
 };

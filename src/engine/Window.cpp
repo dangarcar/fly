@@ -12,7 +12,7 @@ void Window::setScene(std::unique_ptr<Scene> ptr) {
     scene = std::move(ptr);
     scene->start(*this);
 
-    writeLog("Scene load time: %.1fms", timer.elapsedMillis());
+    writeLog("Scene load time: %.1fms\n", timer.elapsedMillis());
 }
 
 int Window::start(bool fullscreen) {

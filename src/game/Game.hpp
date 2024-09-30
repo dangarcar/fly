@@ -15,7 +15,7 @@ class Window;
 class Game : public Scene {
 private:
     static constexpr auto DEFAULT_GAME_FILE = "./resources/game.json";
-    static constexpr int TICKS_PER_SECOND = 15; //TODO: must change
+    static constexpr int TICKS_PER_SECOND = 1500; //TODO: must change
 
 public:
     Game(int width, int height): camera(width, height) {}

@@ -69,7 +69,7 @@ void Map::load(Camera& camera) {
         camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
     }
 
-    //FIXME:
+    //FIXME: stress test
     for(auto& [k, c]: countries) {
         if(c.state == CountryState::BANNED)
             continue;
