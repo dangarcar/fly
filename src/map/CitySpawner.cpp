@@ -23,7 +23,7 @@ void CitySpawner::load(const Camera& camera) {
             c.capital = e["capital"].template get<bool>();
             c.country = k;
 
-            cities[k].push_back(c);
+            cities[k].emplace_back(std::move(c));
         }
     }
 }
@@ -59,6 +59,6 @@ std::optional<City> CitySpawner::getRandomCity() {
 }
 
 void CitySpawner::addCountry(const std::string& country) { 
-    possibleCountries.push_back({country, 1, cities[country][0].population});
+    possibleCountries.emplace_back(country, 1, cities[country][0].population);
     pendingCities.push(cities[country][0]);
 }

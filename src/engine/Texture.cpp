@@ -104,21 +104,6 @@ void Texture::applyMask(SDL_Renderer& renderer, const Texture& mask) {
     *this = std::move(canvas);
 }
 
-/*bool TextureManager::loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath) {
-    using json = nlohmann::json;
-
-    std::ifstream file(jsonPath);
-    json data = json::parse(file)["textures"];
-
-    bool correct = true;
-    for(auto& [k, v]: data.items()) {
-        std::string path = v;
-        correct &= this->loadTexture(renderer, k, path);
-    }
-
-    return correct;
-}*/
-
 void TextureManager::loadTexture(const std::string& name, Texture&& texture) {
     textureMap[name] = std::forward<Texture>(texture);
 }

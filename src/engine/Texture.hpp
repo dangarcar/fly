@@ -41,7 +41,6 @@ private:
 public:
     void loadTexture(const std::string& name, Texture&& texture);
     bool loadTexture(SDL_Renderer& renderer, const std::string& name, const std::string& path);
-    //bool loadTexturePack(SDL_Renderer& renderer, const std::string& jsonPath);
 
     const Texture& getTexture(const std::string& name) const { return textureMap.at(name); }
 };

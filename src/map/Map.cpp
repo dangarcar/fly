@@ -28,6 +28,7 @@ void Map::load(Camera& camera) {
         auto banned = v["banned"].template get<bool>();
         c.state = banned? CountryState::BANNED : CountryState::LOCKED;
 
+        std::vector<Polygon> polys; //TODO: mesh transformations !!!!!
         for(auto& e: v["mesh"]) {
             Polygon p;
             auto box = e["box"].template get<std::vector<std::vector<float>>>(); //It was not compatible with Bounding box type
@@ -35,10 +36,12 @@ void Map::load(Camera& camera) {
             p.triangleIndex = e["triangleIndex"].template get<std::pair<int, int>>();
             p.boundingBox = createBoundingBox({box[0][0], box[0][1]}, {box[1][0], box[1][1]}, camera);
 
-            c.mesh.push_back(p);
+            polys.emplace_back(std::move(p));
         }
 
-        std::sort(c.mesh.begin(), c.mesh.end(), [](Polygon& a, Polygon& b){ return a.boundingBox.area() > b.boundingBox.area(); });
+        std::sort(polys.begin(), polys.end(), [](Polygon& a, Polygon& b){ return a.boundingBox.area() > b.boundingBox.area(); });
+        polygons.insert(polygons.end(), polys.begin(), polys.end());
+        c.meshIndex = std::make_pair(polygons.size() - polys.size(), polygons.size());
 
         countries[k] = std::move(c);
     }
@@ -69,32 +72,30 @@ void Map::load(Camera& camera) {
         camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
     }
 
-    //FIXME: stress test
+    /*//FIXME: stress test
     for(auto& [k, c]: countries) {
         if(c.state == CountryState::BANNED)
             continue;
 
         c.state = CountryState::UNLOCKED;
         citySpawner.addCountry(k);
-    }
+    }*/
 }
 
 void Map::projectMap(const Camera& camera) {
     projectedVertices.resize(vertices.size());
     
-    for(size_t i=0; i*2<vertices.size(); ++i) {
-        auto proj = camera.coordsToProj({vertices[2*i], vertices[2*i + 1]});
-        projectedVertices[2*i] = proj.x;
-        projectedVertices[2*i + 1] = proj.y;
+    for(size_t i=0; i<vertices.size(); i += 2) {
+        auto proj = camera.coordsToProj({vertices[i], vertices[i + 1]});
+        projectedVertices[i] = proj.x;
+        projectedVertices[i + 1] = proj.y;
     }
 
     vertexArray = std::vector<SDL_Vertex>(vertices.size() / 2);
     lineArray.clear();
-    for(auto& [name, country]: countries) {
-        for(auto& pol: country.mesh) {
-            auto [begV, endV] = pol.vertexIndex;            
-            lineArray.push_back(std::vector<SDL_Point>(endV - begV));
-        }
+    for(auto& p: polygons) {
+        auto [begV, endV] = p.vertexIndex;            
+        lineArray.emplace_back(endV - begV);
     }
 }
 
@@ -103,21 +104,28 @@ void Map::render(const Camera& camera) {
     SDL_Rect rect = camera.getScreenViewportRect();
     SDL_RenderFillRect(camera.getSDL(), &rect);
 
-    int lineIndex = 0;
+    //Projection calculation in parallel
+    #pragma omp parallel for
+    for(int i=0; i<int(polygons.size()); ++i) {
+        auto [beg, end] = polygons[i].vertexIndex;
+        for(int j=beg; j<end; ++j) {
+            SDL_Vertex v;
+            v.color = SDL_GOLD;
+            v.position = camera.projToScreen({projectedVertices[2*j], projectedVertices[2*j + 1]});
+            vertexArray[j] = v;
+            lineArray[i][j - beg] = SDL_Point{int(v.position.x), int(v.position.y)};
+        }
+    }
+
+    //Color without parallelization
     for(auto& [name, country]: countries) {
         auto countryColor = getCountryColor(*this, country);
-
-        for(auto pol: country.mesh) {
-            auto [begV, endV] = pol.vertexIndex;
-            for(auto i=begV; i!=endV; ++i) {
-                SDL_Vertex v;
-                v.color = countryColor;
-                v.position = camera.projToScreen({projectedVertices[2*i], projectedVertices[2*i + 1]});
-                vertexArray[i] = v;
-                lineArray[lineIndex][i - begV] = SDL_Point{int(v.position.x), int(v.position.y)};
+        auto [beg, end] = country.meshIndex;
+        for(int i=beg; i<end; ++i) {
+            auto [begV, endV] = polygons[i].vertexIndex;
+            for(auto j=begV; j<endV; ++j) {
+                vertexArray[j].color = countryColor;
             }
-
-            lineIndex++;
         }
     }
 
@@ -133,7 +141,7 @@ void Map::render(const Camera& camera) {
     //BOX RENDER
     if(renderBoxes) {
         for(auto [k, c]: countries) {
-            auto& pol = c.mesh[0];
+            auto& pol = polygons[c.meshIndex.first];
             auto x1 = pol.boundingBox.topLeft.x, y1 = pol.boundingBox.topLeft.y;
             auto x2 = pol.boundingBox.bottomRight.x, y2 = pol.boundingBox.bottomRight.y;
             std::vector box = { camera.projToScreen({x1, y1}), camera.projToScreen({x1, y2}), camera.projToScreen({x2, y2}), camera.projToScreen({x2, y1}), camera.projToScreen({x1, y1}) };
@@ -184,12 +192,13 @@ void Map::update(const Camera& camera) {
         if(country.state == CountryState::HOVERED)
             country.state = CountryState::LOCKED;
 
-        for(auto& pol: country.mesh) {
-            if(isIntersecting(pol, mouseProj)) {
-                if(hoveredPolygon && hoveredPolygon->boundingBox.area() < pol.boundingBox.area())
+        auto [beg, end] = country.meshIndex;
+        for(int i=beg; i<end; ++i) {
+            if(isIntersecting(polygons[i], mouseProj)) {
+                if(hoveredPolygon && hoveredPolygon->boundingBox.area() < polygons[i].boundingBox.area())
                     continue;
                 targetCountry = name;
-                hoveredPolygon = &pol;
+                hoveredPolygon = &polygons[i];
                 break;
             }
         }
@@ -237,7 +246,7 @@ void Map::unlockCountry(const std::string& country, Player& player) {
 }
 
 void Map::moveToCountry(const Country& country, Camera& camera) {
-    auto bb = country.mesh[0].boundingBox; //Biggest polygon bb
+    auto bb = polygons[country.meshIndex.first].boundingBox; //Biggest polygon bb
     camera.setZoom(20.0f);
 
     auto countryProj = (bb.topLeft + bb.bottomRight) * 0.5f;

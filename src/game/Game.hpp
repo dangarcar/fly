@@ -6,7 +6,7 @@
 
 #include "../Player.hpp"
 #include "../map/Map.hpp"
-#include "../Airport.hpp"
+#include "../airport/Airport.hpp"
 #include "../ui/UIManager.hpp"
 #include "Camera.hpp"
 

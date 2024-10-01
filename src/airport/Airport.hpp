@@ -1,22 +1,37 @@
 #pragma once
 
-#include "map/Map.hpp"
-#include "engine/Gradient.h"
-#include "engine/InputEvent.h"
+#include <vector>
+#include <queue>
+
+#include "../engine/Gradient.h"
+#include "../engine/InputEvent.h"
+#include "../game/Types.h"
 
 constexpr float PRICE_PER_METER_ROUTE = 0.0003;
-constexpr float MTS_PER_TICK = 500;
 constexpr Gradient FULL_GRADIENT = {{0x55, 0xBF, 0x40, SDL_ALPHA_OPAQUE}, {0x7D, 0x40, 0xBF, SDL_ALPHA_OPAQUE}};
 
-class AirportManager;
+constexpr size_t PLANE_LEVELS = 1;
+constexpr int PLANE_CAPACITY_PER_LEVEL[PLANE_LEVELS] = { 20 };
+constexpr float MTS_PER_TICK_PER_LEVEL[PLANE_LEVELS] = { 500 };
+
+constexpr size_t AIRPORT_LEVELS = 1;
+constexpr int AIRPORT_CAPACITY_PER_LEVEL[AIRPORT_LEVELS] = { 50 };
+
+class Camera;
+class Player;
+class Map;
+class CitySpawner;
 
 struct Plane {
+    int level = 0;
+    
     float t;
     float speed;
 
     int routeIndex;
 
-    int capacity;
+    int people = 0;
+    std::queue<int> pass;
 };
 
 struct Route {
@@ -29,10 +44,13 @@ struct Route {
 
 
 struct AirportData {
-    int level;
+    int level = 0;
     int radius;
 
-    std::vector<size_t> routeIndexes;
+    int people = 0;
+    std::vector<std::queue<int>> waiting;
+    
+    std::vector<int> routeIndexes;
 };
 
 class AirportManager {

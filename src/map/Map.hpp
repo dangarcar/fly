@@ -48,6 +48,7 @@ private:
     //CACHED RENDERING ARRAYS
     std::vector<SDL_Vertex> vertexArray;
     std::vector<std::vector<SDL_Point>> lineArray;
+    std::vector<Polygon> polygons;
 
     //SYSTEMS
     LabelManager labelManager;

@@ -10,7 +10,7 @@ public:
     template<typename T, typename ... Args>
     requires std::is_base_of_v<Dialog, T>
     void addDialog(Args&&... args) {
-        dialogs.push_back(std::make_unique<T>(std::forward<Args>(args)...));
+        dialogs.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
     }
 
     bool handleInput(const InputEvent& event) {

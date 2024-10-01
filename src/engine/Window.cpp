@@ -8,7 +8,7 @@
 
 void Window::setScene(std::unique_ptr<Scene> ptr) {
     Timer timer;
-
+    
     scene = std::move(ptr);
     scene->start(*this);
 

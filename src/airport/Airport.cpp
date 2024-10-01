@@ -1,13 +1,14 @@
 #include "Airport.hpp"
 
 #include <format>
-#include <queue>
 
-#include "game/Camera.hpp"
-#include "engine/Renderer.hpp"
-#include "engine/Utils.h"
+#include "../game/Camera.hpp"
+#include "../engine/Renderer.hpp"
+#include "../engine/Utils.h"
 
-#include "Player.hpp"
+#include "../map/Map.hpp"
+
+#include "../Player.hpp"
 
 float fillPercentage = 0;
 
@@ -61,7 +62,7 @@ bool AirportManager::handleInput(const InputEvent& event) {
 void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player) {
     fillPercentage += 1e-3; //FIXME: 
 
-    if(routes.size() < 4000) { //FIXME: stress test
+    /*if(routes.size() < 4000) { //FIXME: stress test
         if(airports.size() > 3) {
             int i1 = rand() % airports.size();
             int i2 = rand() % airports.size();
@@ -76,7 +77,7 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
                 this->addRoute(std::move(route), player);
             }
         } 
-    }
+    }*/
 
     if(auto city = citySpawner.getRandomCity()) {    
         auto value = city.value();   
@@ -84,11 +85,11 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
         updatePaths();
     }
 
-    for(auto& p: planes) {
-        p.t += p.speed;
+    for(int i=0; i<int(planes.size()); ++i) {
+        planes[i].t += planes[i].speed;
 
-        if(p.t <= 0 || p.t >= 1)
-            p.speed = -p.speed;
+        if(planes[i].t <= 0 || planes[i].t >= 1)
+            planes[i].speed = -planes[i].speed;
     }
 
     int clickedAirport = -1;
@@ -268,13 +269,16 @@ void AirportManager::addRoute(Route&& r, Player& player) {
     player.spend(currentPrice);
     currentPrice = 0;
     
-    airports[route.a].routeIndexes.push_back(routes.size() -1);
-    airports[route.b].routeIndexes.push_back(routes.size() -1);
+    airports[route.a].routeIndexes.emplace_back(routes.size() -1);
+    airports[route.b].routeIndexes.emplace_back(routes.size() -1);
 
-    networkAdjList[route.a].push_back(route.b);
-    networkAdjList[route.b].push_back(route.a);
+    airports[route.a].waiting.emplace_back();
+    airports[route.b].waiting.emplace_back();
 
-    Plane plane{ .t = 0.0, .speed = MTS_PER_TICK / route.lenght, .routeIndex = int(routes.size()-1), .capacity = 20};
+    networkAdjList[route.a].emplace_back(route.b);
+    networkAdjList[route.b].emplace_back(route.a);
+
+    Plane plane{ .t = 0.0, .speed = MTS_PER_TICK_PER_LEVEL[0] / route.lenght, .routeIndex = int(routes.size()-1)};
     addPlane(std::move(plane), player);
 
     updatePaths();
@@ -282,6 +286,7 @@ void AirportManager::addRoute(Route&& r, Player& player) {
 
 void AirportManager::addPlane(Plane&& p, Player& player) {
     auto& plane = planes.emplace_back(p);
+    plane.people = 0;
 }
 
 void AirportManager::addAirport(City&& c) {
@@ -296,16 +301,13 @@ void AirportManager::addAirport(City&& c) {
 }
 
 void AirportManager::updatePaths() {
-    Timer t;
-
     parentTree.resize(airports.size());
     networkAdjList.resize(airports.size());
     
+    #pragma omp parallel for
     for(int i=0; i<int(airports.size()); ++i) {
         parentTree[i] = searchPath(i, networkAdjList);
     }
-
-    writeLog("%d,%f\n", airports.size(), t.elapsedMillis());
 }
 
 std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjList) {
@@ -362,6 +364,7 @@ std::vector<glm::vec2> getPathProjs(const Camera& camera, Coord a, Coord b) {
     int n = mtsDistance(a, b) * Camera::MAX_ZOOM * 100 / EARTH_RADIUS;
 
     std::vector<glm::vec2> path(n+1);
+    #pragma omp parallel for
     for(int i=0; i<=n; ++i) {
         auto c = getIntermediatePoint(a, b, float(i)/n);
         path[i] = camera.coordsToProj(c);

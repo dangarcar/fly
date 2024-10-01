@@ -48,5 +48,5 @@ enum class CountryState { LOCKED, UNLOCKED, BANNED, HOVERED };
 struct Country {
     std::string name;
     CountryState state;
-    std::vector<Polygon> mesh;
+    std::pair<int, int> meshIndex;
 };
