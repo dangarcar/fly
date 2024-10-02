@@ -7,6 +7,11 @@
 #include "../engine/Window.hpp"
 
 void Game::handleInput(const InputEvent& event) {
+    if(auto* keyevent = std::get_if<KeyPressedEvent>(&event)) {
+        if(keyevent->keycode == SDLK_p)
+            paused = !paused;
+    }
+
     if(uiManager.handleInput(event)) 
         return;
 
@@ -23,7 +28,7 @@ void Game::update() {
     currentTick++;
     uiManager.update();
     
-    if(paused) return;
+    if(paused || uiManager.dialogShown()) return;
 
     player.update();
     map.update(camera);
@@ -32,7 +37,7 @@ void Game::update() {
 
 void Game::render(float frameProgress) {
     map.render(camera);
-    airManager.render(camera, frameProgress);
+    airManager.render(camera, paused? 0.0f: frameProgress);
     player.render(camera, currentTick);
 
     uiManager.render(camera);

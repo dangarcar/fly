@@ -37,7 +37,7 @@ std::optional<City> CitySpawner::getRandomCity() {
         return c;
     }
 
-    if(possibleCountries.empty() || rand() % SPAWN_FREQUENCY != 0)
+    if(possibleCountries.empty() || generator() % SPAWN_FREQUENCY != 0)
         return city;
     
     std::vector<int> populations(possibleCountries.size());

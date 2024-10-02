@@ -49,7 +49,7 @@ void Texture::render(SDL_Renderer& renderer, int x, int y, float scale, float an
 
 bool TextureManager::loadTexture(SDL_Renderer& renderer, const std::string& name, const std::string& path) {
     textureMap[name] = std::move(Texture());
-    
+
     if(!textureMap[name].loadFromFile(renderer, path))
         return false;
     return true;

@@ -88,6 +88,7 @@ bool UnlockCountryDialog::handleInput(const InputEvent& event) {
     if(auto* mouseevent = std::get_if<MouseMoveEvent>(&event)) {
         yesButton.hovered = SDL_PointInRect(&mouseevent->newPos, &yesButton.globalRect);
         noButton.hovered = SDL_PointInRect(&mouseevent->newPos, &noButton.globalRect);
+        return false;
     }
 
     return true;

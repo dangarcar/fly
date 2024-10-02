@@ -5,7 +5,7 @@
 #include <vector>
 #include <queue>
 #include <optional>
-#include <chrono>
+#include <ctime>
 #include <random>
 
 #include "../game/Types.h"
@@ -20,7 +20,7 @@ private:
 
 public:
     //Time is more random in MinGW than the random_device
-    CitySpawner(): generator(std::chrono::system_clock::now().time_since_epoch().count()) {}
+    CitySpawner(): generator(time(nullptr)) {}
 
     void load(const Camera& camera);
 

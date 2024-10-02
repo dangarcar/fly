@@ -34,6 +34,8 @@ public:
         }
     }
 
+    bool dialogShown() const { return !dialogs.empty(); }
+
 private:
     std::list<std::unique_ptr<Dialog>> dialogs;
 

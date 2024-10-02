@@ -19,7 +19,7 @@ public:
     void setColorMod(SDL_Color color) const { SDL_SetTextureColorMod(texture.get(), color.r, color.g, color.b); }
 
     void setAsRenderTarget(SDL_Renderer& renderer) { 
-        SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_BLEND); 
+        SDL_SetTextureBlendMode(texture.get(), SDL_BLENDMODE_NONE); 
         SDL_SetRenderTarget(&renderer, texture.get()); 
     }
 
@@ -27,6 +27,7 @@ public:
 
     int getWidth() const { return width; }
     int getHeight() const { return height; }
+    SDL_Texture* getTexture() const { return texture.get(); }
 
 private:
     std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> texture;

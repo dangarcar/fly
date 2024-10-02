@@ -23,3 +23,16 @@ public:
         };
     }
 };
+
+inline uint32_t color(int r, int g, int b, int a) {
+	return uint32_t((r << 24) + (g << 18) + (b << 8) + (a << 0));
+}
+
+inline SDL_Color uint32ToColor(uint32_t color) {
+	SDL_Color tempcol;
+	tempcol.r = (color >> 24) && 0xFF;
+	tempcol.g = (color >> 16) & 0xFF;
+	tempcol.b = (color >> 8) & 0xFF;
+	tempcol.a = color & 0xFF;
+	return tempcol;
+}

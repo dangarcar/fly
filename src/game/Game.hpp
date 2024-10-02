@@ -15,7 +15,6 @@ class Window;
 class Game : public Scene {
 private:
     static constexpr auto DEFAULT_GAME_FILE = "./resources/game.json";
-    static constexpr int TICKS_PER_SECOND = 1500; //TODO: must change
 
 public:
     Game(int width, int height): camera(width, height) {}
@@ -44,7 +43,7 @@ private:
     Map map;
 
     long currentTick = 0L;
-    int ticksPerSecond = TICKS_PER_SECOND;
+    int ticksPerSecond = DEFAULT_TICKS_PER_SECOND;
     bool paused = false;
 
     Timer fpsTimer;

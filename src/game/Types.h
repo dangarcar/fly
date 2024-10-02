@@ -3,6 +3,7 @@
 #include <string>
 #include <glm/glm.hpp>
 
+constexpr int DEFAULT_TICKS_PER_SECOND = 15;
 constexpr long DEFAULT_CITY_PRICE = 2000;
 constexpr int EARTH_RADIUS = 6371009;
 
