@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <random>
+#include <ctime>
 
 #include "../game/Types.h"
 

@@ -18,9 +18,10 @@ void Game::handleInput(const InputEvent& event) {
     if(airManager.handleInput(event))
         return;
 
-    camera.handleInput(event);
+    if(!uiManager.dialogShown())
+        camera.handleInput(event);
+    
     player.handleInput(event);
-
     map.handleInput(event, camera, uiManager, player);
 }
 
@@ -28,16 +29,17 @@ void Game::update() {
     currentTick++;
     uiManager.update();
     
-    if(paused || uiManager.dialogShown()) return;
+    if(paused || uiManager.dialogShown()) 
+        return;
 
     player.update();
     map.update(camera);
-    airManager.update(map.getCitySpawner(), camera, player);
+    airManager.update(map.getCitySpawner(), camera, player, uiManager);
 }
 
 void Game::render(float frameProgress) {
     map.render(camera);
-    airManager.render(camera, paused? 0.0f: frameProgress);
+    airManager.render(camera, (paused || uiManager.dialogShown())? 0.0f: frameProgress);
     player.render(camera, currentTick);
 
     uiManager.render(camera);

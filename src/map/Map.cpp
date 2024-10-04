@@ -8,6 +8,7 @@
 #include "../game/Camera.hpp"
 #include "../Player.hpp"
 #include "../ui/UIManager.hpp"
+#include "../ui/dialogs/UnlockCountryDialog.hpp"
 
 SDL_Color getCountryColor(const Map& map, const Country& country);
 BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam);
@@ -28,7 +29,7 @@ void Map::load(Camera& camera) {
         auto banned = v["banned"].template get<bool>();
         c.state = banned? CountryState::BANNED : CountryState::LOCKED;
 
-        std::vector<Polygon> polys; //TODO: mesh transformations !!!!!
+        std::vector<Polygon> polys;
         for(auto& e: v["mesh"]) {
             Polygon p;
             auto box = e["box"].template get<std::vector<std::vector<float>>>(); //It was not compatible with Bounding box type

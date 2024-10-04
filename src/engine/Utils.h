@@ -11,6 +11,10 @@ constexpr inline float lerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
+inline float SDL_sqrdistance(SDL_Point a, SDL_Point b) {
+    return float((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
 inline float SDL_distance(SDL_Point a, SDL_Point b) {
     return std::sqrt(float((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
 }

@@ -1,4 +1,4 @@
-#include "Airport.hpp"
+#include "AirportManager.hpp"
 
 #include <format>
 #include <algorithm>
@@ -11,6 +11,9 @@
 
 #include "../Player.hpp"
 
+#include "../ui/UIManager.hpp"
+#include "../ui/dialogs/AirportDialog.hpp"
+
 Coord getIntermediatePoint(Coord c1, Coord c2, float t);
 std::vector<glm::vec2> getPathProjs(const Camera& camera, Coord a, Coord b);
 
@@ -18,8 +21,8 @@ std::pair<glm::vec2, float> getPointAndAngle(const Route& route, float t);
 
 std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjList);
 
-float getRelativeRadius(int radius, float zoom) {
-    return radius * std::clamp(zoom, 2.0f, 12.0f) / 10;
+float getRelativeRadius(float radius, float zoom) {
+    return radius * std::clamp(zoom, 2.0f, 12.0f);
 }
 
 bool AirportManager::handleInput(const InputEvent& event) {
@@ -55,10 +58,10 @@ bool AirportManager::handleInput(const InputEvent& event) {
         }
     }
 
-    return currentRoute.a != -1;
+    return currentRoute.route.a != -1;
 }
 
-void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player) {
+void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager) {
     /*if(routes.size() < 4000) { //FIXME: stress test
         if(airports.size() > 3) {
             int i1 = rand() % airports.size();
@@ -73,7 +76,7 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
                 route.points = getPathProjs(camera, c1, c2);
                 this->addRoute(std::move(route), player);
                 
-                int t = 5;
+                int t = 10;
                 while(--t) {
                     this->addPlane(routes.size() -1, player);
                 }
@@ -116,7 +119,6 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
         } 
     }
 
-    //Timer t;
     int clickedAirport = -1;
     for(size_t i=0; i<airports.size(); ++i) {
         auto pos = camera.projToScreen(cities[i].proj);
@@ -129,16 +131,23 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
     }
 
     int clickedPlane = -1;
+    #pragma omp parallel for shared(clickedPlane)
     for(size_t i=0; i<planes.size(); ++i) {
         auto& plane = planes[i];
         auto [proj, angle] = getPointAndAngle(routes[plane.routeIndex], plane.t);
         auto p = camera.projToScreen(proj);
-    }
-    //writeLog("%f\n", t.elapsedMillis());
 
-    if(clicked) { //FIXME: debug purposes
+        auto radius = getRelativeRadius(AIRPLANE_SCALE * 128, camera.getZoom());
+        if(SDL_sqrdistance({int(p.x), int(p.y)}, mousePos) < radius*radius) {
+            clickedPlane = i;
+        }
+    }
+
+    if(clicked) {      
         if(clickedAirport != -1) {
-            //writeLog("%s -> %d\n", cities[clickedAirport].name.c_str(), clickedAirport);
+            uiManager.addDialog<AirportDialog>(airports[clickedAirport], cities[clickedAirport], player, cities);
+
+            /*//writeLog("%s -> %d\n", cities[clickedAirport].name.c_str(), clickedAirport);
 
             std::vector<std::vector<int>> paths(airports.size());
 
@@ -158,8 +167,12 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
                 }
                 writeLog("\n");
             }
-            writeLog("\n");
+            writeLog("\n");*/
+        } else if(clickedPlane != -1) { //FIXME:
+            auto route = routes[planes[clickedPlane].routeIndex];
+            writeLog("%d: %s -> %s, %d people\n", clickedPlane, cities[route.a].name.c_str(), cities[route.b].name.c_str(), planes[clickedPlane].people);
         }
+        
         clicked = false;
     }
 
@@ -175,30 +188,31 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
             camera.move(glm::vec2(0.0f, -10 / camera.getZoom()));
 
         if(clickedAirport != -1) {
-            if(currentRoute.a == -1)
-                currentRoute.a = clickedAirport;
-            else if(currentRoute.a != clickedAirport)
-                currentRoute.b = clickedAirport;
+            if(currentRoute.route.a == -1)
+                currentRoute.route.a = clickedAirport;
+            else if(currentRoute.route.a != clickedAirport)
+                currentRoute.route.b = clickedAirport;
         } else {
-            currentRoute.b = -1;
+            currentRoute.route.b = -1;
         }
     } else {
-        if(currentRoute.a != -1 && currentRoute.b != -1)
-            this->addRoute(std::move(currentRoute), player);
-        currentRoute = Route(-1, -1);
+        if(currentRoute.route.a != -1 && currentRoute.route.b != -1)
+            this->addRoute(std::move(currentRoute.route), player);
+        currentRoute = CurrentRoute();
     }
 
-    if(currentRoute.a != -1) {
-        Coord c1 = cities[currentRoute.a].coord;
-        Coord c2 = currentRoute.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.b].coord;
+    if(currentRoute.route.a != -1) {
+        Coord c1 = cities[currentRoute.route.a].coord;
+        Coord c2 = currentRoute.route.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.route.b].coord;
         
-        currentRoute.lenght = mtsDistance(c1, c2);
-        currentRoute.points = getPathProjs(camera, c1, c2);
-        currentPrice = currentRoute.lenght * player.getDifficulty() * PRICE_PER_METER_ROUTE;
+        currentRoute.route.lenght = mtsDistance(c1, c2);
+        currentRoute.route.points = getPathProjs(camera, c1, c2);
+        currentRoute.price = currentRoute.route.lenght * player.getDifficulty() * PRICE_PER_METER_ROUTE;
+        currentRoute.color = (currentRoute.price > player.getCash())? SDL_Color {0xff, 0, 0, 0xff} : SDL_Color {0xff, 0xff, 0xff, 0xff};
     }
 }
 
-void AirportManager::render(const Camera& camera, float frameProgress) {
+void AirportManager::render(const Camera& camera, float frameProgress) const {
     for(const auto& r: routes) {
         renderRoute(camera, r);
     }
@@ -211,10 +225,10 @@ void AirportManager::render(const Camera& camera, float frameProgress) {
         renderPlane(camera, pl, frameProgress);
     }
 
-    if(currentRoute.a != -1) {
-        Coord c1 = cities[currentRoute.a].coord;
-        Coord c2 = currentRoute.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.b].coord;
-        SDL_SetRenderDrawColor(camera.getSDL(), 0xff, 0xff, 0xff, 0xff);
+    if(currentRoute.route.a != -1) {
+        Coord c1 = cities[currentRoute.route.a].coord;
+        Coord c2 = currentRoute.route.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.route.b].coord;
+        SDL_SetRenderDrawColor(camera.getSDL(), currentRoute.color.r, currentRoute.color.g, currentRoute.color.b, currentRoute.color.a);
         int n = float(mtsDistance(c1, c2)) / EARTH_RADIUS * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
         n += n % 2 + 1;
 
@@ -231,7 +245,7 @@ void AirportManager::render(const Camera& camera, float frameProgress) {
             lastCoord = c;
         }
 
-        camera.renderText(std::to_string(currentPrice), mousePos.x, mousePos.y - 36, 32, FC_ALIGN_CENTER, SDL_WHITE);
+        camera.renderText(std::to_string(currentRoute.price), mousePos.x, mousePos.y - 36, 32, FC_ALIGN_CENTER, currentRoute.color);
     }
 
     auto t = std::format("\nZoom level: {}\n\n\n{}", camera.getZoom(), routes.size());
@@ -310,7 +324,7 @@ void AirportManager::renderPlane(const Camera& camera, const Plane& plane, float
     auto [proj, angle] = getPointAndAngle(route, std::clamp(plane.t + plane.speed*frameProgress, 0.0f, 1.0f));
     auto p = camera.projToScreen(proj);
     auto& t = camera.getTextureManager().getTexture("PLANE");
-    auto scale = std::clamp(camera.getZoom(), 2.0f, 12.0f) * 0.009f;
+    auto scale = getRelativeRadius(AIRPLANE_SCALE, camera.getZoom());
 
     auto distA = glm::distance(proj, cities[route.a].proj) * camera.getZoom();
     auto distB = glm::distance(proj, cities[route.b].proj) * camera.getZoom();
@@ -324,14 +338,14 @@ void AirportManager::renderPlane(const Camera& camera, const Plane& plane, float
     }
 }
 
-void AirportManager::addRoute(Route&& r, Player& player) {
+bool AirportManager::addRoute(Route&& r, Player& player) {
     if(std::find(networkAdjList[r.a].begin(), networkAdjList[r.a].end(), r.b) != networkAdjList[r.a].end())
-        return;
+        return true;
 
-    auto& route = routes.emplace_back(r);
+    if(!player.spend(currentRoute.price))
+        return false;
     
-    player.spend(currentPrice);
-    currentPrice = 0;
+    auto& route = routes.emplace_back(r);
     
     airports[route.a].routeIndexes.emplace_back(routes.size() -1);
     airports[route.b].routeIndexes.emplace_back(routes.size() -1);
@@ -341,6 +355,8 @@ void AirportManager::addRoute(Route&& r, Player& player) {
 
     updatePaths();
     addPlane(routes.size() - 1, player);
+
+    return true;
 }
 
 void AirportManager::addPlane(int routeIndex, Player& player) {
@@ -358,9 +374,9 @@ void AirportManager::addAirport(City&& c) {
     auto& city = cities.emplace_back(c);
 
     AirportData data;
-    if(city.capital) data.radius = 20;
-    else if(city.population > 1e6) data.radius = 16;
-    else data.radius = 12;
+    if(city.capital) data.radius = 2.0f;
+    else if(city.population > 1e6) data.radius = 1.6f;
+    else data.radius = 1.2f;
 
     airports.emplace_back(std::move(data));
 }
