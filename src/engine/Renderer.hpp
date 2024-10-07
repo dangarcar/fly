@@ -3,41 +3,32 @@
 #include <SDL.h>
 #include <SDL_FontCache.h>
 
-#include <unordered_map>
+#include <vector>
 #include <memory>
 
 #include "Texture.hpp"
 
 class TextRenderer {
 private:
-    static constexpr int MAX_PRELOADED_FONT_SIZE = 64;
-    static constexpr int MIN_PRELOADED_FONT_SIZE = 4;
+    static constexpr int CACHES_NUMBER = 10;
     static constexpr auto FONT_SRC = "./resources/ds_digital/DS-DIGIB.TTF";
 
 public:
+    TextRenderer() {
+        for(int i=0; i<=CACHES_NUMBER; ++i)
+            fonts.push_back(Font(FC_CreateFont(), &FC_FreeFont));
+    }
+
     bool start(SDL_Renderer& renderer);
     Texture renderToTexture(SDL_Renderer& renderer, const std::string& str, int size) const;
     
-    void render(SDL_Renderer& renderer, const std::string& text, int x, int y, int size, FC_Effect effect) const {
-        FC_DrawEffect(fonts.at(size).get(), &renderer, x, y, effect, text.c_str());
-    }
+    void render(SDL_Renderer& renderer, const std::string& text, int x, int y, float size, FC_Effect effect) const;
 
-    SDL_Rect getTextBounds(const std::string& str, int size) const {
-        return FC_GetBounds(fonts.at(size).get(), 0, 0, FC_ALIGN_LEFT, {1,1}, str.c_str());
-    }
-
-    bool loadFontSize(int size, SDL_Renderer& renderer) {
-        if(!fonts.contains(size)) {
-            fonts.insert(std::make_pair(size, Font(FC_CreateFont(), &FC_FreeFont)));
-            return FC_LoadFont(fonts.at(size).get(), &renderer, FONT_SRC, size, FC_MakeColor(0xFF, 0xFF, 0xFF, 0xFF), TTF_STYLE_NORMAL);
-        }
-
-        return true;
-    }
+    SDL_Rect getTextBounds(const std::string& str, float size) const;
 
 private:
     using Font = std::unique_ptr<FC_Font, decltype(&FC_FreeFont)>;
-    std::unordered_map<int, Font> fonts;
+    std::vector<Font> fonts;
 };
 
 class Renderer {

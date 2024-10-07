@@ -13,6 +13,7 @@
 
 #include "../ui/UIManager.hpp"
 #include "../ui/dialogs/AirportDialog.hpp"
+#include "../ui/dialogs/PlaneDialog.hpp"
 
 Coord getIntermediatePoint(Coord c1, Coord c2, float t);
 std::vector<glm::vec2> getPathProjs(const Camera& camera, Coord a, Coord b);
@@ -146,31 +147,9 @@ void AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& pl
     if(clicked) {      
         if(clickedAirport != -1) {
             uiManager.addDialog<AirportDialog>(airports[clickedAirport], cities[clickedAirport], player, cities);
-
-            /*//writeLog("%s -> %d\n", cities[clickedAirport].name.c_str(), clickedAirport);
-
-            std::vector<std::vector<int>> paths(airports.size());
-
-            for(int i=0; i<int(paths.size()); ++i) {
-                int a = clickedAirport;
-                paths[i].push_back(a);
-                while(a != -1 && a != i) {
-                    a = getNextAirport(a, i);
-                    paths[i].push_back(a);
-                }
-            }
-
-            writeLog("\n");
-            for(auto p: paths) {
-                for(auto e: p) {
-                    writeLog("%s -> ", cities[e].name.c_str());
-                }
-                writeLog("\n");
-            }
-            writeLog("\n");*/
-        } else if(clickedPlane != -1) { //FIXME:
-            auto route = routes[planes[clickedPlane].routeIndex];
-            writeLog("%d: %s -> %s, %d people\n", clickedPlane, cities[route.a].name.c_str(), cities[route.b].name.c_str(), planes[clickedPlane].people);
+        } else if(clickedPlane != -1) {
+            auto& plane = planes[clickedPlane];
+            uiManager.addDialog<PlaneDialog>(plane, player, routes[plane.routeIndex], cities);
         }
         
         clicked = false;
@@ -323,7 +302,7 @@ void AirportManager::renderPlane(const Camera& camera, const Plane& plane, float
     const auto& route = routes[plane.routeIndex];
     auto [proj, angle] = getPointAndAngle(route, std::clamp(plane.t + plane.speed*frameProgress, 0.0f, 1.0f));
     auto p = camera.projToScreen(proj);
-    auto& t = camera.getTextureManager().getTexture("PLANE");
+    auto& t = camera.getTextureManager().getTexture(PLANE_TEXTURE_PER_LEVEL[plane.level]);
     auto scale = getRelativeRadius(AIRPLANE_SCALE, camera.getZoom());
 
     auto distA = glm::distance(proj, cities[route.a].proj) * camera.getZoom();

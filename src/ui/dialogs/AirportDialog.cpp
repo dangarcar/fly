@@ -81,10 +81,10 @@ void AirportDialog::render(const Camera& camera) {
     upgradeButton.disabled = !canUpgrade();
     if(canUpgrade())
         upgradeButton.text = std::format("UPGRADE FOR ${}", AIRPORT_UPGRADE_COST[airport.level]);
-    else if(player.getCash() < AIRPORT_UPGRADE_COST[airport.level])
-        upgradeButton.text = "NOT ENOUGH MONEY";
-    else
+    else if(airport.level+1 >= int(AIRPORT_LEVELS))
         upgradeButton.text = "CAN'T UPGRADE MORE";
+    else
+        upgradeButton.text = "NOT ENOUGH MONEY";
 
     upgradeButton.globalRect = getBB(upgradeButton);
     Dialog::renderButton(upgradeButton, camera);

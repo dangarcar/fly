@@ -49,8 +49,8 @@ void Window::run() {
     assert(scene != nullptr);
 
     Timer updateTimer;
-    const float msPerTick = 1000.0 / scene->getTicksPerSecond();
     while (alive) {
+        float msPerTick = 1000.0 / scene->getTicksPerSecond();
         InputEvent event;
         while(event = getInputEvent(), event.index() != 0) {
             scene->handleInput(event);
@@ -59,6 +59,7 @@ void Window::run() {
         if(updateTimer.elapsedMillis() >= msPerTick) {
             scene->update();
             updateTimer.reset();
+        
         }
 
         scene->getRenderer().clearScreen();

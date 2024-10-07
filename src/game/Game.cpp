@@ -18,10 +18,12 @@ void Game::handleInput(const InputEvent& event) {
     if(airManager.handleInput(event))
         return;
 
+    if(player.handleInput(event))
+        return;
+
     if(!uiManager.dialogShown())
         camera.handleInput(event);
     
-    player.handleInput(event);
     map.handleInput(event, camera, uiManager, player);
 }
 

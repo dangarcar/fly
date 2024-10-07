@@ -10,11 +10,7 @@
 #include "../Player.hpp"
 #include "../engine/Window.hpp"
 
-void LabelManager::load(Camera& camera) {
-    for(int i=0; i<Label::NUMBER_TEXTURE; ++i) {
-        camera.getTextRenderer().loadFontSize(2 << i, *camera.getSDL());
-    }
-    
+void LabelManager::load(Camera& camera) {    
     using json = nlohmann::json;
 
     std::ifstream labelFile(LABELS_DATA_FILE);

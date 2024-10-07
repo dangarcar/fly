@@ -17,6 +17,8 @@ private:
     static constexpr auto DEFAULT_GAME_FILE = "./resources/game.json";
 
 public:
+    static constexpr int MAX_FAST_FORWARD = 5;
+
     Game(int width, int height): camera(width, height) {}
     ~Game() = default;
 
@@ -26,7 +28,7 @@ public:
     void update() override;
     void render(float frameProgress) override;
 
-    long getTicksPerSecond() const override { return ticksPerSecond; }
+    long getTicksPerSecond() const override { return player.getFastForward() * DEFAULT_TICKS_PER_SECOND; }
     long getCurrentTick() const override { return currentTick; }
 
     Renderer& getRenderer() override { return camera; }
@@ -43,7 +45,6 @@ private:
     Map map;
 
     long currentTick = 0L;
-    int ticksPerSecond = DEFAULT_TICKS_PER_SECOND;
     bool paused = false;
 
     Timer fpsTimer;
