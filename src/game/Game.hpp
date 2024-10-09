@@ -11,6 +11,7 @@
 #include "Camera.hpp"
 
 class Window;
+using air::AirportManager;
 
 class Game : public Scene {
 private:

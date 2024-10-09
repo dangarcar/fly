@@ -26,12 +26,16 @@ bool Dialog::handleInput(const InputEvent& event) {
     return false;
 }
 
-void Dialog::renderButton(const Button& btn, const Camera& camera) const {
-    auto color = btn.hovered? btn.hoverColor : btn.color;
-    if(btn.disabled) color = btn.disabledColor;
-    SDL_SetRenderDrawColor(camera.getSDL(), color.r, color.g, color.b, color.a);
+void Button::render(const Camera& camera, SDL_Rect parent) {
+    globalRect = localRect;
+    globalRect.x += parent.x;
+    globalRect.y += parent.y;
 
-    auto rect = btn.globalRect;
-    SDL_RenderFillRect(camera.getSDL(), &rect);
-    camera.renderText(btn.text, rect.x + rect.w/2, rect.y + (rect.h - btn.fontSize) / 2, btn.fontSize, FC_ALIGN_CENTER, btn.textColor);
+    auto c = hovered? hoverColor : color;
+    if(disabled) 
+        c = disabledColor;
+    SDL_SetRenderDrawColor(camera.getSDL(), c.r, c.g, c.b, c.a);
+
+    SDL_RenderFillRect(camera.getSDL(), &globalRect);
+    camera.renderText(text, globalRect.x + globalRect.w/2, globalRect.y + (globalRect.h - fontSize) / 2, fontSize, FC_ALIGN_CENTER, textColor);
 }

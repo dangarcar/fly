@@ -55,3 +55,14 @@ inline SDL_Color hexCodeToColor(const std::string& str) {
 
     return SDL_Color { r, g, b, SDL_ALPHA_OPAQUE };
 }
+
+inline std::string cutNCharacters(std::string s, int n) {
+    if(int(s.length()) > n) {
+        s = s.substr(0, n-1);
+        if(s.back() == ' ')
+            s = s.substr(0, n-2);
+        s = s.append("...");
+    }
+
+    return s;
+}

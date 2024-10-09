@@ -15,7 +15,7 @@ void Game::handleInput(const InputEvent& event) {
     if(uiManager.handleInput(event)) 
         return;
 
-    if(airManager.handleInput(event))
+    if(airManager.handleInput(event, player, uiManager))
         return;
 
     if(player.handleInput(event))

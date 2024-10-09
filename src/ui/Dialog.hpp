@@ -8,15 +8,25 @@ class Camera;
 class Map;
 class Player;
 
-struct Button {
-    SDL_Rect localRect, globalRect;
-    SDL_Color color, hoverColor, disabledColor;
+class Button {
+public:    
+    void render(const Camera& camera, SDL_Rect parent);
     
-    bool hovered = false, disabled = false;
-    
-    std::string text;
+    void setDisabled(bool condition) { disabled = condition; }
+    void updateHover(SDL_Point mousePos) { hovered = SDL_PointInRect(&mousePos, &globalRect); }
+    bool isClickable() const { return !disabled && hovered; };
+
+public://PROPERTIES
+    SDL_Rect localRect;
+    SDL_Color color, hoverColor, disabledColor = SDL_SILVER;
     int fontSize = 8;
     SDL_Color textColor = SDL_WHITE;
+    std::string text;
+
+private: //STATE
+    SDL_Rect globalRect;
+    bool hovered = false, disabled = false;
+    
 };
 
 class Dialog {
@@ -24,9 +34,6 @@ public:
     //Returns true if the event has been consumed or false otherwise
     virtual bool handleInput(const InputEvent& event);
     virtual void render(const Camera& camera);
-    
-    void renderButton(const Button& btn, const Camera& camera) const;
-    SDL_Rect getBB(const Button& btn) const { return SDL_Rect { btn.localRect.x + dialog.x, btn.localRect.y + dialog.y, btn.localRect.w, btn.localRect.h }; }
 
     bool mustDie() const { return die; }
     SDL_Rect getRect() const { return dialog; }

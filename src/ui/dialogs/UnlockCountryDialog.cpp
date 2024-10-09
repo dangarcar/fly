@@ -13,17 +13,14 @@ UnlockCountryDialog::UnlockCountryDialog(const std::string& name, const std::str
     dialog = SDL_Rect {0, 0, 550, 320};
     
     yesButton.localRect = SDL_Rect{25, dialog.h - 70, 230, 50};
-    yesButton.globalRect = getBB(yesButton);
-    yesButton.color = hexCodeToColor("#2e802a");
-    yesButton.hoverColor = hexCodeToColor("#246621");
-    yesButton.disabledColor = SDL_SILVER;
+    yesButton.color = SDL_GREEN;
+    yesButton.hoverColor = SDL_DARK_GREEN;
     yesButton.text = "YES";
     yesButton.fontSize = 40;
 
     noButton.localRect = SDL_Rect{dialog.w - 255, dialog.h - 70, 230, 50};
-    noButton.globalRect = getBB(noButton);
-    noButton.color = hexCodeToColor("#802a2a");
-    noButton.hoverColor = hexCodeToColor("#662222");
+    noButton.color = SDL_RED;
+    noButton.hoverColor = SDL_DARK_RED;
     noButton.text = "NO";
     noButton.fontSize = 40;
 }
@@ -31,12 +28,10 @@ UnlockCountryDialog::UnlockCountryDialog(const std::string& name, const std::str
 void UnlockCountryDialog::render(const Camera& camera) {
     Dialog::render(camera);
 
-    yesButton.disabled = player.getCash() < DEFAULT_CITY_PRICE * player.getDifficulty();
-    yesButton.globalRect = getBB(yesButton);
-    renderButton(yesButton, camera);
+    yesButton.setDisabled( player.getCash() < DEFAULT_CITY_PRICE * player.getDifficulty() );
+    yesButton.render(camera, dialog);
 
-    noButton.globalRect = getBB(noButton);
-    renderButton(noButton, camera);
+    noButton.render(camera, dialog);
 
     auto text = std::format("Buy {}?", countryName);
     camera.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 32, FC_ALIGN_CENTER, SDL_WHITE);
@@ -60,20 +55,19 @@ bool UnlockCountryDialog::handleInput(const InputEvent& event) {
     
     if(auto* clickevent = std::get_if<ClickEvent>(&event)) {
         if(clickevent->button == SDL_BUTTON_LEFT) {
-            if(yesButton.hovered && !yesButton.disabled) {
+            if(yesButton.isClickable()) {
                 map.unlockCountry(this->countryCode, player);
                 die = true;
             }
-
-            if(noButton.hovered) {
+            else if(noButton.isClickable()) {
                 die = true;
             }
         }
     }
 
     if(auto* mouseevent = std::get_if<MouseMoveEvent>(&event)) {
-        yesButton.hovered = SDL_PointInRect(&mouseevent->newPos, &yesButton.globalRect);
-        noButton.hovered = SDL_PointInRect(&mouseevent->newPos, &noButton.globalRect);
+        yesButton.updateHover(mouseevent->newPos);
+        noButton.updateHover(mouseevent->newPos);
         return false;
     }
 

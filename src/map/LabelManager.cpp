@@ -38,7 +38,7 @@ void LabelManager::load(Camera& camera) {
     }
 }
 
-void LabelManager::render(const Camera& camera) { //FIXME: Probably overkill
+void LabelManager::render(const Camera& camera) {
     for(auto& [k, label]: labels) {
         auto sz = label.size * camera.getZoom();
 

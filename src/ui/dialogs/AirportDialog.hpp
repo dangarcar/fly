@@ -2,12 +2,14 @@
 
 #include "../Dialog.hpp"
 
-class AirportData;
+namespace air {
+    class AirportData;
+};
 class City;
 
 class AirportDialog: public Dialog {
 public:
-    AirportDialog(AirportData& airport, const City& city, Player& player, const std::vector<City>& cities);
+    AirportDialog(air::AirportData& airport, const City& city, Player& player, const std::vector<City>& cities);
 
     bool handleInput(const InputEvent& event) override;
     void render(const Camera& camera) override;
@@ -17,7 +19,7 @@ private:
     bool canUpgrade() const;
 
 private:
-    AirportData& airport;
+    air::AirportData& airport;
     const City& city;
     Player& player;
 

@@ -6,18 +6,15 @@
 #include "../../airport/AirportManager.hpp"
 #include "../../Player.hpp"
 
-AirportDialog::AirportDialog(AirportData& airport, const City& city, Player& player, const std::vector<City>& cities):
+AirportDialog::AirportDialog(air::AirportData& airport, const City& city, Player& player, const std::vector<City>& cities):
     airport(airport), city(city), player(player), cities(cities)
 {
     dialog = SDL_Rect {0, 0, 600, 400};
 
     upgradeButton.localRect = SDL_Rect {15, 253, 270, 42};
-    upgradeButton.color = hexCodeToColor("#2e802a");
-    upgradeButton.hoverColor = hexCodeToColor("#246621");
-    upgradeButton.disabledColor = SDL_SILVER;
+    upgradeButton.color = SDL_GREEN;
+    upgradeButton.hoverColor = SDL_DARK_GREEN;
     upgradeButton.fontSize = 28;
-    upgradeButton.textColor = SDL_WHITE;
-    upgradeButton.text = "UPGRADE";
 }
 
 void AirportDialog::render(const Camera& camera) {
@@ -38,7 +35,7 @@ void AirportDialog::render(const Camera& camera) {
     SDL_SetRenderDrawColor(camera.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(camera.getSDL(), &rect);
 
-    auto fillPercentage = float(airport.people) / AIRPORT_CAPACITY_PER_LEVEL[airport.level];
+    auto fillPercentage = float(airport.waiting.size()) / air::AIRPORT_CAPACITY_PER_LEVEL[airport.level];
     rect.w *= std::min(1.0f, fillPercentage);
     if(fillPercentage < 1)
         SDL_SetRenderDrawColor(camera.getSDL(), 0, 200, 100, SDL_ALPHA_OPAQUE);
@@ -46,7 +43,7 @@ void AirportDialog::render(const Camera& camera) {
         SDL_SetRenderDrawColor(camera.getSDL(), 250, 50, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(camera.getSDL(), &rect);
 
-    text = std::format("{}/{}", airport.people, AIRPORT_CAPACITY_PER_LEVEL[airport.level]);
+    text = std::format("{}/{}", airport.waiting.size(), air::AIRPORT_CAPACITY_PER_LEVEL[airport.level]);
     auto textColor = fillPercentage<1? SDL_WHITE : FC_MakeColor(150,0,0,255);
     camera.renderText(text, dialog.x + dialog.w - 25, dialog.y + dialog.h - 86, 24, FC_ALIGN_RIGHT, textColor);
 
@@ -78,16 +75,17 @@ void AirportDialog::render(const Camera& camera) {
     text = std::to_string(airport.level + 1);
     camera.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, FC_ALIGN_CENTER, SDL_WHITE);
 
-    upgradeButton.disabled = !canUpgrade();
+    upgradeButton.setDisabled(!canUpgrade());
     if(canUpgrade())
-        upgradeButton.text = std::format("UPGRADE FOR ${}", AIRPORT_UPGRADE_COST[airport.level]);
-    else if(airport.level+1 >= int(AIRPORT_LEVELS))
-        upgradeButton.text = "CAN'T UPGRADE MORE";
-    else
-        upgradeButton.text = "NOT ENOUGH MONEY";
+        upgradeButton.text = std::format("UPGRADE FOR ${}", air::AIRPORT_UPGRADE_COST[airport.level]);
+    else {
+        if(airport.level+1 >= int(air::AIRPORT_LEVELS))
+            upgradeButton.text = "CAN'T UPGRADE MORE";
+        else
+            upgradeButton.text = "NOT ENOUGH MONEY";
+    }
 
-    upgradeButton.globalRect = getBB(upgradeButton);
-    Dialog::renderButton(upgradeButton, camera);
+    upgradeButton.render(camera, dialog);
 }
 
 bool AirportDialog::handleInput(const InputEvent& event) {
@@ -95,16 +93,16 @@ bool AirportDialog::handleInput(const InputEvent& event) {
         return true;
     
     if(auto* clickevent = std::get_if<ClickEvent>(&event)) {
-        if(clickevent->button == SDL_BUTTON_LEFT && upgradeButton.hovered) {
-            if(!upgradeButton.disabled) {
-                player.spend(AIRPORT_UPGRADE_COST[airport.level]);
+        if(clickevent->button == SDL_BUTTON_LEFT) {
+            if(upgradeButton.isClickable()) {
+                player.spend(air::AIRPORT_UPGRADE_COST[airport.level]);
                 airport.level++;
             }
         }
     }
 
     if(auto* moveevent = std::get_if<MouseMoveEvent>(&event)) {
-        upgradeButton.hovered = SDL_PointInRect(&moveevent->newPos, &upgradeButton.globalRect);
+        upgradeButton.updateHover(moveevent->newPos);
         return false;
     }
 
@@ -127,6 +125,6 @@ std::vector<std::pair<std::string, int>> AirportDialog::getFrequentDestinations(
 }
 
 bool AirportDialog::canUpgrade() const {
-    return airport.level < int(AIRPORT_LEVELS-1) &&
-        AIRPORT_UPGRADE_COST[airport.level] <= player.getCash();
+    return airport.level < int(air::AIRPORT_LEVELS-1) &&
+        air::AIRPORT_UPGRADE_COST[airport.level] <= player.getCash();
 }
