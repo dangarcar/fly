@@ -50,7 +50,11 @@ void Window::run() {
 
     Timer updateTimer;
     while (alive) {
+#ifdef FIXED_UPDATE
         float msPerTick = 1000.0 / scene->getTicksPerSecond();
+#else
+        float msPerTick = SDL_FLT_EPSILON;
+#endif
         InputEvent event;
         while(event = getInputEvent(), event.index() != 0) {
             scene->handleInput(event);
@@ -59,7 +63,6 @@ void Window::run() {
         if(updateTimer.elapsedMillis() >= msPerTick) {
             scene->update();
             updateTimer.reset();
-        
         }
 
         scene->getRenderer().clearScreen();

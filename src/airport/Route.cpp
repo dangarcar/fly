@@ -98,6 +98,8 @@ std::vector<glm::vec2> air::getPathProjs(const Camera& camera, Coord a, Coord b)
 }
 
 std::pair<glm::vec2, float> air::getPointAndAngle(const Route& route, float t) {
+    assert(route.points.empty() == false);
+
     float fi = t * (route.points.size() - 1);
     int i1 = std::floor(fi), i2 = std::ceil(fi);
     auto v = glm::normalize(route.points[i1] - route.points[i2]);

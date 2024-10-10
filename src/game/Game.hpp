@@ -36,6 +36,7 @@ public:
 
 private:
     void timeFps();
+    void renderDebugInfo();
 
 private:
     Camera camera;

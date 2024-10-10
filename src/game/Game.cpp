@@ -28,6 +28,7 @@ void Game::handleInput(const InputEvent& event) {
 }
 
 void Game::update() {
+    timeFps();
     currentTick++;
     uiManager.update();
     
@@ -40,25 +41,37 @@ void Game::update() {
 }
 
 void Game::render(float frameProgress) {
+    renderDebugInfo();
+    return; //FIXME:
+
     map.render(camera);
     airManager.render(camera, (paused || uiManager.dialogShown())? 0.0f: frameProgress);
     player.render(camera, currentTick);
 
     uiManager.render(camera);
 
-    timeFps();
+    renderDebugInfo();
 }
 
 void Game::timeFps() {
     framesDrawn++;
-    auto text = std::format("{} -> {}ms", framesPerMs * 1000, 1 / framesPerMs);
-    camera.renderText(text, 0, 0, 32, FC_ALIGN_LEFT, SDL_WHITE);
-
     if(fpsTimer.elapsedMillis() >= 500) {
         framesPerMs = framesDrawn / fpsTimer.elapsedMillis();        
         fpsTimer.reset();
         framesDrawn = 0;
     }
+}
+
+void Game::renderDebugInfo() {
+    auto text = std::format("{} -> {}ms\n", framesPerMs * 1000, 1 / framesPerMs);
+    text += std::format("Countries {}\n", player.stats.countries);
+    text += std::format("Population {:.02f}M\n", double(player.stats.population) / 1e6);
+    text += std::format("Airports {}\n", player.stats.airports);
+    text += std::format("Routes {}\n", player.stats.routes);
+    text += std::format("Planes {}\n", player.stats.planes);
+    text += std::format("Passengers -> arrived: {}    total: {}\n", player.stats.passengersArrived, player.stats.passengersTotal);
+
+    camera.renderText(text, 0, 0, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
 void Game::start(const Window& window) {

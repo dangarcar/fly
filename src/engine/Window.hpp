@@ -7,6 +7,8 @@
 #include "Utils.h"
 #include "Scene.h"
 
+#undef FIXED_UPDATE
+
 class Window {
 public:
     static constexpr int DEFAULT_SCREEN_WIDTH = 1280;

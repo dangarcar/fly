@@ -113,7 +113,7 @@ bool RouteDialog::handleInput(const InputEvent& event) {
                 long buyPrice = air::PLANE_PRICE_PER_LEVEL[route.level];
                 player.spend(buyPrice);
                 
-                airManager.addPlane(route);
+                airManager.addPlane(route, player);
             } 
             else if(upgradeButton.isClickable()) {
                 long upgradePrice = route.planes.size() * air::PLANE_UPGRADE_COST[route.level];
@@ -126,7 +126,7 @@ bool RouteDialog::handleInput(const InputEvent& event) {
             else if(sellButton.isClickable()) {
                 long sellPrice = air::routePrice(route) * player.getDifficulty() * air::SELL_RETRIEVAL_RATIO;
                 player.earn(sellPrice);
-                airManager.deleteRoute(routeIndex);
+                airManager.deleteRoute(routeIndex, player);
                 die = true;
             }
         }

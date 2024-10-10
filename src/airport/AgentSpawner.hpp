@@ -28,23 +28,31 @@ public:
         if(cities.size() < 2)
             return {-1, -1};
     
-        std::vector<int> populations(cities.size());
-        for(int i=0; i<int(cities.size()); ++i) 
-            populations[i] = cities[i].population;
-        std::discrete_distribution<int> distribution(populations.begin(), populations.end());
+        std::vector<long> populations(cities.size());
+        populations[0] = cities[0].population;
+        for(int i=1; i<int(cities.size()); ++i) 
+            populations[i] = populations[i-1] + long(cities[i].population);
+
+        long x = gen() % populations.back();
+        auto it = std::lower_bound(populations.begin(), populations.end(), x);
 
         Agent a;
-        a.source = distribution(gen);
+        a.source = it - populations.begin();
 
         auto country = cities[a.source].country;
         for(int i=0; i<int(cities.size()); ++i) {
-            if(cities[i].country == country)
-                populations[i] *= NATIONAL_BOOST + cities[i].capital*CAPITAL_BOOST;
+            if(cities[i].country == country) {
+                long prev = i>0? populations[i-1]: 0;
+                populations[i] = prev + long(cities[i].population) * long(NATIONAL_BOOST + cities[i].capital*CAPITAL_BOOST);
+            }
         }
-        distribution = {populations.begin(), populations.end()};
 
         do {
-            a.target = distribution(gen);
+            long x = gen() % populations.back();
+            auto it = std::lower_bound(populations.begin(), populations.end(), x);
+            //assert(it != populations.end());
+
+            a.target = it - populations.begin();
         } while(a.source == a.target);
 
         return a;

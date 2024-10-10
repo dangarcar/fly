@@ -17,10 +17,6 @@
 
 std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjList);
 
-void air::AirportManager::deleteRoute(int routeIndex) {
-    routes.erase(routes.begin() + routeIndex);
-}
-
 bool air::AirportManager::handleInput(const InputEvent& event, Player& player, UIManager& uiManager) {
     if(auto* moveevent = std::get_if<MouseMoveEvent>(&event)) {
         mousePos = moveevent->newPos;
@@ -65,30 +61,69 @@ bool air::AirportManager::handleInput(const InputEvent& event, Player& player, U
 }
 
 void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager) {
-    /*if(routes.size() < 4000) { //FIXME: stress test
-        if(airports.size() > 3) {
-            int i1 = rand() % airports.size();
-            int i2 = rand() % airports.size();
-            if(i1 != i2) {
-                Coord c1 = cities[i1].coord;
-                Coord c2 = cities[i2].coord;
-                Route route(i1, i2);
-                route.lenght = mtsDistance(c1, c2);
-                route.points = getPathProjs(camera, c1, c2);
-                this->addRoute(std::move(route), player);
-            }
-        } 
-    }*/
+    if(airports.size() > 3) { //FIXME: stress test
+        Route route(-1, -1);
+        int i1, i2;
+        
+        auto it = countryCities.begin();
+        do {
+            it = countryCities.begin();
+            std::advance(it, rand() % countryCities.size()); 
+        } while(it->second.size() <= 1);
 
-    if(auto city = citySpawner.getRandomCity()) {    
-        auto value = city.value();   
-        addAirport(std::move(value));
+        do {
+            auto vit = it->second.begin();
+            std::advance(vit, rand() % it->second.size());
+            i1 = *vit;
+        } while(!cities[i1].capital);
+        
+        int tries = 0;
+        Coord c1, c2;
+        do {
+            tries++;
+            auto c = cities[i1].country;
+
+            do {
+                if(rand() % 1000 < 10) {
+                    auto cit = countryCities.begin();
+                    std::advance(cit, rand() % countryCities.size()); 
+
+                    do {
+                        auto vit = cit->second.begin();
+                        std::advance(vit, rand() % cit->second.size());
+                        i2 = *vit;
+                    } while(!cities[i2].capital);
+                } else {
+                    auto vit = it->second.begin();
+                    std::advance(vit, rand() % it->second.size());
+                    i2 = *vit;
+                }
+            } while(i1 == i2);
+
+            c1 = cities[i1].coord;
+            c2 = cities[i2].coord;
+            route = Route(i1, i2);
+            route.lenght = mtsDistance(c1, c2);
+            route.points = getPathProjs(camera, c1, c2);
+            writeLog("%s - %s\n", cities[i1].name.c_str(), cities[i2].name.c_str());
+        } while(!this->addRoute(std::move(route), player) && tries < 1000);
+    } 
+
+    //SPAWN CITY
+    while(auto city = citySpawner.getRandomCity()) {    
+        auto value = city.value();        
+        addAirport(std::move(value), player);
         updatePaths();
     }
 
+    //SPAWN PEOPLE
+    #pragma omp parallel for
     for(int i=0; i<agentSpawner.peopleToSpawn(cities.size()); ++i) {
-        if(auto agent = agentSpawner.spawn(cities); agent.source != -1) {
+        auto agent = agentSpawner.spawn(cities);
+        #pragma omp critical
+        if(agent.source != -1) {
             airports[agent.source].waiting.push_back(agent.target);
+            player.stats.passengersTotal++;
         }
     }
 
@@ -206,12 +241,18 @@ void air::AirportManager::render(const Camera& camera, float frameProgress) cons
 
         camera.renderText(std::to_string(currentRoute.price), mousePos.x, mousePos.y - 36, 32, FC_ALIGN_CENTER, currentRoute.color);
     }
+}
 
-    auto t = std::format("\nZoom level: {}\n\n\n{}", camera.getZoom(), routes.size());
-    camera.renderText(t, 0, 0, 32, FC_ALIGN_LEFT, SDL_WHITE);
+void air::AirportManager::deleteRoute(int routeIndex, Player& player) {
+    routes.erase(routes.begin() + routeIndex);
+
+    player.stats.routes--;
 }
 
 bool air::AirportManager::addRoute(Route&& r, Player& player) {
+    if(r.a < 0 || r.b < 0)
+        return false;
+
     if(std::find(networkAdjList[r.a].begin(), networkAdjList[r.a].end(), r.b) != networkAdjList[r.a].end())
         return true;
     
@@ -219,7 +260,8 @@ bool air::AirportManager::addRoute(Route&& r, Player& player) {
         return false;
     
     auto& route = routes.emplace_back(r);
-    
+    player.stats.routes++;
+
     airports[route.a].routeIndexes.emplace_back(routes.size() -1);
     airports[route.b].routeIndexes.emplace_back(routes.size() -1);
     
@@ -227,29 +269,36 @@ bool air::AirportManager::addRoute(Route&& r, Player& player) {
     networkAdjList[route.b].emplace_back(route.a);
     
     updatePaths();
-    addPlane(route);
+    for(int i=0; i<MAX_PLANES_PER_ROUTE; ++i) //FIXME:
+        addPlane(route, player);
     
     return true;
 }
 
-void air::AirportManager::addAirport(City&& c) {
+void air::AirportManager::addAirport(City&& c, Player& player) {
     auto& city = cities.emplace_back(c);
-    
+    countryCities[city.country].push_back(cities.size() - 1);
+
     AirportData data;
     if(city.capital) data.radius = 2.0f;
     else if(city.population > 1e6) data.radius = 1.6f;
     else data.radius = 1.2f;
     
     airports.emplace_back(std::move(data));
+
+    player.stats.airports++;
+    player.stats.population += city.population;
 }
 
-void air::AirportManager::addPlane(Route& route) {
+void air::AirportManager::addPlane(Route& route, Player& player) {
     Plane p;
     p.t = 0.0f;
     p.speed = MTS_PER_TICK_PER_LEVEL[route.level] / route.lenght;
     
     route.planes.emplace_back(p);
     landPlane(nullptr, route.planes.back(), route, false);
+
+    player.stats.planes++;
 }
 
 void air::AirportManager::updatePaths() {
@@ -270,14 +319,21 @@ void air::AirportManager::landPlane(Player* player, Plane &plane, Route& route, 
     auto peopleTotal = airports[a].waiting.size() + plane.pass.size();
 
     // GET OFF THE PLANE
-    if(player)
+    if(player) {
         player->earn(PRICE_PER_FLIGHT * plane.pass.size());
+        player->stats.flights++;
+    }
+
     auto &wait = airports[a].waiting;
     for(int i=0; i<int(plane.pass.size()); ++i) {
         if(plane.pass[i] != a) {
             wait.emplace_back(plane.pass[i]);
-        } else {
+        } 
+        else {
             peopleTotal--;
+            
+            if(player)
+                player->stats.passengersArrived++;
         }
     }
     // GET ON THE PLANE
@@ -293,7 +349,7 @@ void air::AirportManager::landPlane(Player* player, Plane &plane, Route& route, 
         int p = *it;
         if(getNextAirport(a, p) == b) {
             plane.pass.push_back(p);
-            
+
             it = wait.erase(it);
         } else {
             ++it;

@@ -33,7 +33,7 @@ namespace air {
     struct Route {
         int a, b;
 
-        int level = 0;
+        int level = ROUTE_LEVELS-1; //FIXME:
         float lenght;
         std::vector<glm::vec2> points;
         std::vector<Plane> planes;

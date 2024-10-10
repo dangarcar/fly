@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "../engine/InputEvent.h"
 
 #include "AgentSpawner.hpp"
@@ -27,14 +29,14 @@ namespace air {
         void render(const Camera& camera, float frameProgress) const;
 
         //DOES NOT COST MONEY
-        void addPlane(Route& route);
+        void addPlane(Route& route, Player& player);
 
-        void deleteRoute(int routeIndex);
+        void deleteRoute(int routeIndex, Player& player);
 
     private:
         void updatePaths();
 
-        void addAirport(City&& city);
+        void addAirport(City&& city, Player& player);
         bool addRoute(Route&& route, Player& player);
 
         int getNextAirport(int src, int target) { return parentTree[target][src]; }
@@ -43,6 +45,7 @@ namespace air {
 
     private:
         std::vector<City> cities;
+        std::unordered_map<std::string, std::vector<int>> countryCities;
         std::vector<AirportData> airports;
         std::vector<Route> routes;
 

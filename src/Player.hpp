@@ -5,6 +5,23 @@
 class Camera;
 class Game;
 
+
+struct Stats {
+    long routes = 0;
+    long planes = 0;
+    long flights = 0;
+    
+    long passengersTotal = 0;
+    long passengersArrived = 0;
+    
+    long countries = 0;
+    long airports = 0;
+    long population = 0;
+    
+    long moneySpent = 0;
+    long moneyEarned = 0;
+};
+
 class Player {
 private:
     static constexpr long INITIAL_CASH = 30000;
@@ -19,15 +36,22 @@ public:
     bool spend(long amount) { 
         if(amount <= cash) {
             cash -= amount;
+            stats.moneySpent += amount;
             return true;
         } else {
             return false;
         }
     }
-    void earn(long amount) { cash += amount; }
+
+    void earn(long amount) { 
+        cash += amount;
+        stats.moneyEarned += amount;
+    }
 
     double getDifficulty() const { return difficulty; }
     int getFastForward() const { return fastForwardMultiplier; }
+
+    Stats stats;
 
 private:
     long cash = INITIAL_CASH;

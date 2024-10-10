@@ -92,6 +92,7 @@
         "netfwd": "cpp",
         "timer": "cpp",
         "future": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "unordered_set": "cpp"
     }
 }

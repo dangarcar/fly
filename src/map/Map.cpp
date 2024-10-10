@@ -73,14 +73,14 @@ void Map::load(Camera& camera) {
         camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
     }
 
-    /*//FIXME: stress test
+    //FIXME: stress test
     for(auto& [k, c]: countries) {
         if(c.state == CountryState::BANNED)
             continue;
 
         c.state = CountryState::UNLOCKED;
         citySpawner.addCountry(k);
-    }*/
+    }
 }
 
 void Map::projectMap(const Camera& camera) {
@@ -150,12 +150,6 @@ void Map::render(const Camera& camera) {
             SDL_RenderDrawLinesF(camera.getSDL(), box.data(), box.size());
         }
     }
-
-    auto str = std::format("Countries left: {}\nUnlocked: {}\n",
-        std::accumulate(countries.begin(), countries.end(), 0, [&](int a, auto& b){ return a + (b.second.state != CountryState::BANNED); }),
-        std::accumulate(countries.begin(), countries.end(), 0, [&](int a, auto& b){ return a + (b.second.state == CountryState::UNLOCKED); })
-    );
-    camera.renderText(str, 0, 64, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
 void Map::handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player) {
@@ -244,6 +238,7 @@ void Map::unlockCountry(const std::string& country, Player& player) {
 
     long price = long( double(DEFAULT_CITY_PRICE) * player.getDifficulty() );
     player.spend(price);
+    player.stats.countries++;
 }
 
 void Map::moveToCountry(const Country& country, Camera& camera) {
