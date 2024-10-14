@@ -7,7 +7,7 @@
 #include "Utils.h"
 #include "Scene.h"
 
-#undef FIXED_UPDATE
+#define FIXED_UPDATE 1
 
 class Window {
 public:

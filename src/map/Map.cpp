@@ -73,14 +73,14 @@ void Map::load(Camera& camera) {
         camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
     }
 
-    //FIXME: stress test
+    /*//FIXME: stress test
     for(auto& [k, c]: countries) {
         if(c.state == CountryState::BANNED)
             continue;
 
         c.state = CountryState::UNLOCKED;
         citySpawner.addCountry(k);
-    }
+    }*/
 }
 
 void Map::projectMap(const Camera& camera) {

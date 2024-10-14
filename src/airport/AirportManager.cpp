@@ -61,15 +61,16 @@ bool air::AirportManager::handleInput(const InputEvent& event, Player& player, U
 }
 
 void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager) {
-    if(airports.size() > 3) { //FIXME: stress test
+    /*if(airports.size() > 3) { //FIXME: stress test
         Route route(-1, -1);
-        int i1, i2;
+        int i1 = 0, i2;
         
         auto it = countryCities.begin();
+        int tries = 0;
         do {
             it = countryCities.begin();
             std::advance(it, rand() % countryCities.size()); 
-        } while(it->second.size() <= 1);
+        } while(it->second.size() <= 1 && tries++ < 50);
 
         do {
             auto vit = it->second.begin();
@@ -77,8 +78,8 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
             i1 = *vit;
         } while(!cities[i1].capital);
         
-        int tries = 0;
         Coord c1, c2;
+        tries = 0;
         do {
             tries++;
             auto c = cities[i1].country;
@@ -105,9 +106,10 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
             route = Route(i1, i2);
             route.lenght = mtsDistance(c1, c2);
             route.points = getPathProjs(camera, c1, c2);
-            writeLog("%s - %s\n", cities[i1].name.c_str(), cities[i2].name.c_str());
-        } while(!this->addRoute(std::move(route), player) && tries < 1000);
-    } 
+            //writeLog("%s - %s\n", cities[i1].name.c_str(), cities[i2].name.c_str());
+        } while(!this->addRoute(std::move(route), player, camera) && tries < 1000);
+    }
+    */
 
     //SPAWN CITY
     while(auto city = citySpawner.getRandomCity()) {    
@@ -128,24 +130,23 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
     }
 
     for(int i=0; i<int(routes.size()); ++i) {
+        auto planeDistance = 2.0f / routes[i].planes.size();
+        auto routeSpeed = MTS_PER_TICK_PER_LEVEL[routes[i].level] / routes[i].lenght;
+        routes[i].lastTakeoffA += routeSpeed;
+        routes[i].lastTakeoffB += routeSpeed;
+
         for(int j=0; j<int(routes[i].planes.size()); ++j) {
             auto& p = routes[i].planes[j];
             p.t += p.speed;
 
             if(p.speed == 0) {
-                int k = (j+1) % int(routes[i].planes.size());
-                auto newSpeed = (p.t<=0.0f? 1:-1) * MTS_PER_TICK_PER_LEVEL[routes[i].level] / routes[i].lenght;
-                auto distance = 1.0f / (routes[i].planes.size()-1) - std::abs(newSpeed);
-
-                if(routes[i].planes[k].t == p.t) {
-                    p.speed = newSpeed;
-                } 
-                else if(std::signbit(newSpeed) == std::signbit(routes[i].planes[k].speed)) {
-                    if(std::abs(routes[i].planes[k].t - p.t) >= distance)
-                        p.speed = newSpeed;
-                } else {
-                    if(std::abs(routes[i].planes[k].t - p.t) <=  distance)
-                        p.speed = newSpeed;
+                if(p.t <= 0.0f && routes[i].lastTakeoffA > planeDistance) {
+                    routes[i].lastTakeoffA = 0;
+                    p.speed = routeSpeed;
+                }
+                else if(p.t >= 1.0f && routes[i].lastTakeoffB > planeDistance) {
+                    routes[i].lastTakeoffB = 0;
+                    p.speed = -routeSpeed;
                 }
             } 
             else if(p.t <= 0.0f || p.t >= 1.0f) {
@@ -170,8 +171,12 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
 
     //UPDATE CLICKED ROUTE
     clickedRoute = -1;
+    auto gridIndex = getPointGrid(camera, camera.screenToProj(mousePos));
     #pragma omp parallel for shared(clickedRoute)
-    for(size_t i=0; i<routes.size(); ++i) {
+    for(int i=0; i<int(routes.size()); ++i) {
+        if(std::find(routeGrids[gridIndex].begin(), routeGrids[gridIndex].end(), i) == routeGrids[gridIndex].end())
+            continue;
+
         if(air::routeClicked(camera, routes[i], mousePos))
             clickedRoute = i;
     }
@@ -195,7 +200,7 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
         }
     } else {
         if(currentRoute.route.a != -1 && currentRoute.route.b != -1)
-            this->addRoute(std::move(currentRoute.route), player);
+            this->addRoute(std::move(currentRoute.route), player, camera);
         currentRoute = CurrentRoute();
     }
 
@@ -249,7 +254,7 @@ void air::AirportManager::deleteRoute(int routeIndex, Player& player) {
     player.stats.routes--;
 }
 
-bool air::AirportManager::addRoute(Route&& r, Player& player) {
+bool air::AirportManager::addRoute(Route&& r, Player& player, const Camera& camera) {
     if(r.a < 0 || r.b < 0)
         return false;
 
@@ -260,6 +265,7 @@ bool air::AirportManager::addRoute(Route&& r, Player& player) {
         return false;
     
     auto& route = routes.emplace_back(r);
+    int routeIndex = routes.size() - 1;
     player.stats.routes++;
 
     airports[route.a].routeIndexes.emplace_back(routes.size() -1);
@@ -268,9 +274,14 @@ bool air::AirportManager::addRoute(Route&& r, Player& player) {
     networkAdjList[route.a].emplace_back(route.b);
     networkAdjList[route.b].emplace_back(route.a);
     
+    for(auto& p: route.points) {
+        int i = getPointGrid(camera, p);
+        if(routeGrids[i].empty() || routeGrids[i].back() != routeIndex)
+            routeGrids[i].push_back(routeIndex);
+    }
+
     updatePaths();
-    for(int i=0; i<MAX_PLANES_PER_ROUTE; ++i) //FIXME:
-        addPlane(route, player);
+    addPlane(route, player);
     
     return true;
 }

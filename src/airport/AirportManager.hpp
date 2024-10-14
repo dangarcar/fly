@@ -15,7 +15,7 @@ class CitySpawner;
 class UIManager;
 
 namespace air {
-    
+
     struct CurrentRoute {
         Route route = {-1, -1};
         long price = 0;
@@ -37,7 +37,7 @@ namespace air {
         void updatePaths();
 
         void addAirport(City&& city, Player& player);
-        bool addRoute(Route&& route, Player& player);
+        bool addRoute(Route&& route, Player& player, const Camera& camera);
 
         int getNextAirport(int src, int target) { return parentTree[target][src]; }
         //Player can be null
@@ -45,9 +45,11 @@ namespace air {
 
     private:
         std::vector<City> cities;
-        std::unordered_map<std::string, std::vector<int>> countryCities;
         std::vector<AirportData> airports;
+        std::unordered_map<std::string, std::vector<int>> countryCities;
+        
         std::vector<Route> routes;
+        std::array<std::vector<int>, ROUTE_GRID_HEIGHT*ROUTE_GRID_WIDTH> routeGrids;
 
         std::vector<std::vector<int>> networkAdjList;
         std::vector<std::vector<int>> parentTree;

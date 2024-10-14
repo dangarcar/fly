@@ -3,6 +3,12 @@
 #include "Airport.hpp"
 #include "../game/Camera.hpp"
 
+int air::getPointGrid(const Camera& camera, glm::vec2 proj) {
+    int x = proj.x * ROUTE_GRID_WIDTH / camera.getWidth();
+    int y = proj.y * ROUTE_GRID_HEIGHT / camera.getWidth();
+    return std::clamp(y*ROUTE_GRID_WIDTH + x, 0, ROUTE_GRID_WIDTH*ROUTE_GRID_HEIGHT-1);
+}
+
 float air::routePrice(const Route& route) {
     return route.lenght * PRICE_PER_METER_ROUTE;
 }

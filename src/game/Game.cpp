@@ -28,7 +28,6 @@ void Game::handleInput(const InputEvent& event) {
 }
 
 void Game::update() {
-    timeFps();
     currentTick++;
     uiManager.update();
     
@@ -41,8 +40,7 @@ void Game::update() {
 }
 
 void Game::render(float frameProgress) {
-    renderDebugInfo();
-    return; //FIXME:
+    timeFps();
 
     map.render(camera);
     airManager.render(camera, (paused || uiManager.dialogShown())? 0.0f: frameProgress);

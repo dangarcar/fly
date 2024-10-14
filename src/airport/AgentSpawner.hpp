@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include <random>
 #include <ctime>
 
@@ -16,6 +17,9 @@ class AgentSpawner {
 
 private:
     std::mt19937_64 gen;
+    std::vector<long> populations;
+    std::unordered_map<std::string, std::vector<long>> boostedPopsByCountry;
+    std::unordered_map<std::string, int> capitals;
 
 public:
     AgentSpawner(): gen(time(nullptr)) {}
@@ -28,31 +32,50 @@ public:
         if(cities.size() < 2)
             return {-1, -1};
     
-        std::vector<long> populations(cities.size());
-        populations[0] = cities[0].population;
-        for(int i=1; i<int(cities.size()); ++i) 
-            populations[i] = populations[i-1] + long(cities[i].population);
+        //UPDATE POPULATIONS CACHE
+        if(cities.size() != populations.size()) { 
+            for(auto i=populations.size(); i<cities.size(); ++i) {
+                auto cnt = cities[i].country;
+
+                if(cities[i].capital) {
+                    capitals[cnt] = i;
+                }
+
+                long prev = populations.empty()? 0 : populations.back();
+                populations.push_back(prev + long(std::sqrt(cities[i].population / 1000.0f) * 1000.0f));
+
+                if(!boostedPopsByCountry.contains(cnt))
+                    boostedPopsByCountry[cnt] = {};
+
+                for(auto& [k, v]: boostedPopsByCountry) {
+                    for(auto j=v.size(); j<cities.size(); ++j) {
+                        prev = v.empty()? 0 : v.back();
+                        float boost = 1 + cities[j].capital * CAPITAL_BOOST;
+
+                        if(cnt == k)
+                            boost += NATIONAL_BOOST;
+
+                        long a = boost * std::log2f(cities[j].population / 1000.0f) * 1000.0f;
+                        v.push_back(prev + a);
+                    }
+                }
+            }
+        }
 
         long x = gen() % populations.back();
         auto it = std::lower_bound(populations.begin(), populations.end(), x);
-
+        
         Agent a;
         a.source = it - populations.begin();
 
         auto country = cities[a.source].country;
-        for(int i=0; i<int(cities.size()); ++i) {
-            if(cities[i].country == country) {
-                long prev = i>0? populations[i-1]: 0;
-                populations[i] = prev + long(cities[i].population) * long(NATIONAL_BOOST + cities[i].capital*CAPITAL_BOOST);
-            }
-        }
 
         do {
-            long x = gen() % populations.back();
-            auto it = std::lower_bound(populations.begin(), populations.end(), x);
-            //assert(it != populations.end());
+            long x = gen() % boostedPopsByCountry[country].back();
+            auto it = std::lower_bound(boostedPopsByCountry[country].begin(), boostedPopsByCountry[country].end(), x);
+            assert(it != boostedPopsByCountry[country].end());
 
-            a.target = it - populations.begin();
+            a.target = it - boostedPopsByCountry[country].begin();
         } while(a.source == a.target);
 
         return a;

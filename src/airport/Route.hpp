@@ -23,6 +23,8 @@ namespace air {
     constexpr const char* PLANE_TEXTURE_PER_LEVEL[ROUTE_LEVELS] = { "PLANE0", "PLANE1", "PLANE2" };
     constexpr float MTS_PER_TICK_PER_LEVEL[ROUTE_LEVELS] = { 800, 1200, 1600 };
 
+    constexpr int ROUTE_GRID_HEIGHT = 128, ROUTE_GRID_WIDTH = 128;
+
     struct Plane {    
         float t;
         float speed;
@@ -33,10 +35,11 @@ namespace air {
     struct Route {
         int a, b;
 
-        int level = ROUTE_LEVELS-1; //FIXME:
+        int level = 0;
         float lenght;
         std::vector<glm::vec2> points;
         std::vector<Plane> planes;
+        float lastTakeoffA = 0, lastTakeoffB = 0;
 
         Route(int a, int b): a(a), b(b) {}
     };
@@ -46,6 +49,8 @@ namespace air {
     bool routeClicked(const Camera& camera, const Route& route, SDL_Point mousePos);
 
     float routePrice(const Route& route);
+
+    int getPointGrid(const Camera& camera, glm::vec2 p);
 
     Coord getIntermediatePoint(Coord c1, Coord c2, float t);
     std::vector<glm::vec2> getPathProjs(const Camera& camera, Coord a, Coord b);

@@ -15,7 +15,7 @@ class Camera;
 class CitySpawner {
 private:
     //The inverse of the probability of a city spawn
-    static constexpr int SPAWN_FREQUENCY = 1; //TODO: must change it probably
+    static constexpr int SPAWN_FREQUENCY = 30; //TODO: must change it probably
     static constexpr auto AIRPORTS_DATA_FILE = "./resources/airports.json";
 
 public:
