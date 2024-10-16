@@ -5,11 +5,14 @@
 
 #include "../engine/Utils.h"
 #include "../engine/Window.hpp"
+#include "../ui/dialogs/PauseGameDialog.hpp"
 
 void Game::handleInput(const InputEvent& event) {
     if(auto* keyevent = std::get_if<KeyPressedEvent>(&event)) {
-        if(keyevent->keycode == SDLK_p)
-            paused = !paused;
+        if(keyevent->keycode == SDLK_ESCAPE && !paused) {
+            uiManager.removeDialogs();
+            paused = true;
+        }
     }
 
     if(uiManager.handleInput(event)) 
@@ -31,8 +34,10 @@ void Game::update() {
     currentTick++;
     uiManager.update();
     
-    if(paused || uiManager.dialogShown()) 
+    if(uiManager.dialogShown()) 
         return;
+    else if(paused)
+        uiManager.addDialog<PauseGameDialog>(*this);
 
     player.update();
     map.update(camera);
@@ -43,12 +48,12 @@ void Game::render(float frameProgress) {
     timeFps();
 
     map.render(camera);
-    airManager.render(camera, (paused || uiManager.dialogShown())? 0.0f: frameProgress);
+    airManager.render(camera, uiManager.dialogShown()? 0.0f: frameProgress);
     player.render(camera, currentTick);
+    
+    renderDebugInfo();
 
     uiManager.render(camera);
-
-    renderDebugInfo();
 }
 
 void Game::timeFps() {
@@ -72,9 +77,9 @@ void Game::renderDebugInfo() {
     camera.renderText(text, 0, 0, 32, FC_ALIGN_LEFT, SDL_WHITE);
 }
 
-void Game::start(const Window& window) {
-    if(!camera.start(window.getSDL()))
-        writeError("Renderer couldn't start: %s\n", SDL_GetError());
+void Game::start() {
+    if(!camera.start())
+        writeError("Camera couldn't start: %s\n", SDL_GetError());
 
     using json = nlohmann::json;
     std::ifstream file(DEFAULT_GAME_FILE);

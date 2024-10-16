@@ -6,15 +6,6 @@
 #include "Scene.h"
 #include "Renderer.hpp"
 
-void Window::setScene(std::unique_ptr<Scene> ptr) {
-    Timer timer;
-    
-    scene = std::move(ptr);
-    scene->start(*this);
-
-    writeLog("Scene load time: %.1fms\n", timer.elapsedMillis());
-}
-
 int Window::start(bool fullscreen) {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         writeError("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -40,6 +31,12 @@ int Window::start(bool fullscreen) {
     if(!window) {
         writeError("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return -1;
+    }
+
+    renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED));
+    if(!renderer) {
+        writeError("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        return false;
     }
 
     return 0;

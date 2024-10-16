@@ -37,7 +37,7 @@ target_link_libraries(${PROJECT_NAME}
     SDL2_ttf::SDL2_ttf
     glm::glm
     SDL_FontCache
-    OpenMP::OpenMP_CXX
+    #OpenMP::OpenMP_CXX
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

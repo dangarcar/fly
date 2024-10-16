@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "../engine/Scene.h"
+#include "../engine/Window.hpp"
 
 #include "../Player.hpp"
 #include "../map/Map.hpp"
@@ -10,7 +11,6 @@
 #include "../ui/UIManager.hpp"
 #include "Camera.hpp"
 
-class Window;
 using air::AirportManager;
 
 class Game : public Scene {
@@ -20,25 +20,29 @@ private:
 public:
     static constexpr int MAX_FAST_FORWARD = 5;
 
-    Game(int width, int height): camera(width, height) {}
+    Game(Window& window): window(window), camera(window.getSDLRenderer(), window.getWidth(), window.getHeight()) {}
     ~Game() = default;
 
     void handleInput(const InputEvent& event) override;
     
-    void start(const Window& window) override;
+    void start() override;
     void update() override;
     void render(float frameProgress) override;
 
     long getTicksPerSecond() const override { return player.getFastForward() * DEFAULT_TICKS_PER_SECOND; }
-    long getCurrentTick() const override { return currentTick; }
 
     Renderer& getRenderer() override { return camera; }
+    
+    bool paused = false;
+
+    Window& getWindow() { return window; }
 
 private:
     void timeFps();
     void renderDebugInfo();
 
 private:
+    Window& window;
     Camera camera;
     
     UIManager uiManager;
@@ -47,7 +51,6 @@ private:
     Map map;
 
     long currentTick = 0L;
-    bool paused = false;
 
     Timer fpsTimer;
     int framesDrawn = 0;

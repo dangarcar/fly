@@ -5,6 +5,8 @@
 #include <list>
 #include <type_traits>
 
+#include "../engine/Renderer.hpp"
+
 class UIManager {
 public:
     template<typename T, typename ... Args>
@@ -22,9 +24,9 @@ public:
         return consumed;
     }
 
-    void render(const Camera& camera) {
+    void render(const Renderer& renderer) {
         for(auto& dialog: dialogs)
-            dialog->render(camera);
+            dialog->render(renderer);
     }
 
     void update() {
@@ -35,6 +37,7 @@ public:
     }
 
     bool dialogShown() const { return !dialogs.empty(); }
+    void removeDialogs() { dialogs.clear(); }
 
 private:
     std::list<std::unique_ptr<Dialog>> dialogs;

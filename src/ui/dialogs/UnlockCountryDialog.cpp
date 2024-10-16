@@ -1,7 +1,7 @@
 #include "UnlockCountryDialog.hpp"
 
+#include "../../engine/Renderer.hpp"
 #include "../../engine/Gradient.h"
-#include "../../game/Camera.hpp"
 #include "../../map/Map.hpp"
 #include "../../Player.hpp"
 
@@ -25,28 +25,28 @@ UnlockCountryDialog::UnlockCountryDialog(const std::string& name, const std::str
     noButton.fontSize = 40;
 }
 
-void UnlockCountryDialog::render(const Camera& camera) {
-    Dialog::render(camera);
+void UnlockCountryDialog::render(const Renderer& renderer) {
+    Dialog::render(renderer);
 
     yesButton.setDisabled( player.getCash() < DEFAULT_CITY_PRICE * player.getDifficulty() );
-    yesButton.render(camera, dialog);
+    yesButton.render(renderer, dialog);
 
-    noButton.render(camera, dialog);
+    noButton.render(renderer, dialog);
 
     auto text = std::format("Buy {}?", countryName);
-    camera.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 32, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 32, FC_ALIGN_CENTER, SDL_WHITE);
 
-    auto& cir = camera.getTextureManager().getTexture("CIRCLE");
+    auto& cir = renderer.getTextureManager().getTexture("CIRCLE");
     cir.setColorMod(SDL_BLACK);
     auto rect = SDL_Rect { dialog.x + dialog.w/2 - 70, dialog.y + 52, 140, 140 };
-    cir.render(*camera.getSDL(), rect.x, rect.y, &rect);
+    cir.render(*renderer.getSDL(), rect.x, rect.y, &rect);
 
-    auto& t = camera.getTextureManager().getTexture(countryCode);
+    auto& t = renderer.getTextureManager().getTexture(countryCode);
     rect = SDL_Rect { dialog.x + dialog.w/2 - 64, dialog.y + 58, 128, 128 };
-    t.render(*camera.getSDL(), rect.x, rect.y, &rect);
+    t.render(*renderer.getSDL(), rect.x, rect.y, &rect);
 
     text = std::format("Price: ${}", long(double(DEFAULT_CITY_PRICE) * player.getDifficulty()));
-    camera.renderText(text, dialog.x + dialog.w/2, dialog.y + 207, 26, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 207, 26, FC_ALIGN_CENTER, SDL_WHITE);
 }
 
 bool UnlockCountryDialog::handleInput(const InputEvent& event) {

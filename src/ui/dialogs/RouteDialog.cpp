@@ -1,6 +1,6 @@
 #include "RouteDialog.hpp"
 
-#include "../../game/Camera.hpp"
+#include "../../engine/Renderer.hpp"
 #include "../../Player.hpp"
 #include "../../airport/AirportManager.hpp"
 #include "../../engine/Utils.h"
@@ -38,22 +38,22 @@ RouteDialog::RouteDialog(int routeIndex, Route& route, Player& player, AirportMa
     sellButton.fontSize = 28;
 }
 
-void RouteDialog::render(const Camera& camera) {
-    Dialog::render(camera);
+void RouteDialog::render(const Renderer& renderer) {
+    Dialog::render(renderer);
 
     //RENDER TITLE
     auto nameA = cutNCharacters(cities[route.a].name, 15), nameB = cutNCharacters(cities[route.b].name, 15);
     auto text = std::format("{} - {}", nameA, nameB);
-    camera.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 36, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 36, FC_ALIGN_CENTER, SDL_WHITE);
 
     //RENDER PLANES
-    auto& t = camera.getTextureManager().getTexture(air::PLANE_TEXTURE_PER_LEVEL[route.level]);
+    auto& t = renderer.getTextureManager().getTexture(air::PLANE_TEXTURE_PER_LEVEL[route.level]);
     auto planesW = (route.planes.size() - 1) * 100;
     for(int i=0; i<int(route.planes.size()); ++i) {
         auto x = dialog.x + dialog.w/2 - planesW/2 + i*100;
         auto fillPercentage = float(route.planes[i].pass.size()) / air::PLANE_CAPACITY_PER_LEVEL[route.level];
         t.setColorMod(air::FULL_GRADIENT.getColor(fillPercentage));
-        t.renderCenter(*camera.getSDL(), x, dialog.y + 120, 90.0f/t.getWidth(), 0);
+        t.renderCenter(*renderer.getSDL(), x, dialog.y + 120, 90.0f/t.getWidth(), 0);
     }
 
     //BUY BUTTON
@@ -63,7 +63,7 @@ void RouteDialog::render(const Camera& camera) {
     } else {
         buyButton.text = std::format("BUY NEW FOR ${}", air::PLANE_PRICE_PER_LEVEL[route.level]);
     }
-    buyButton.render(camera, dialog);
+    buyButton.render(renderer, dialog);
 
     //UPGRADE BUTTON
     upgradeButton.setDisabled(!canUpgrade());
@@ -73,12 +73,12 @@ void RouteDialog::render(const Camera& camera) {
         long upgradePrice = route.planes.size() * air::PLANE_UPGRADE_COST[route.level];
         upgradeButton.text = std::format("UPGRADE PLANES FOR ${}", upgradePrice);
     }
-    upgradeButton.render(camera, dialog);
+    upgradeButton.render(renderer, dialog);
 
     //SELL BUTTON
     long sellPrice = air::routePrice(route) * player.getDifficulty() * air::SELL_RETRIEVAL_RATIO;
     sellButton.text = std::format("SELL FOR ${}", sellPrice);
-    sellButton.render(camera, dialog);
+    sellButton.render(renderer, dialog);
 
     //RENDER FILL BAR
     auto total = air::PLANE_CAPACITY_PER_LEVEL[route.level] * route.planes.size();
@@ -87,20 +87,20 @@ void RouteDialog::render(const Camera& camera) {
         passengers += p.pass.size();
 
     auto rect = SDL_Rect { dialog.x + 20, dialog.y + dialog.h - 60, dialog.w - 40, 40 };
-    SDL_SetRenderDrawColor(camera.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(renderer.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
     rect = {rect.x + 5, rect.y + 5, rect.w - 10, rect.h - 10};
-    SDL_SetRenderDrawColor(camera.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(renderer.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
     auto color = air::FULL_GRADIENT.getColor(float(passengers) / total);
     rect.w *= std::min(1.0f, float(passengers)/total);
-    SDL_SetRenderDrawColor(camera.getSDL(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(renderer.getSDL(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
     text = std::format("{}/{}", passengers, total);
-    camera.renderText(text, dialog.x + dialog.w - 30, dialog.y + dialog.h - 52, 24, FC_ALIGN_RIGHT, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w - 30, dialog.y + dialog.h - 52, 24, FC_ALIGN_RIGHT, SDL_WHITE);
 }
 
 bool RouteDialog::handleInput(const InputEvent& event) {

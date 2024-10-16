@@ -33,22 +33,32 @@ private:
 
 class Renderer {
 private:
-    std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> renderer;
+    SDL_Renderer& renderer;
     TextureManager textureManager;
     TextRenderer textRenderer;
 
-public:
-    Renderer(): renderer(nullptr, &SDL_DestroyRenderer) {}
+protected:
+    int width, height;
 
-    bool start(SDL_Window& window);
+public:
+    Renderer(SDL_Renderer& rend, int w, int h): renderer(rend), width(w), height(h) {}
+
+    Renderer(Renderer&&) = default;
+    Renderer& operator=(Renderer&& that) = default;
+
+    bool start();
     void renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const;
 
-    SDL_Renderer* getSDL() const { return renderer.get(); }
+    SDL_Renderer* getSDL() const { return &renderer; }
     TextureManager& getTextureManager() { return textureManager; }
     const TextureManager& getTextureManager() const { return textureManager; }
     TextRenderer& getTextRenderer() { return textRenderer; }
     const TextRenderer& getTextRenderer() const { return textRenderer; }
 
-    void clearScreen() const { SDL_SetRenderDrawColor(renderer.get(), 0, 0, 0, SDL_ALPHA_OPAQUE); SDL_RenderClear(renderer.get()); }
-    void presentScreen() const { SDL_RenderPresent(renderer.get()); }
+    SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+
+    void clearScreen() const { SDL_SetRenderDrawColor(&renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); SDL_RenderClear(&renderer); }
+    void presentScreen() const { SDL_RenderPresent(&renderer); }
 };

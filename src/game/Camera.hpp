@@ -15,7 +15,7 @@ private:
     static constexpr Coord INITIAL_POS = {0, 33};
 
 public:
-    Camera(int w, int h): width(w), height(h) {
+    Camera(SDL_Renderer& rend, int w, int h): Renderer(rend, w, h) {
         pos = coordsToProj(INITIAL_POS);
     }
 
@@ -31,10 +31,6 @@ public:
     void handleInput(const InputEvent& event);
     void move(glm::vec2 v);
 
-    SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }
-    int getWidth() const { return width; }
-    int getHeight() const { return height; }
-
     float getZoom() const { return zoom; }
     void setZoom(float z) { 
         assert(z >= 1 && z <= MAX_ZOOM);
@@ -45,7 +41,5 @@ public:
 private:
     float zoom = 1.0f;
     glm::vec2 pos;
-
-    int width, height;
 
 };

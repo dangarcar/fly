@@ -11,12 +11,15 @@ namespace air {
     class Plane;
 };
 
+class Player;
+class Camera;
+
 class RouteDialog: public Dialog {
 public:
     RouteDialog(int routeIndex, air::Route& route, Player& player, air::AirportManager& airManager, const std::vector<City>& cities);
 
     bool handleInput(const InputEvent& event) override;
-    void render(const Camera& camera) override;
+    void render(const Renderer& renderer) override;
 
 private:
     bool canBuy() const;

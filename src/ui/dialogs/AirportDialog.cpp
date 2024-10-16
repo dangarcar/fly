@@ -2,7 +2,7 @@
 
 #include <format>
 
-#include "../../game/Camera.hpp"
+#include "../../engine/Renderer.hpp"
 #include "../../airport/AirportManager.hpp"
 #include "../../Player.hpp"
 
@@ -17,42 +17,42 @@ AirportDialog::AirportDialog(air::AirportData& airport, const City& city, Player
     upgradeButton.fontSize = 28;
 }
 
-void AirportDialog::render(const Camera& camera) {
-    Dialog::render(camera);
+void AirportDialog::render(const Renderer& renderer) {
+    Dialog::render(renderer);
 
     //RENDER TITLE
-    camera.renderText(city.name, dialog.x + dialog.w/2, dialog.y + 10, 42, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(city.name, dialog.x + dialog.w/2, dialog.y + 10, 42, FC_ALIGN_CENTER, SDL_WHITE);
 
     auto text = std::format("Population: {}", city.population);
-    camera.renderText(text, dialog.x + 20, dialog.y + 60, 24, FC_ALIGN_LEFT, SDL_WHITE);
+    renderer.renderText(text, dialog.x + 20, dialog.y + 60, 24, FC_ALIGN_LEFT, SDL_WHITE);
 
     //RENDER BAR WITH FILLED PERCENTAGE
     auto rect = SDL_Rect { dialog.x + 20, dialog.y + dialog.h - 60, dialog.w - 40, 40 };
-    SDL_SetRenderDrawColor(camera.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(renderer.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
     rect = {rect.x + 5, rect.y + 5, rect.w - 10, rect.h - 10};
-    SDL_SetRenderDrawColor(camera.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(renderer.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
     auto fillPercentage = float(airport.waiting.size()) / air::AIRPORT_CAPACITY_PER_LEVEL[airport.level];
     rect.w *= std::min(1.0f, fillPercentage);
     if(fillPercentage < 1)
-        SDL_SetRenderDrawColor(camera.getSDL(), 0, 200, 100, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(renderer.getSDL(), 0, 200, 100, SDL_ALPHA_OPAQUE);
     else
-        SDL_SetRenderDrawColor(camera.getSDL(), 250, 50, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+        SDL_SetRenderDrawColor(renderer.getSDL(), 250, 50, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
     text = std::format("{}/{}", airport.waiting.size(), air::AIRPORT_CAPACITY_PER_LEVEL[airport.level]);
     auto textColor = fillPercentage<1? SDL_WHITE : FC_MakeColor(150,0,0,255);
-    camera.renderText(text, dialog.x + dialog.w - 25, dialog.y + dialog.h - 86, 24, FC_ALIGN_RIGHT, textColor);
+    renderer.renderText(text, dialog.x + dialog.w - 25, dialog.y + dialog.h - 86, 24, FC_ALIGN_RIGHT, textColor);
 
     //RENDER TOP DESTINATIONS
     rect = SDL_Rect { dialog.x + dialog.w/2 + 10, dialog.y + 60, dialog.w/2 - 30, 235 };
-    SDL_SetRenderDrawColor(camera.getSDL(), 50, 50, 50, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(renderer.getSDL(), 50, 50, 50, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer.getSDL(), &rect);
 
-    camera.renderText("Top destinations", dialog.x + 3*dialog.w/4, dialog.y + 67, 32, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText("Top destinations", dialog.x + 3*dialog.w/4, dialog.y + 67, 32, FC_ALIGN_CENTER, SDL_WHITE);
 
     auto dest = getFrequentDestinations();
     for(int i=0; i<int(dest.size()); ++i) {
@@ -63,17 +63,17 @@ void AirportDialog::render(const Camera& camera) {
                 text = text.substr(0, 16);
             text = text.append("...");
         }
-        camera.renderText(text, dialog.x + dialog.w/2 + 17, dialog.y + 106 + 26*i, 26, FC_ALIGN_LEFT, SDL_WHITE);
+        renderer.renderText(text, dialog.x + dialog.w/2 + 17, dialog.y + 106 + 26*i, 26, FC_ALIGN_LEFT, SDL_WHITE);
         text = std::format("{}", dest[i].second);
-        camera.renderText(text, dialog.x + dialog.w - 27, dialog.y + 106 + 26*i, 26, FC_ALIGN_RIGHT, SDL_GOLD);
+        renderer.renderText(text, dialog.x + dialog.w - 27, dialog.y + 106 + 26*i, 26, FC_ALIGN_RIGHT, SDL_GOLD);
     }
 
     //RENDER LEVEL UPGRADES
-    auto& t = camera.getTextureManager().getTexture("CIRCLE");
+    auto& t = renderer.getTextureManager().getTexture("CIRCLE");
     t.setColorMod(SDL_GOLD);
-    t.renderCenter(*camera.getSDL(), dialog.x + dialog.w/4, dialog.y + 168, 134.0f / t.getWidth(), 0);
+    t.renderCenter(*renderer.getSDL(), dialog.x + dialog.w/4, dialog.y + 168, 134.0f / t.getWidth(), 0);
     text = std::to_string(airport.level + 1);
-    camera.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, FC_ALIGN_CENTER, SDL_WHITE);
 
     upgradeButton.setDisabled(!canUpgrade());
     if(canUpgrade())
@@ -85,7 +85,7 @@ void AirportDialog::render(const Camera& camera) {
             upgradeButton.text = "NOT ENOUGH MONEY";
     }
 
-    upgradeButton.render(camera, dialog);
+    upgradeButton.render(renderer, dialog);
 }
 
 bool AirportDialog::handleInput(const InputEvent& event) {
