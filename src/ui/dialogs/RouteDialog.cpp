@@ -53,7 +53,7 @@ void RouteDialog::render(const Renderer& renderer) {
         auto x = dialog.x + dialog.w/2 - planesW/2 + i*100;
         auto fillPercentage = float(route.planes[i].pass.size()) / air::PLANE_CAPACITY_PER_LEVEL[route.level];
         t.setColorMod(air::FULL_GRADIENT.getColor(fillPercentage));
-        t.renderCenter(*renderer.getSDL(), x, dialog.y + 120, 90.0f/t.getWidth(), 0);
+        t.renderCenter(renderer.getSDL(), x, dialog.y + 120, 90.0f/t.getWidth(), 0);
     }
 
     //BUY BUTTON
@@ -87,17 +87,17 @@ void RouteDialog::render(const Renderer& renderer) {
         passengers += p.pass.size();
 
     auto rect = SDL_Rect { dialog.x + 20, dialog.y + dialog.h - 60, dialog.w - 40, 40 };
-    SDL_SetRenderDrawColor(renderer.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(renderer.getSDL(), &rect);
+    SDL_SetRenderDrawColor(&renderer.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(&renderer.getSDL(), &rect);
 
     rect = {rect.x + 5, rect.y + 5, rect.w - 10, rect.h - 10};
-    SDL_SetRenderDrawColor(renderer.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(renderer.getSDL(), &rect);
+    SDL_SetRenderDrawColor(&renderer.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(&renderer.getSDL(), &rect);
 
     auto color = air::FULL_GRADIENT.getColor(float(passengers) / total);
     rect.w *= std::min(1.0f, float(passengers)/total);
-    SDL_SetRenderDrawColor(renderer.getSDL(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(renderer.getSDL(), &rect);
+    SDL_SetRenderDrawColor(&renderer.getSDL(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(&renderer.getSDL(), &rect);
 
     text = std::format("{}/{}", passengers, total);
     renderer.renderText(text, dialog.x + dialog.w - 30, dialog.y + dialog.h - 52, 24, FC_ALIGN_RIGHT, SDL_WHITE);

@@ -40,7 +40,7 @@ void renderClockHand(const Camera& camera, SDL_Point center, int w, int h, float
         p.position = SDL_FPoint {v.x, v.y};
     }
 
-    SDL_RenderGeometry(camera.getSDL(), nullptr, minuteVertices.data(), minuteVertices.size(), indices, 6);
+    SDL_RenderGeometry(&camera.getSDL(), nullptr, minuteVertices.data(), minuteVertices.size(), indices, 6);
 }
 
 void renderFastForward(int n, const Camera& camera, float x, float y, float w, float h, SDL_Color color) {
@@ -51,7 +51,7 @@ void renderFastForward(int n, const Camera& camera, float x, float y, float w, f
     };
 
     for(int i=0; i<=n; ++i) {
-        SDL_RenderGeometry(camera.getSDL(), nullptr, triVertices, 3, nullptr, 3);
+        SDL_RenderGeometry(&camera.getSDL(), nullptr, triVertices, 3, nullptr, 3);
         
         for(int j=0; j<3; ++j)
             triVertices[j].position.x += w / n + 6;
@@ -64,8 +64,8 @@ void Player::render(const Camera& camera, int currentTick) {
     auto bounds = camera.getTextRenderer().getTextBounds(text, 36);
     
     auto rect = SDL_Rect {screen.w - bounds.w - 202, 0, bounds.w + 192, 92};
-    SDL_SetRenderDrawColor(camera.getSDL(), 0xE0, 0xE0, 0xE0, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_SetRenderDrawColor(&camera.getSDL(), 0xE0, 0xE0, 0xE0, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(&camera.getSDL(), &rect);
 
     camera.renderText(text, screen.w - bounds.w - 192, 28, 36, FC_ALIGN_LEFT, FC_MakeColor(0, 0, 0, SDL_ALPHA_OPAQUE));
 
@@ -77,7 +77,7 @@ void Player::render(const Camera& camera, int currentTick) {
 
     auto& t = camera.getTextureManager().getTexture("CLOCK");
     rect.w = rect.h = 72;
-    t.render(*camera.getSDL(), screen.w - 92, 10, &rect);
+    t.render(camera.getSDL(), screen.w - 92, 10, &rect);
 
     ffButton = SDL_Rect { screen.w - 172, 20, 60, 52 };
     renderFastForward(fastForwardMultiplier, camera, screen.w - 172, 20, 30, 52, SDL_BLACK);

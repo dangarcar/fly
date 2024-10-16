@@ -62,8 +62,8 @@ void StartMenu::update() {
 
 void StartMenu::render([[maybe_unused]] float frameProgress) {
     auto screen = renderer.getScreenViewportRect();
-    SDL_SetRenderDrawColor(renderer.getSDL(), 0xb5, 0xc9, 0x9c, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(renderer.getSDL(), &screen);
+    SDL_SetRenderDrawColor(&renderer.getSDL(), 0xb5, 0xc9, 0x9c, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(&renderer.getSDL(), &screen);
 
     renderer.renderText("AIRPORTS GAME", screen.w/2, 30, 96, FC_ALIGN_CENTER, SDL_BLACK);
 

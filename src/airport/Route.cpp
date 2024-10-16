@@ -42,7 +42,7 @@ void air::renderRoutePath(const Camera& camera, const Route& route) {
     int n = dist * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
     n += n % 2 + 1;
     auto routeColor = ROUTE_COLOR_BY_LEVEL[route.level];
-    SDL_SetRenderDrawColor(camera.getSDL(), routeColor.r, routeColor.g, routeColor.b, 0xff);
+    SDL_SetRenderDrawColor(&camera.getSDL(), routeColor.r, routeColor.g, routeColor.b, 0xff);
     glm::vec2 lastProj;
     for(int i=0; i<=n; ++i) {
         auto t = float(i) / n;
@@ -51,7 +51,7 @@ void air::renderRoutePath(const Camera& camera, const Route& route) {
             auto lastPoint = camera.projToScreen(lastProj);
             auto p = camera.projToScreen(proj);
             if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
-                SDL_RenderDrawLine(camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y));
+                SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y));
         }
         lastProj = proj;
     }
@@ -69,7 +69,7 @@ void air::renderRoutePlanes(const Camera& camera, const Route& route, float fram
         assert(fillPercentage >= 0.0f);
         if(distA > scale * t.getWidth()/2 && distB > scale * t.getWidth()/2) {
             t.setColorMod(FULL_GRADIENT.getColor(fillPercentage));
-            t.renderCenter(*camera.getSDL(), p.x, p.y, scale, angle + 180.0f * (plane.speed < 0));
+            t.renderCenter(camera.getSDL(), p.x, p.y, scale, angle + 180.0f * (plane.speed < 0));
         }
     }
 }

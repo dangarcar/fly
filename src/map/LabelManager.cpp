@@ -29,7 +29,7 @@ void LabelManager::load(Camera& camera) {
             if(size > 2 * Camera::MAX_ZOOM * label.size)
                 break;
             
-            label.texture[i] = std::move(camera.getTextRenderer().renderToTexture(*camera.getSDL(), name, size));
+            label.texture[i] = std::move(camera.getTextRenderer().renderToTexture(camera.getSDL(), name, size));
             label.texture[i].setColorMod(FC_MakeColor(0x60, 0x60, 0x60, 0xFF));
         }
 
@@ -48,6 +48,6 @@ void LabelManager::render(const Camera& camera) {
         auto v = camera.coordsToScreen(label.coord);
         auto centre = glm::vec2(label.texture[textureIndex].getWidth()/2.f, label.texture[textureIndex].getHeight()/2.f);
         auto dv = glm::rotate(centre * sz, glm::radians(label.angle));
-        label.texture[textureIndex].render(*camera.getSDL(), int(v.x - dv.x), int(v.y - dv.y), sz, label.angle, SDL_BLENDMODE_ADD);
+        label.texture[textureIndex].render(camera.getSDL(), int(v.x - dv.x), int(v.y - dv.y), sz, label.angle, SDL_BLENDMODE_ADD);
     }
 }

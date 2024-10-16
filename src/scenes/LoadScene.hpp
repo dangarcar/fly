@@ -27,8 +27,8 @@ public:
     
     void render([[maybe_unused]] float frameProgress) {
         auto rect = renderer.getScreenViewportRect();
-        SDL_SetRenderDrawColor(renderer.getSDL(), 0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE);
-        SDL_RenderFillRect(renderer.getSDL(), &rect);
+        SDL_SetRenderDrawColor(&renderer.getSDL(), 0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(&renderer.getSDL(), &rect);
         renderer.renderText("LOADING...", rect.w/2, rect.h/2 - 64, 128, FC_ALIGN_CENTER, SDL_WHITE);
     }
 

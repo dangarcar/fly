@@ -227,7 +227,7 @@ void air::AirportManager::render(const Camera& camera, float frameProgress) cons
     if(currentRoute.route.a != -1) {
         Coord c1 = cities[currentRoute.route.a].coord;
         Coord c2 = currentRoute.route.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.route.b].coord;
-        SDL_SetRenderDrawColor(camera.getSDL(), currentRoute.color.r, currentRoute.color.g, currentRoute.color.b, currentRoute.color.a);
+        SDL_SetRenderDrawColor(&camera.getSDL(), currentRoute.color.r, currentRoute.color.g, currentRoute.color.b, currentRoute.color.a);
         int n = float(mtsDistance(c1, c2)) / EARTH_RADIUS * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
         n += n % 2 + 1;
 
@@ -239,7 +239,7 @@ void air::AirportManager::render(const Camera& camera, float frameProgress) cons
                 auto p = camera.coordsToScreen(c);
 
                 if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
-                    SDL_RenderDrawLine(camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y));
+                    SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y));
             }
             lastCoord = c;
         }

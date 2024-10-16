@@ -88,7 +88,7 @@ void Game::start() {
     auto textures = data["textures"];
     for(auto& [k, v]: textures.items()) {
         auto path = v.template get<std::string>();
-        camera.getTextureManager().loadTexture(*camera.getSDL(), k, path);
+        camera.getTextureManager().loadTexture(camera.getSDL(), k, path);
     }
 
     map.seaColor = hexCodeToColor(data["SEA_COLOR"].template get<std::string>());

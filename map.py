@@ -2,6 +2,7 @@ import fiona
 import json
 import numpy as np
 import requests
+import os
 
 from madcad.mesh import Wire
 from madcad.triangulation import *
@@ -194,20 +195,26 @@ def getFlags():
         countries = json.load(c)
 
     flags = {}
-    for i in countries:
-        code = countries[i]['iso'].lower()
-        if i == 'SOL': code = 'somaliland'
-        elif i == 'KAS': code = 'pk-jk'
+    for k in countries:
+        code = countries[k]['iso'].lower()
+        if k == 'SOL': code = 'somaliland'
+        elif k == 'KAS': code = 'pk-jk'
         url = f"https://hatscripts.github.io/circle-flags/flags/{code}.svg"
         response = requests.get(url)
         if response.status_code != 200:
-            print("no", countries[i]['name'])
+            print("no", countries[k]['name'])
         else:
-            flags[i] = response.text
+            with open("a.svg", mode="w") as file:
+                file.write(response.text)
+
+            from cairosvg import svg2png
+            svg2png(bytestring=response.text, write_to=f"./assets/countries/{k}.png")
+            flags[k] = response.text
     
     with open('resources/flags.json', 'w', encoding='utf-8') as f:
         json.dump(flags, f)
+        
 
 if __name__ == '__main__':
-    main()
+    #main()
     getFlags()

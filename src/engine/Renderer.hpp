@@ -49,7 +49,7 @@ public:
     bool start();
     void renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const;
 
-    SDL_Renderer* getSDL() const { return &renderer; }
+    SDL_Renderer& getSDL() const { return renderer; }
     TextureManager& getTextureManager() { return textureManager; }
     const TextureManager& getTextureManager() const { return textureManager; }
     TextRenderer& getTextRenderer() { return textRenderer; }

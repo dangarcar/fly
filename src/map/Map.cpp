@@ -65,6 +65,8 @@ void Map::load(Camera& camera) {
 
     this->projectMap(camera);
 
+    Timer timer;
+
     //FLAG LOADING
     std::ifstream flagFile(FLAGS_DATA_FILE);
     json flagData = json::parse(flagFile);
@@ -72,6 +74,8 @@ void Map::load(Camera& camera) {
         auto svg = v.template get<std::string>();
         camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
     }
+
+    writeLog("Flag %fms\n", timer.elapsedMillis());
 
     /*//FIXME: stress test
     for(auto& [k, c]: countries) {
@@ -101,9 +105,9 @@ void Map::projectMap(const Camera& camera) {
 }
 
 void Map::render(const Camera& camera) {
-    SDL_SetRenderDrawColor(camera.getSDL(), seaColor.r, seaColor.g, seaColor.b, seaColor.a);
+    SDL_SetRenderDrawColor(&camera.getSDL(), seaColor.r, seaColor.g, seaColor.b, seaColor.a);
     SDL_Rect rect = camera.getScreenViewportRect();
-    SDL_RenderFillRect(camera.getSDL(), &rect);
+    SDL_RenderFillRect(&camera.getSDL(), &rect);
 
     //Projection calculation in parallel
     #pragma omp parallel for
@@ -130,13 +134,13 @@ void Map::render(const Camera& camera) {
         }
     }
 
-    SDL_RenderGeometry(camera.getSDL(), nullptr, vertexArray.data(), vertexArray.size(), triangles.data(), triangles.size());
+    SDL_RenderGeometry(&camera.getSDL(), nullptr, vertexArray.data(), vertexArray.size(), triangles.data(), triangles.size());
 
     labelManager.render(camera);
 
-    SDL_SetRenderDrawColor(camera.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
     for(auto& l: lineArray) {
-        SDL_RenderDrawLines(camera.getSDL(), l.data(), l.size());
+        SDL_RenderDrawLines(&camera.getSDL(), l.data(), l.size());
     }
 
     //BOX RENDER
@@ -146,8 +150,8 @@ void Map::render(const Camera& camera) {
             auto x1 = pol.boundingBox.topLeft.x, y1 = pol.boundingBox.topLeft.y;
             auto x2 = pol.boundingBox.bottomRight.x, y2 = pol.boundingBox.bottomRight.y;
             std::vector box = { camera.projToScreen({x1, y1}), camera.projToScreen({x1, y2}), camera.projToScreen({x2, y2}), camera.projToScreen({x2, y1}), camera.projToScreen({x1, y1}) };
-            SDL_SetRenderDrawColor(camera.getSDL(), 0, 0xFF, 0xFF, 0xFF);
-            SDL_RenderDrawLinesF(camera.getSDL(), box.data(), box.size());
+            SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0xFF, 0xFF, 0xFF);
+            SDL_RenderDrawLinesF(&camera.getSDL(), box.data(), box.size());
         }
     }
 }
@@ -277,8 +281,8 @@ BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam) {
 Texture createFlag(Camera& camera, const std::string& svg) {
     auto& circle = camera.getTextureManager().getTexture("CIRCLE");
     Texture country;
-    country.loadSVG(*camera.getSDL(), svg);
-    country.applyMask(*camera.getSDL(), circle);
+    country.loadSVG(camera.getSDL(), svg);
+    country.applyMask(camera.getSDL(), circle);
 
     return country;
 }
