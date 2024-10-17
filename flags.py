@@ -1,5 +1,6 @@
 import json
 import requests
+import subprocess
 
 def main():
     countries = {}
@@ -19,8 +20,8 @@ def main():
             with open("a.svg", mode="w") as file:
                 file.write(response.text)
 
-            import subprocess
-            subprocess.run(["convert", "a.svg", f"{k}.png"])
+            subprocess.run(["convert", "-background", "none", "a.svg", f"assets/countries/{k}.png"])
+
             flags[k] = response.text
     
     with open('resources/flags.json', 'w', encoding='utf-8') as f:
