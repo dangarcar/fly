@@ -7,7 +7,7 @@ void StartMenu::handleInput(const InputEvent& event) {
     if(auto* clickevent = std::get_if<ClickEvent>(&event)) {
         if(clickevent->button == SDL_BUTTON_LEFT) {
             if(startButton.isClickable()) {
-                auto scene = std::make_unique<LoadScene>(window, std::move(renderer), [](Window& win) {
+                auto scene = std::make_unique<LoadScene>(window, [](Window& win) {
                     auto game = std::make_unique<Game>(win);
                     game->start();
                     return game;
@@ -36,13 +36,10 @@ void StartMenu::handleInput(const InputEvent& event) {
 }
     
 void StartMenu::start() {
-    if(!renderer.start())
-        writeError("Renderer couldn't start: %s\n", SDL_GetError());
-
     startButton.textColor = loadButton.textColor = quitButton.textColor = settingsButton.textColor = SDL_BLACK;
     startButton.fontSize = loadButton.fontSize = quitButton.fontSize = settingsButton.fontSize = 40;
 
-    auto screen = renderer.getScreenViewportRect();
+    auto screen = window.getRenderer().getScreenViewportRect();
     startButton.text = "Start game";
     startButton.localRect = SDL_Rect { screen.w/2 - 250, 150, 500, 70};
 
@@ -61,6 +58,8 @@ void StartMenu::update() {
 }
 
 void StartMenu::render([[maybe_unused]] float frameProgress) {
+    Renderer& renderer = window.getRenderer();
+
     auto screen = renderer.getScreenViewportRect();
     SDL_SetRenderDrawColor(&renderer.getSDL(), 0xb5, 0xc9, 0x9c, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(&renderer.getSDL(), &screen);

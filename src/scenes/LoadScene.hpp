@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../engine/Scene.h"
-#include "../engine/Renderer.hpp"
 #include "../engine/Gradient.h"
+#include "../engine/Window.hpp"
 
 #include "../game/Game.hpp"
 #include <future>
@@ -11,8 +11,8 @@
 class LoadScene : public Scene {
 public:
     using SceneLoader = std::function< std::unique_ptr<Scene>(Window&) >;
-    LoadScene(Window& window, Renderer&& r, SceneLoader loader): 
-        window(window), renderer(std::forward<Renderer>(r)), loader(loader)
+    LoadScene(Window& window, SceneLoader loader): 
+        window(window), loader(loader)
     {}
     ~LoadScene() = default;
 
@@ -26,6 +26,8 @@ public:
     }
     
     void render([[maybe_unused]] float frameProgress) {
+        Renderer& renderer = window.getRenderer();
+
         auto rect = renderer.getScreenViewportRect();
         SDL_SetRenderDrawColor(&renderer.getSDL(), 0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(&renderer.getSDL(), &rect);
@@ -33,11 +35,9 @@ public:
     }
 
     long getTicksPerSecond() const override { return 30; }
-    Renderer& getRenderer() override { return renderer; }; 
 
 private:
     Window& window;
-    Renderer renderer;
     SceneLoader loader;
 
     std::once_flag onceFlag;

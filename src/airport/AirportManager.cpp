@@ -4,7 +4,6 @@
 #include <algorithm>
 
 #include "../game/Camera.hpp"
-#include "../engine/Renderer.hpp"
 #include "../engine/Utils.h"
 
 #include "../map/Map.hpp"

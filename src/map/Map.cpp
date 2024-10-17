@@ -45,6 +45,7 @@ void Map::load(Camera& camera) {
         c.meshIndex = std::make_pair(polygons.size() - polys.size(), polygons.size());
 
         countries[k] = std::move(c);
+        camera.getTextureManager().loadTexture(camera.getSDL(), k, std::format("./assets/countries/{}.png", k));
     }
 
     //MESH LOADING
@@ -64,18 +65,6 @@ void Map::load(Camera& camera) {
     meshFile.read(reinterpret_cast<char*>(&triangles[0]), triSize * 3 * sizeof(int32_t));
 
     this->projectMap(camera);
-
-    Timer timer;
-
-    //FLAG LOADING
-    std::ifstream flagFile(FLAGS_DATA_FILE);
-    json flagData = json::parse(flagFile);
-    for(auto& [k, v]: flagData.items()) {
-        auto svg = v.template get<std::string>();
-        camera.getTextureManager().loadTexture(k, createFlag(camera, svg));
-    }
-
-    writeLog("Flag %fms\n", timer.elapsedMillis());
 
     /*//FIXME: stress test
     for(auto& [k, c]: countries) {

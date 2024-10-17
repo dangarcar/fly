@@ -20,7 +20,7 @@ private:
 public:
     static constexpr int MAX_FAST_FORWARD = 5;
 
-    Game(Window& window): window(window), camera(window.getSDLRenderer(), window.getWidth(), window.getHeight()) {}
+    Game(Window& window): window(window), camera(window.getRenderer()) {}
     ~Game() = default;
 
     void handleInput(const InputEvent& event) override;
@@ -30,8 +30,6 @@ public:
     void render(float frameProgress) override;
 
     long getTicksPerSecond() const override { return player.getFastForward() * DEFAULT_TICKS_PER_SECOND; }
-
-    Renderer& getRenderer() override { return camera; }
     
     bool paused = false;
 

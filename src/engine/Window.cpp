@@ -4,7 +4,6 @@
 #include <cassert>
 
 #include "Scene.h"
-#include "Renderer.hpp"
 
 int Window::start(bool fullscreen) {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -33,11 +32,7 @@ int Window::start(bool fullscreen) {
         return -1;
     }
 
-    renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED));
-    if(!renderer) {
-        writeError("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-        return false;
-    }
+    renderer.start(*window);
 
     return 0;
 }
@@ -62,9 +57,9 @@ void Window::run() {
             updateTimer.reset();
         }
 
-        scene->getRenderer().clearScreen();
+        renderer.clearScreen();
         scene->render(updateTimer.elapsedMillis() / msPerTick);
-        scene->getRenderer().presentScreen();
+        renderer.presentScreen();
     }
 }
 

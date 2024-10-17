@@ -40,10 +40,16 @@ Texture TextRenderer::renderToTexture(SDL_Renderer& renderer, const std::string&
     return text;
 }
 
-bool Renderer::start() {
+bool Renderer::start(SDL_Window& window) {
+    renderer.reset(SDL_CreateRenderer(&window, -1, SDL_RENDERER_ACCELERATED));
+    if(!renderer) {
+        writeError("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        return false;
+    }
+
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
     
-    if(!textRenderer.start(renderer)) {
+    if(!textRenderer.start(*renderer)) {
         writeError("Fonts couldn't be loaded from the files");
         return false;
     }
@@ -56,5 +62,5 @@ void Renderer::renderText(const std::string& str, int x, int y, float scale, FC_
     effect.color = color;
     effect.alignment = align;
     effect.scale = {1, 1};
-    textRenderer.render(renderer, str, x, y, scale, effect); 
+    textRenderer.render(*renderer, str, x, y, scale, effect); 
 }

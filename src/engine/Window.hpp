@@ -6,6 +6,7 @@
 
 #include "Utils.h"
 #include "Scene.h"
+#include "Renderer.hpp"
 
 #define FIXED_UPDATE 1
 
@@ -15,7 +16,7 @@ public:
     static constexpr int DEFAULT_SCREEN_HEIGHT = 720;
 
 public:
-    Window(): window(nullptr, &SDL_DestroyWindow), renderer(nullptr, &SDL_DestroyRenderer) {}
+    Window(): window(nullptr, &SDL_DestroyWindow), renderer(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT) {}
     ~Window() { SDL_Quit(); }
     
     int start(bool fullscreen);
@@ -27,12 +28,12 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
-    void setScene(std::unique_ptr<Scene> scene) { 
+    void setScene(std::unique_ptr<Scene> scene) {
         this->scene = std::move(scene);
     }
 
     SDL_Window& getSDLWindow() const { return *window; }
-    SDL_Renderer& getSDLRenderer() const { return *renderer; }
+    Renderer& getRenderer() { return renderer; }
 
 private:
     InputEvent getInputEvent();
@@ -40,8 +41,9 @@ private:
 private:
     std::unique_ptr<Scene> scene;
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
-    std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> renderer;
-    
+
+    Renderer renderer;
+
     bool alive = true;
     int width = DEFAULT_SCREEN_WIDTH, height = DEFAULT_SCREEN_HEIGHT;
 

@@ -14,7 +14,6 @@ public:
     virtual void render(float frameProgress) = 0;
 
     virtual long getTicksPerSecond() const = 0;
-    virtual Renderer& getRenderer() = 0; 
 
     virtual ~Scene() {}
 };

@@ -6,7 +6,7 @@
 #include "Types.h"
 #include "../engine/InputEvent.h"
 
-class Camera : public Renderer {
+class Camera {
 public:
     static constexpr float MAX_ZOOM = 40.0f;
 
@@ -15,7 +15,7 @@ private:
     static constexpr Coord INITIAL_POS = {0, 33};
 
 public:
-    Camera(SDL_Renderer& rend, int w, int h): Renderer(rend, w, h) {
+    Camera(Renderer& renderer): renderer(renderer), width(renderer.getWidth()), height(renderer.getHeight()) {
         pos = coordsToProj(INITIAL_POS);
     }
 
@@ -38,8 +38,29 @@ public:
         zoom = z;
     }
 
+    //SERVE AS RENDERER MEDIATOR: probably bs
+
+    const Renderer& getRenderer() const { return renderer; }
+
+    SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+
+    void renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const { 
+        renderer.renderText(str, x, y, scale, align, color);
+    }
+
+    SDL_Renderer& getSDL() const { return renderer.getSDL(); }
+    TextureManager& getTextureManager() { return renderer.getTextureManager(); }
+    const TextureManager& getTextureManager() const { return renderer.getTextureManager(); }
+    TextRenderer& getTextRenderer() { return renderer.getTextRenderer(); }
+    const TextRenderer& getTextRenderer() const { return renderer.getTextRenderer(); }
+
 private:
+    Renderer& renderer;
+    
     float zoom = 1.0f;
     glm::vec2 pos;
+    int width, height;
 
 };

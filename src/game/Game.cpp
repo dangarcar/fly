@@ -53,7 +53,7 @@ void Game::render(float frameProgress) {
     
     renderDebugInfo();
 
-    uiManager.render(camera);
+    uiManager.render(camera.getRenderer());
 }
 
 void Game::timeFps() {
@@ -78,8 +78,6 @@ void Game::renderDebugInfo() {
 }
 
 void Game::start() {
-    if(!camera.start())
-        writeError("Camera couldn't start: %s\n", SDL_GetError());
 
     using json = nlohmann::json;
     std::ifstream file(DEFAULT_GAME_FILE);
