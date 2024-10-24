@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <filesystem>
 
 #include "LabelManager.hpp"
 #include "CitySpawner.hpp"
@@ -13,14 +14,16 @@ class Camera;
 class UIManager;
 class Player;
 
-class Map {
+using MapSave = CitySpawnerSave;
+
+class Map: Serializable<MapSave> {
 public:
     SDL_Color seaColor, lockedColor, unlockedColor, bannedColor, hoveredColor;
 
 private:
-    static constexpr auto COUNTRIES_DATA_FILE = "./resources/countries.json";
-    static constexpr auto MESH_DATA_FILE = "./resources/mesh.bin";
-    static constexpr auto FLAGS_DATA_FILE = "./resources/flags.json";
+    inline static const std::filesystem::path COUNTRIES_DATA_FILE = "./resources/countries.json";
+    inline static const std::filesystem::path MESH_DATA_FILE = "./resources/mesh.bin";
+    //inline static const std::filesystem::path FLAGS_DATA_FILE = "./resources/flags.json";
 
 public:
     Map() = default;
@@ -36,7 +39,11 @@ public:
     void unlockCountry(const std::string& country, Player& player);
     void moveToCountry(const Country& country, Camera& camera);
 
-    CitySpawner& getCitySpawner() { return citySpawner; };
+    CitySpawner& getCitySpawner() { return citySpawner; }
+    const CitySpawner& getCitySpawner() const { return citySpawner; }
+
+    MapSave serialize() const override;
+    void deserialize(const MapSave& save) override;
 
 private:
     //DATA

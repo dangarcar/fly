@@ -1,10 +1,10 @@
 #pragma once
 
 #include "engine/InputEvent.h"
+#include "engine/Serializable.h"
 
 class Camera;
 class Game;
-
 
 struct Stats {
     long routes = 0;
@@ -22,15 +22,25 @@ struct Stats {
     long moneyEarned = 0;
 };
 
-class Player {
+struct PlayerSave {
+    long cash;
+    float difficulty;
+    int fastForwardMultiplier;
+    Stats stats;
+};
+
+class Player: Serializable<PlayerSave> {
 private:
-    static constexpr long INITIAL_CASH = 30000;
-    //static constexpr long INITIAL_CASH = 1000000000;
+    //static constexpr long INITIAL_CASH = 30000;
+    static constexpr long INITIAL_CASH = 1000000000;
 
 public:
     bool handleInput(const InputEvent& event);
     void render(const Camera& camera, int currentTick);
     void update();
+
+    PlayerSave serialize() const override;
+    void deserialize(const PlayerSave& save) override;
 
     long getCash() const { return cash; }
     bool spend(long amount) { 
@@ -48,14 +58,14 @@ public:
         stats.moneyEarned += amount;
     }
 
-    double getDifficulty() const { return difficulty; }
+    float getDifficulty() const { return difficulty; }
     int getFastForward() const { return fastForwardMultiplier; }
 
     Stats stats;
 
 private:
     long cash = INITIAL_CASH;
-    double difficulty = 1.0;
+    float difficulty = 1.0f;
 
     int fastForwardMultiplier = 1;
     SDL_Rect ffButton;

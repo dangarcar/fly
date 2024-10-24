@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <filesystem>
 
 #include "../game/Types.h"
 #include "../engine/Texture.hpp"
@@ -21,7 +22,7 @@ class Camera;
 
 class LabelManager {
 private:
-    static constexpr auto LABELS_DATA_FILE = "./resources/labels.json";
+    inline static const std::filesystem::path LABELS_DATA_FILE = "./resources/labels.json";
     std::unordered_map<std::string, Label> labels;
 
 public:

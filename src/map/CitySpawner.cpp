@@ -62,3 +62,39 @@ void CitySpawner::addCountry(const std::string& country) {
     possibleCountries.emplace_back(country, 1, cities[country][0].population);
     pendingCities.push(cities[country][0]);
 }
+
+CitySpawnerSave CitySpawner::serialize() const {
+    CitySpawnerSave save;
+
+    save.possibleCountries = this->possibleCountries;
+
+    return save;
+}
+
+void CitySpawner::deserialize(const CitySpawnerSave& save) {
+    this->possibleCountries = save.possibleCountries;
+}
+
+std::vector<std::pair<std::string, int>> CitySpawner::getCityIndices(const std::vector<City>& cities) const {
+    std::vector<std::pair<std::string, int>> indices(cities.size());
+
+    for(int i=0; i<int(cities.size()); ++i) {
+        auto cnt = cities[i].country;
+        indices[i].first = cities[i].country;
+        const auto& cntCities = this->cities.at(cnt);
+        indices[i].second = std::find_if(cntCities.begin(), cntCities.end(), 
+            [&cities, i](auto c){ return c.name == cities[i].name; }) - cntCities.begin();
+    }
+
+    return indices;
+}
+
+std::vector<City> CitySpawner::getCityVector(const std::vector<std::pair<std::string, int>>& indices) const {
+    std::vector<City> cities(indices.size());
+
+    for(int i=0; i<int(indices.size()); ++i) {
+        cities[i] = this->cities.at(indices[i].first).at(indices[i].second);
+    }
+
+    return cities;
+}

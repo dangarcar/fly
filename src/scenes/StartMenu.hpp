@@ -3,6 +3,7 @@
 #include "../engine/Window.hpp"
 #include "../engine/Scene.h"
 #include "../ui/UIManager.hpp"
+#include "../game/GameSaver.hpp"
 
 class StartMenu : public Scene {
 public:
@@ -21,5 +22,6 @@ private:
     Window& window;
     UIManager uiManager;
 
+    int saveIndex = -1;
     Button startButton, loadButton, quitButton, settingsButton;
 };

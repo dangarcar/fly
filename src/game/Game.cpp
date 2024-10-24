@@ -37,7 +37,7 @@ void Game::update() {
     if(uiManager.dialogShown()) 
         return;
     else if(paused)
-        uiManager.addDialog<PauseGameDialog>(*this);
+        uiManager.addDialog<PauseGameDialog>(*this, uiManager);
 
     player.update();
     map.update(camera);
@@ -78,7 +78,6 @@ void Game::renderDebugInfo() {
 }
 
 void Game::start() {
-
     using json = nlohmann::json;
     std::ifstream file(DEFAULT_GAME_FILE);
     auto data = json::parse(file);
@@ -96,4 +95,31 @@ void Game::start() {
     map.hoveredColor = hexCodeToColor(data["HOVERED_COLOR"].template get<std::string>());
 
     map.load(camera);
+}
+
+GameSave Game::serialize() const {
+    GameSave save;
+
+    save.currentTick = this->currentTick;
+    save.camera = camera.serialize();
+    save.player = player.serialize();
+    save.map = map.serialize();
+    save.airport = airManager.serialize();
+
+    save.citiesIndexes = map.getCitySpawner().getCityIndices(save.airport.cities);
+
+    return save;
+}
+
+void Game::deserialize(const GameSave& save) {
+    this->currentTick = save.currentTick;
+
+    camera.deserialize(save.camera);
+    player.deserialize(save.player);
+    map.deserialize(save.map);
+
+    auto airportSave = save.airport;
+    airportSave.cities = map.getCitySpawner().getCityVector(save.citiesIndexes);
+
+    airManager.deserialize(airportSave);
 }

@@ -10,9 +10,8 @@
 #include "../ui/UIManager.hpp"
 #include "../ui/dialogs/UnlockCountryDialog.hpp"
 
-SDL_Color getCountryColor(const Map& map, const Country& country);
 BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam);
-Texture createFlag(Camera& camera, const std::string& svg);
+SDL_Color getCountryColor(const Map& map, const Country& country);
 
 void Map::load(Camera& camera) {
     labelManager.load(camera);
@@ -65,15 +64,6 @@ void Map::load(Camera& camera) {
     meshFile.read(reinterpret_cast<char*>(&triangles[0]), triSize * 3 * sizeof(int32_t));
 
     this->projectMap(camera);
-
-    /*//FIXME: stress test
-    for(auto& [k, c]: countries) {
-        if(c.state == CountryState::BANNED)
-            continue;
-
-        c.state = CountryState::UNLOCKED;
-        citySpawner.addCountry(k);
-    }*/
 }
 
 void Map::projectMap(const Camera& camera) {
@@ -251,6 +241,18 @@ void Map::moveToCountry(const Country& country, Camera& camera) {
     camera.move({0.0f, 0.0f}); //To correct out of bounds errors
 }
 
+MapSave Map::serialize() const {
+    return citySpawner.serialize();
+}
+
+void Map::deserialize(const MapSave& save) {
+    for(auto& s: save.possibleCountries) {
+        this->countries[s.name].state = CountryState::UNLOCKED;
+    }
+
+    citySpawner.deserialize(save);
+}
+
 SDL_Color getCountryColor(const Map& map, const Country& country) {
     switch (country.state) {
         case CountryState::UNLOCKED: return map.unlockedColor;
@@ -265,13 +267,4 @@ BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam) {
     auto v2 = cam.coordsToProj(c2);
 
     return BoundingBox { glm::min(v1, v2), glm::max(v1, v2) };
-}
-
-Texture createFlag(Camera& camera, const std::string& svg) {
-    auto& circle = camera.getTextureManager().getTexture("CIRCLE");
-    Texture country;
-    country.loadSVG(camera.getSDL(), svg);
-    country.applyMask(camera.getSDL(), circle);
-
-    return country;
 }

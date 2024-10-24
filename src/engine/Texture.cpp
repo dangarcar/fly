@@ -47,7 +47,7 @@ void Texture::render(SDL_Renderer& renderer, int x, int y, float scale, float an
     SDL_RenderCopyEx(&renderer, texture.get(), nullptr, &renderQuad, angle, &center, SDL_FLIP_NONE);
 }
 
-bool TextureManager::loadTexture(SDL_Renderer& renderer, const std::string& name, const std::string& path) {
+bool TextureManager::loadTexture(SDL_Renderer& renderer, const std::string& name, const std::filesystem::path& path) {
     textureMap[name] = std::move(Texture());
 
     if(!textureMap[name].loadFromFile(renderer, path))
@@ -55,8 +55,8 @@ bool TextureManager::loadTexture(SDL_Renderer& renderer, const std::string& name
     return true;
 }
 
-bool Texture::loadFromFile(SDL_Renderer& renderer, const std::string& path) {
-    auto surface = IMG_Load(path.c_str());
+bool Texture::loadFromFile(SDL_Renderer& renderer, const std::filesystem::path& path) {
+    auto surface = IMG_Load(path.string().c_str());
     if(!surface) {
         writeError("Unable to load %s. SDL_Image error: %s", path.c_str(), IMG_GetError());
         return false;

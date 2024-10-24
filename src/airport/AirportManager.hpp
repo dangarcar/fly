@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "../engine/InputEvent.h"
+#include "../engine/Serializable.h"
 
 #include "AgentSpawner.hpp"
 #include "Airport.hpp"
@@ -22,11 +23,22 @@ namespace air {
         SDL_Color color = {0xff, 0xff, 0xff, 0xff};
     };
 
-    class AirportManager {
+    struct AirportSave {
+        std::vector<City> cities; //Not serialized
+        std::vector<air::AirportData> airports;
+        std::vector<air::Route> routes;
+        std::vector<std::vector<int>> networkAdjList;
+        std::array<std::vector<int>, ROUTE_GRID_HEIGHT*ROUTE_GRID_WIDTH> routeGrids;
+    };
+
+    class AirportManager: Serializable<AirportSave> {
     public:
         bool handleInput(const InputEvent& event, Player& player, UIManager& uiManager);
         void update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager);
-        void render(const Camera& camera, float frameProgress) const;
+        void render(const Camera& camera, float frameProgress);
+
+        AirportSave serialize() const override;
+        void deserialize(const AirportSave& save) override;
 
         //DOES NOT COST MONEY
         void addPlane(Route& route, Player& player);
@@ -46,7 +58,6 @@ namespace air {
     private:
         std::vector<City> cities;
         std::vector<AirportData> airports;
-        std::unordered_map<std::string, std::vector<int>> countryCities;
         
         std::vector<Route> routes;
         std::array<std::vector<int>, ROUTE_GRID_HEIGHT*ROUTE_GRID_WIDTH> routeGrids;

@@ -38,10 +38,15 @@ int Window::start(bool fullscreen) {
 }
 
 void Window::run() {
-    assert(scene != nullptr);
-
     Timer updateTimer;
     while (alive) {
+        if(nextScene) {
+            scene = std::move(nextScene);
+            nextScene = nullptr;
+        }
+
+        assert(scene != nullptr);
+
 #ifdef FIXED_UPDATE
         float msPerTick = 1000.0 / scene->getTicksPerSecond();
 #else

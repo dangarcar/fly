@@ -60,56 +60,6 @@ bool air::AirportManager::handleInput(const InputEvent& event, Player& player, U
 }
 
 void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager) {
-    /*if(airports.size() > 3) { //FIXME: stress test
-        Route route(-1, -1);
-        int i1 = 0, i2;
-        
-        auto it = countryCities.begin();
-        int tries = 0;
-        do {
-            it = countryCities.begin();
-            std::advance(it, rand() % countryCities.size()); 
-        } while(it->second.size() <= 1 && tries++ < 50);
-
-        do {
-            auto vit = it->second.begin();
-            std::advance(vit, rand() % it->second.size());
-            i1 = *vit;
-        } while(!cities[i1].capital);
-        
-        Coord c1, c2;
-        tries = 0;
-        do {
-            tries++;
-            auto c = cities[i1].country;
-
-            do {
-                if(rand() % 1000 < 10) {
-                    auto cit = countryCities.begin();
-                    std::advance(cit, rand() % countryCities.size()); 
-
-                    do {
-                        auto vit = cit->second.begin();
-                        std::advance(vit, rand() % cit->second.size());
-                        i2 = *vit;
-                    } while(!cities[i2].capital);
-                } else {
-                    auto vit = it->second.begin();
-                    std::advance(vit, rand() % it->second.size());
-                    i2 = *vit;
-                }
-            } while(i1 == i2);
-
-            c1 = cities[i1].coord;
-            c2 = cities[i2].coord;
-            route = Route(i1, i2);
-            route.lenght = mtsDistance(c1, c2);
-            route.points = getPathProjs(camera, c1, c2);
-            //writeLog("%s - %s\n", cities[i1].name.c_str(), cities[i2].name.c_str());
-        } while(!this->addRoute(std::move(route), player, camera) && tries < 1000);
-    }
-    */
-
     //SPAWN CITY
     while(auto city = citySpawner.getRandomCity()) {    
         auto value = city.value();        
@@ -133,6 +83,9 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
         auto routeSpeed = MTS_PER_TICK_PER_LEVEL[routes[i].level] / routes[i].lenght;
         routes[i].lastTakeoffA += routeSpeed;
         routes[i].lastTakeoffB += routeSpeed;
+
+        if(routes[i].points.empty())
+            routes[i].points = getPathProjs(camera, cities[routes[i].a].coord, cities[routes[i].b].coord);
 
         for(int j=0; j<int(routes[i].planes.size()); ++j) {
             auto& p = routes[i].planes[j];
@@ -213,9 +166,12 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
     }
 }
 
-void air::AirportManager::render(const Camera& camera, float frameProgress) const {
-    for(const auto& r: routes)
+void air::AirportManager::render(const Camera& camera, float frameProgress) {
+    for(auto& r: routes) {
+        if(r.points.empty())
+            r.points = air::getPathProjs(camera, cities[r.a].coord, cities[r.b].coord);
         renderRoutePath(camera, r);
+    }
 
     for(int i=0; i<int(airports.size()); ++i)
         renderAirport(camera, airports[i], cities[i]);
@@ -281,13 +237,12 @@ bool air::AirportManager::addRoute(Route&& r, Player& player, const Camera& came
 
     updatePaths();
     addPlane(route, player);
-    
+
     return true;
 }
 
 void air::AirportManager::addAirport(City&& c, Player& player) {
     auto& city = cities.emplace_back(c);
-    countryCities[city.country].push_back(cities.size() - 1);
 
     AirportData data;
     if(city.capital) data.radius = 2.0f;
@@ -368,6 +323,30 @@ void air::AirportManager::landPlane(Player* player, Plane &plane, Route& route, 
 
     assert(peopleTotal == wait.size() + plane.pass.size());
 }
+
+air::AirportSave air::AirportManager::serialize() const {
+    AirportSave save;
+
+    save.cities = this->cities;
+    save.airports = this->airports;
+    save.networkAdjList = this->networkAdjList;
+    save.routes = this->routes;
+    save.routeGrids = this->routeGrids;
+
+    return save;
+}
+
+void air::AirportManager::deserialize(const air::AirportSave& save) {
+    this->cities = save.cities;
+    this->airports = save.airports;
+    
+    this->networkAdjList = save.networkAdjList;
+    this->updatePaths();
+
+    this->routes = save.routes;
+    this->routeGrids = save.routeGrids;
+}
+
 
 std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjList) {
     int n = adjList.size();

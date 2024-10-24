@@ -7,20 +7,38 @@
 #include <optional>
 #include <ctime>
 #include <random>
+#include <filesystem>
 
 #include "../game/Types.h"
+#include "../engine/Serializable.h"
 
 class Camera;
 
-class CitySpawner {
+struct UnlockableCityData {
+    std::string name;
+    size_t currentCity;
+    int population;
+};
+
+struct CitySpawnerSave {
+    std::vector<UnlockableCityData> possibleCountries;
+};
+
+class CitySpawner: Serializable<CitySpawnerSave> {
 private:
     //The inverse of the probability of a city spawn
     static constexpr int SPAWN_FREQUENCY = 30; //TODO: must change it probably
-    static constexpr auto AIRPORTS_DATA_FILE = "./resources/airports.json";
+    inline static const std::filesystem::path AIRPORTS_DATA_FILE = "./resources/airports.json";
 
 public:
     //Time is more random in MinGW than the random_device
     CitySpawner(): generator(time(nullptr)) {}
+
+    CitySpawnerSave serialize() const override;
+    void deserialize(const CitySpawnerSave& save) override;
+
+    std::vector<std::pair<std::string, int>> getCityIndices(const std::vector<City>& cities) const;
+    std::vector<City> getCityVector(const std::vector<std::pair<std::string, int>>& indices) const;
 
     void load(const Camera& camera);
 
@@ -30,12 +48,6 @@ public:
 private:
     std::unordered_map<std::string, std::vector<City>> cities;
     std::mt19937_64 generator;
-    
-    struct UnlockableCityData {
-        std::string name;
-        size_t currentCity;
-        int population;
-    };
 
     std::queue<City> pendingCities;
     std::vector<UnlockableCityData> possibleCountries;

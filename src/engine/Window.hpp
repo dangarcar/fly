@@ -29,7 +29,7 @@ public:
     int getHeight() const { return height; }
 
     void setScene(std::unique_ptr<Scene> scene) {
-        this->scene = std::move(scene);
+        this->nextScene = std::move(scene);
     }
 
     SDL_Window& getSDLWindow() const { return *window; }
@@ -39,7 +39,7 @@ private:
     InputEvent getInputEvent();
 
 private:
-    std::unique_ptr<Scene> scene;
+    std::unique_ptr<Scene> scene, nextScene;
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window;
 
     Renderer renderer;

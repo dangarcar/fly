@@ -4,6 +4,7 @@
 #include <memory>
 #include <list>
 #include <type_traits>
+#include <cassert>
 
 #include "../engine/Renderer.hpp"
 
@@ -16,12 +17,10 @@ public:
     }
 
     bool handleInput(const InputEvent& event) {
-        bool consumed = false;
-        for(auto& d: dialogs) {
-            consumed |= d->handleInput(event);
-        }
-
-        return consumed;
+        if(dialogs.empty())
+            return false;
+        
+        return dialogs.back()->handleInput(event);
     }
 
     void render(const Renderer& renderer) {

@@ -5,8 +5,14 @@
 #include "../engine/Renderer.hpp"
 #include "Types.h"
 #include "../engine/InputEvent.h"
+#include "../engine/Serializable.h"
 
-class Camera {
+struct CameraSave {
+    float zoom;
+    glm::vec2 pos;
+};
+
+class Camera: Serializable<CameraSave> {
 public:
     static constexpr float MAX_ZOOM = 40.0f;
 
@@ -38,8 +44,10 @@ public:
         zoom = z;
     }
 
-    //SERVE AS RENDERER MEDIATOR: probably bs
+    CameraSave serialize() const override;
+    void deserialize(const CameraSave& save) override;
 
+    //SERVE AS RENDERER MEDIATOR: probably bs
     const Renderer& getRenderer() const { return renderer; }
 
     SDL_Rect getScreenViewportRect() const { return {0, 0, width, height}; }

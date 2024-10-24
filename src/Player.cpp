@@ -86,3 +86,21 @@ void Player::render(const Camera& camera, int currentTick) {
 void Player::update() {
     difficulty += 1e-5; //MORE OR LESS +50% PER HOUR 0,00001 * 15 * 3600 = 0,54
 }
+
+PlayerSave Player::serialize() const {
+    PlayerSave save;
+
+    save.cash = this->cash;
+    save.difficulty = this->difficulty;
+    save.fastForwardMultiplier = this->fastForwardMultiplier;
+    save.stats = this->stats;
+
+    return save;
+}
+
+void Player::deserialize(const PlayerSave& save) {
+    this->cash = save.cash;
+    this->difficulty = save.difficulty;
+    this->fastForwardMultiplier = save.fastForwardMultiplier;
+    this->stats = save.stats;
+}

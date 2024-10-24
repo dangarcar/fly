@@ -74,3 +74,19 @@ void Camera::move(glm::vec2 v) {
     else if(bottom.x >= width)
         pos.x += width - bottom.x;
 }
+
+CameraSave Camera::serialize() const {
+    CameraSave save;
+
+    save.pos = this->pos;
+    save.zoom = this->zoom;
+
+    return save;
+}
+
+void Camera::deserialize(const CameraSave& save) {
+    this->pos = save.pos;
+    this->zoom = save.zoom;
+
+    this->move({0, 0}); //To move camera if outside boundaries
+}

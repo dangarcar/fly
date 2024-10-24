@@ -4,13 +4,14 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <filesystem>
 
 class Texture {
 public:
     Texture(): texture(nullptr, &SDL_DestroyTexture) {}
 
     bool createBlank(SDL_Renderer& rend, int w, int h, SDL_TextureAccess acc);
-    bool loadFromFile(SDL_Renderer& renderer, const std::string& path);
+    bool loadFromFile(SDL_Renderer& renderer, const std::filesystem::path& path);
     bool loadSVG(SDL_Renderer& renderer, const std::string& svg);
 
     void render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
@@ -41,7 +42,7 @@ private:
 
 public:
     void loadTexture(const std::string& name, Texture&& texture);
-    bool loadTexture(SDL_Renderer& renderer, const std::string& name, const std::string& path);
+    bool loadTexture(SDL_Renderer& renderer, const std::string& name, const std::filesystem::path& path);
 
     const Texture& getTexture(const std::string& name) const { return textureMap.at(name); }
 };

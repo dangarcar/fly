@@ -13,15 +13,24 @@
 
 using air::AirportManager;
 
-class Game : public Scene {
+struct GameSave;
+
+class Game : public Scene, Serializable<GameSave> {
 private:
     static constexpr auto DEFAULT_GAME_FILE = "./resources/game.json";
 
 public:
     static constexpr int MAX_FAST_FORWARD = 5;
 
-    Game(Window& window): window(window), camera(window.getRenderer()) {}
-    ~Game() = default;
+    Game(Window& window): window(window), camera(window.getRenderer()) {
+        //writeLog("Hello game\n");
+    }
+    ~Game() {
+        //writeLog("Bye game\n");
+    };
+
+    GameSave serialize() const override;
+    void deserialize(const GameSave& save) override;
 
     void handleInput(const InputEvent& event) override;
     
@@ -41,9 +50,9 @@ private:
 
 private:
     Window& window;
-    Camera camera;
-    
     UIManager uiManager;
+    
+    Camera camera;
     Player player;
     AirportManager airManager;
     Map map;
@@ -53,4 +62,15 @@ private:
     Timer fpsTimer;
     int framesDrawn = 0;
     float framesPerMs = 0.0;
+};
+
+struct GameSave {
+    long currentTick;
+
+    CameraSave camera;
+    PlayerSave player;
+    air::AirportSave airport;
+    MapSave map;
+
+    std::vector<std::pair<std::string, int>> citiesIndexes;
 };

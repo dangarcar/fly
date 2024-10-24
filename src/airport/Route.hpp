@@ -37,7 +37,7 @@ namespace air {
 
         int level = 0;
         float lenght;
-        std::vector<glm::vec2> points;
+        std::vector<glm::vec2> points; //Not serialized
         std::vector<Plane> planes;
         float lastTakeoffA = 0, lastTakeoffB = 0;
 
