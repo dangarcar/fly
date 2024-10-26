@@ -1,3 +1,5 @@
+# This script generates the map to be used in the app
+
 import fiona
 import json
 import numpy as np

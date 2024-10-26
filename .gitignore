@@ -3,3 +3,7 @@ release
 out
 saves
 bin
+
+lib/SDL2
+lib/SDL2_image
+lib/SDL2_ttf

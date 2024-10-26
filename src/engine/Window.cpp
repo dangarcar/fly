@@ -26,11 +26,14 @@ int Window::start(bool fullscreen) {
         flags |= SDL_WINDOW_FULLSCREEN;
     }
 
-    window.reset(SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags));
+    window.reset(SDL_CreateWindow("Airport Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags));
     if(!window) {
         writeError("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return -1;
     }
+
+    SDL_Surface* icon = IMG_Load("./assets/icon.ico"); 
+    SDL_SetWindowIcon(window.get(), icon);
 
     renderer.start(*window);
 

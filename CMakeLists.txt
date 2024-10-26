@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.5)
 project(Fly VERSION 0.0.1)
 
 include(CTest)
@@ -56,7 +56,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 set_target_properties(Fly PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
 if(WIN32)

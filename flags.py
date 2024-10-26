@@ -1,3 +1,6 @@
+# This script generates the flags
+# It must be run after the map.py script
+
 import json
 import requests
 import subprocess
