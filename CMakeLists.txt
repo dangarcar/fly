@@ -49,7 +49,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 set_target_properties(Fly PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin"
 )
 
 if(WIN32)
