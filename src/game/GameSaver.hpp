@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <ctime>
 
-#include "../../include/json.hpp"
+#include "../../lib/json.hpp"
 
 #include "Game.hpp"
 

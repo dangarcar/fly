@@ -1,6 +1,6 @@
 #include "Game.hpp"
 
-#include "../../include/json.hpp"
+#include "../../lib/json.hpp"
 #include <fstream>
 
 #include "../engine/Utils.h"

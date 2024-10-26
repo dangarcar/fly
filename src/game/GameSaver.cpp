@@ -1,7 +1,7 @@
 #include "GameSaver.hpp"
 
 #include <fstream>
-#include "../../include/json.hpp"
+#include "../../lib/json.hpp"
 
 using nlohmann::json;
 

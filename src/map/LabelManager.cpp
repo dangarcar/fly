@@ -1,6 +1,6 @@
 #include "LabelManager.hpp"
 
-#include "../../include/json.hpp"
+#include "../../lib/json.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL 1
 #include <glm/gtx/rotate_vector.hpp>
