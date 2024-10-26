@@ -121,7 +121,7 @@ std::vector<std::pair<std::string, int>> AirportDialog::getFrequentDestinations(
         return a.second > b.second;
     });
 
-    return {result.begin(), result.begin() + std::min(7ULL, result.size())};
+    return {result.begin(), result.begin() + std::min<int>(7ULL, result.size())};
 }
 
 bool AirportDialog::canUpgrade() const {

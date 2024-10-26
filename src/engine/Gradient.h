@@ -24,10 +24,10 @@ public:
 
     SDL_Color getColor(float t) const {
         return {
-            (Uint8)lerp(a.r, b.r, t),
-            (Uint8)lerp(a.g, b.g, t),
-            (Uint8)lerp(a.b, b.b, t),
-            (Uint8)lerp(a.a, b.a, t),
+            (Uint8)flerp(a.r, b.r, t),
+            (Uint8)flerp(a.g, b.g, t),
+            (Uint8)flerp(a.b, b.b, t),
+            (Uint8)flerp(a.a, b.a, t),
         };
     }
 };

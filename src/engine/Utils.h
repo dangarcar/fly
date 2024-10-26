@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <SDL.h>
 
-constexpr inline float lerp(float a, float b, float t) {
+constexpr inline float flerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
 

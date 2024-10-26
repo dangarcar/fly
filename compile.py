@@ -8,7 +8,7 @@ def main():
     if not os.path.exists('release'):
         os.mkdir('release')
     os.chdir('release')
-    subprocess.run(['cmake', '-DCMAKE_BUILD_TYPE=Release', '..'])
+    subprocess.run(['cmake', '-DCMAKE_BUILD_TYPE=debug', '..'])
     subprocess.run('make')
     os.chdir('..')
 

@@ -13,16 +13,23 @@ set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2)
+include(FetchContent)
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+FetchContent_MakeAvailable(glm)
 
-set(SDL2_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2/cmake")
-set(SDL2_image_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2_image/cmake")
-set(SDL2_ttf_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2_ttf/cmake")
+if(WIN32)
+    set(SDL2_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2/cmake")
+    set(SDL2_image_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2_image/cmake")
+    set(SDL2_ttf_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2_ttf/cmake")
+endif()
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
-find_package(glm CONFIG REQUIRED)
 find_package(OpenMP REQUIRED)
 
 if($<CONFIG:Debug>)
