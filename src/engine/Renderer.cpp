@@ -29,15 +29,16 @@ void TextRenderer::render(SDL_Renderer& renderer, const std::string& text, int x
 }
 
 Texture TextRenderer::renderToTexture(SDL_Renderer& renderer, const std::string& str, int size) const {
-    Texture text;
+    Texture tex;
     auto rect = getTextBounds(str, size);
-    text.createBlank(renderer, rect.w, rect.h, SDL_TEXTUREACCESS_TARGET);
+    tex.createBlank(renderer, rect.w, rect.h, SDL_TEXTUREACCESS_TARGET);
     
-    text.setAsRenderTarget(renderer);
+    SDL_SetTextureBlendMode(tex.getTexture(), SDL_BLENDMODE_NONE); 
+    SDL_SetRenderTarget(&renderer, tex.getTexture()); 
     render(renderer, str, 0, 0, size, FC_MakeEffect(FC_ALIGN_LEFT, {1,1}, SDL_WHITE));
     SDL_SetRenderTarget(&renderer, nullptr);
     
-    return text;
+    return tex;
 }
 
 bool Renderer::start(SDL_Window& window) {
@@ -64,3 +65,34 @@ void Renderer::renderText(const std::string& str, int x, int y, float scale, FC_
     effect.scale = {1, 1};
     textRenderer.render(*renderer, str, x, y, scale, effect); 
 }
+
+void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const {
+    SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer.get(), color.r, color.g, color.b, color.a);
+    SDL_RenderFillRect(renderer.get(), &rect);
+}
+
+void Renderer::render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode) const {
+	SDL_Rect renderQuad = { x, y, tex.getWidth(), tex.getHeight() };
+
+	if(clip) {
+		renderQuad.w = clip->w;
+		renderQuad.h = clip->h;
+	}
+
+    SDL_SetTextureBlendMode(tex.getTexture(), blendMode);
+    SDL_RenderCopy(renderer.get(), tex.getTexture(), nullptr, &renderQuad);
+}
+
+void Renderer::renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre, SDL_BlendMode blendMode) const {
+    float w = tex.getWidth() * scale, h = tex.getHeight() * scale;
+    SDL_FRect renderQuad = { x, y, w, h };
+    if(centre)
+        renderQuad = { x - w/2 , y - h/2 , w, h };
+
+    SDL_FPoint centrePoint = { 0, 0 };        
+
+    SDL_SetTextureBlendMode(tex.getTexture(), blendMode); 
+    SDL_RenderCopyExF(renderer.get(), tex.getTexture(), nullptr, &renderQuad, angle, centre? nullptr:&centrePoint, SDL_FLIP_NONE);
+}
+

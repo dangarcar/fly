@@ -64,8 +64,7 @@ void Player::render(const Camera& camera, int currentTick) {
     auto bounds = camera.getTextRenderer().getTextBounds(text, 36);
     
     auto rect = SDL_Rect {screen.w - bounds.w - 202, 0, bounds.w + 192, 92};
-    SDL_SetRenderDrawColor(&camera.getSDL(), 0xE0, 0xE0, 0xE0, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(&camera.getSDL(), &rect);
+    camera.fillRect(rect, SDL_Color{0xE0, 0xE0, 0xE0, SDL_ALPHA_OPAQUE});
 
     camera.renderText(text, screen.w - bounds.w - 192, 28, 36, FC_ALIGN_LEFT, FC_MakeColor(0, 0, 0, SDL_ALPHA_OPAQUE));
 
@@ -77,7 +76,7 @@ void Player::render(const Camera& camera, int currentTick) {
 
     auto& t = camera.getTextureManager().getTexture("CLOCK");
     rect.w = rect.h = 72;
-    t.render(camera.getSDL(), screen.w - 92, 10, &rect);
+    camera.render(t, screen.w - 92, 10, &rect);
 
     ffButton = SDL_Rect { screen.w - 172, 20, 60, 52 };
     renderFastForward(fastForwardMultiplier, camera, screen.w - 172, 20, 30, 52, SDL_BLACK);

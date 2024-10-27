@@ -28,20 +28,14 @@ void AirportDialog::render(const Renderer& renderer) {
 
     //RENDER BAR WITH FILLED PERCENTAGE
     auto rect = SDL_Rect { dialog.x + 20, dialog.y + dialog.h - 60, dialog.w - 40, 40 };
-    SDL_SetRenderDrawColor(&renderer.getSDL(), 20, 20, 20, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(&renderer.getSDL(), &rect);
+    renderer.fillRect(rect, SDL_Color{20, 20, 20, SDL_ALPHA_OPAQUE});
 
     rect = {rect.x + 5, rect.y + 5, rect.w - 10, rect.h - 10};
-    SDL_SetRenderDrawColor(&renderer.getSDL(), 140, 140, 140, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(&renderer.getSDL(), &rect);
+    renderer.fillRect(rect, SDL_Color{140, 140, 140, SDL_ALPHA_OPAQUE});
 
     auto fillPercentage = float(airport.waiting.size()) / air::AIRPORT_CAPACITY_PER_LEVEL[airport.level];
     rect.w *= std::min(1.0f, fillPercentage);
-    if(fillPercentage < 1)
-        SDL_SetRenderDrawColor(&renderer.getSDL(), 0, 200, 100, SDL_ALPHA_OPAQUE);
-    else
-        SDL_SetRenderDrawColor(&renderer.getSDL(), 250, 50, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(&renderer.getSDL(), &rect);
+    renderer.fillRect(rect, fillPercentage<1? SDL_Color{0, 200, 100, 255}:SDL_Color{250, 50, 0, 255});
 
     text = std::format("{}/{}", airport.waiting.size(), air::AIRPORT_CAPACITY_PER_LEVEL[airport.level]);
     auto textColor = fillPercentage<1? SDL_WHITE : FC_MakeColor(150,0,0,255);
@@ -49,8 +43,7 @@ void AirportDialog::render(const Renderer& renderer) {
 
     //RENDER TOP DESTINATIONS
     rect = SDL_Rect { dialog.x + dialog.w/2 + 10, dialog.y + 60, dialog.w/2 - 30, 235 };
-    SDL_SetRenderDrawColor(&renderer.getSDL(), 50, 50, 50, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(&renderer.getSDL(), &rect);
+    renderer.fillRect(rect, SDL_Color{50, 50, 50, SDL_ALPHA_OPAQUE});
 
     renderer.renderText("Top destinations", dialog.x + 3*dialog.w/4, dialog.y + 67, 32, FC_ALIGN_CENTER, SDL_WHITE);
 
@@ -71,7 +64,7 @@ void AirportDialog::render(const Renderer& renderer) {
     //RENDER LEVEL UPGRADES
     auto& t = renderer.getTextureManager().getTexture("CIRCLE");
     t.setColorMod(SDL_GOLD);
-    t.renderCenter(renderer.getSDL(), dialog.x + dialog.w/4, dialog.y + 168, 134.0f / t.getWidth(), 0);
+    renderer.renderF(t, dialog.x + dialog.w/4, dialog.y + 168, 134.0f / t.getWidth(), 0, true);
     text = std::to_string(airport.level + 1);
     renderer.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, FC_ALIGN_CENTER, SDL_WHITE);
 

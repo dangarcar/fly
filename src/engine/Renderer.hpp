@@ -49,6 +49,11 @@ public:
     bool start(SDL_Window& window);
     void renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const;
 
+    void fillRect(SDL_Rect rect, SDL_Color color) const;
+    
+    void render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
+    void renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre=false, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
+
     SDL_Renderer& getSDL() const { return *renderer; }
     TextureManager& getTextureManager() { return textureManager; }
     const TextureManager& getTextureManager() const { return textureManager; }

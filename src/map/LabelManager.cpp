@@ -41,13 +41,14 @@ void LabelManager::load(Camera& camera) {
 void LabelManager::render(const Camera& camera) {
     for(auto& [k, label]: labels) {
         auto sz = label.size * camera.getZoom();
-
         auto textureIndex =  std::clamp(0, Label::NUMBER_TEXTURE - 1, int(std::log2(sz)));
-        sz /= label.texture[textureIndex].getHeight();
+
+        auto& t = label.texture[textureIndex];
+        sz /= t.getHeight();
 
         auto v = camera.coordsToScreen(label.coord);
-        auto centre = glm::vec2(label.texture[textureIndex].getWidth()/2.f, label.texture[textureIndex].getHeight()/2.f);
+        auto centre = glm::vec2(t.getWidth()/2.0f, t.getHeight()/2.0f);
         auto dv = glm::rotate(centre * sz, glm::radians(label.angle));
-        label.texture[textureIndex].render(camera.getSDL(), int(v.x - dv.x), int(v.y - dv.y), sz, label.angle, SDL_BLENDMODE_ADD);
+        camera.renderF(t, int(v.x - dv.x), int(v.y - dv.y), sz, label.angle, false, SDL_BLENDMODE_ADD);
     }
 }

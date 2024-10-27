@@ -29,8 +29,7 @@ public:
         Renderer& renderer = window.getRenderer();
 
         auto rect = renderer.getScreenViewportRect();
-        SDL_SetRenderDrawColor(&renderer.getSDL(), 0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE);
-        SDL_RenderFillRect(&renderer.getSDL(), &rect);
+        renderer.fillRect(rect, SDL_Color{ 0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE});
         renderer.renderText("LOADING...", rect.w/2, rect.h/2 - 64, 128, FC_ALIGN_CENTER, SDL_WHITE);
     }
 

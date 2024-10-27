@@ -39,11 +39,11 @@ void UnlockCountryDialog::render(const Renderer& renderer) {
     auto& cir = renderer.getTextureManager().getTexture("CIRCLE");
     cir.setColorMod(SDL_BLACK);
     auto rect = SDL_Rect { dialog.x + dialog.w/2 - 70, dialog.y + 52, 140, 140 };
-    cir.render(renderer.getSDL(), rect.x, rect.y, &rect);
+    renderer.render(cir, rect.x, rect.y, &rect);
 
     auto& t = renderer.getTextureManager().getTexture(countryCode);
     rect = SDL_Rect { dialog.x + dialog.w/2 - 64, dialog.y + 58, 128, 128 };
-    t.render(renderer.getSDL(), rect.x, rect.y, &rect);
+    renderer.render(t, rect.x, rect.y, &rect);
 
     text = std::format("Price: ${}", long(double(DEFAULT_CITY_PRICE) * player.getDifficulty()));
     renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 207, 26, FC_ALIGN_CENTER, SDL_WHITE);

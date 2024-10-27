@@ -84,9 +84,7 @@ void Map::projectMap(const Camera& camera) {
 }
 
 void Map::render(const Camera& camera) {
-    SDL_SetRenderDrawColor(&camera.getSDL(), seaColor.r, seaColor.g, seaColor.b, seaColor.a);
-    SDL_Rect rect = camera.getScreenViewportRect();
-    SDL_RenderFillRect(&camera.getSDL(), &rect);
+    camera.fillRect(camera.getScreenViewportRect(), seaColor);
 
     //Projection calculation in parallel
     #pragma omp parallel for

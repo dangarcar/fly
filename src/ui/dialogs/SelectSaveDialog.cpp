@@ -31,12 +31,8 @@ void SelectSaveDialog::render(const Renderer& renderer) {
 
     for(int i=0; i<size; ++i) {
         SDL_Rect rect{dialog.x + 10, dialog.y + 100 + 70*i, dialog.w-20, 60};
-        if(index == i)
-            SDL_SetRenderDrawColor(&renderer.getSDL(), 50, 50, 50, SDL_ALPHA_OPAQUE);
-        else
-            SDL_SetRenderDrawColor(&renderer.getSDL(), 80, 80, 80, SDL_ALPHA_OPAQUE);
-        SDL_RenderFillRect(&renderer.getSDL(), &rect);
-
+        renderer.fillRect(rect, index==i? SDL_Color{50, 50, 50, 255}:SDL_Color{80, 80, 80, 255});
+        
         renderer.renderText(std::to_string(i+1), rect.x + 5, rect.y + 10, 40, FC_ALIGN_LEFT, SDL_WHITE);
         
         if(i < int(saves.size())) {

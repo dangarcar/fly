@@ -18,35 +18,6 @@ bool Texture::createBlank(SDL_Renderer& rend, int w, int h, SDL_TextureAccess ac
     return true;
 }
 
-void Texture::render(SDL_Renderer& renderer, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode) const {
-	SDL_Rect renderQuad = { x, y, width, height };
-
-	if(clip) {
-		renderQuad.w = clip->w;
-		renderQuad.h = clip->h;
-	}
-
-    SDL_SetTextureBlendMode(texture.get(), blendMode);
-    SDL_RenderCopy(&renderer, texture.get(), nullptr, &renderQuad);
-}
-
-void Texture::renderCenter(SDL_Renderer& renderer, float x, float y, float scale, float angle) const {
-    float w = width * scale, h = height * scale;
-    SDL_FRect renderQuad = { x - w/2 , y - h/2 , w, h };
-
-    SDL_RenderCopyExF(&renderer, texture.get(), nullptr, &renderQuad, angle, nullptr, SDL_FLIP_NONE);
-}
-
-void Texture::render(SDL_Renderer& renderer, int x, int y, float scale, float angle, SDL_BlendMode blendMode) const {
-    int w = width * scale, h = height * scale;
-    SDL_Rect renderQuad = { x, y, w, h };
-
-    SDL_Point center = { 0, 0 };
-
-    SDL_SetTextureBlendMode(texture.get(), blendMode); 
-    SDL_RenderCopyEx(&renderer, texture.get(), nullptr, &renderQuad, angle, &center, SDL_FLIP_NONE);
-}
-
 bool TextureManager::loadTexture(SDL_Renderer& renderer, const std::string& name, const std::filesystem::path& path) {
     textureMap[name] = std::move(Texture());
 
@@ -72,36 +43,6 @@ bool Texture::loadFromFile(SDL_Renderer& renderer, const std::filesystem::path& 
     SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height);
 
     return true;
-}
-
-bool Texture::loadSVG(SDL_Renderer& renderer, const std::string& svg) {
-    auto rw = SDL_RWFromConstMem(svg.c_str(), svg.size());
-    auto surface = IMG_Load_RW(rw, 1);
-    
-    texture.reset(SDL_CreateTextureFromSurface(&renderer, surface));
-    SDL_FreeSurface(surface);
-    if(!texture) {
-        writeError("Unable to create texture %s. SDL error: %s", svg.c_str(), SDL_GetError());
-        return false;
-    }
-
-    SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height);
-
-    return true;
-}
-
-void Texture::applyMask(SDL_Renderer& renderer, const Texture& mask) {    
-    Texture canvas;
-    canvas.createBlank(renderer, this->width, this->height, SDL_TEXTUREACCESS_TARGET);
-    canvas.setAsRenderTarget(renderer);
-    
-    mask.render(renderer, 0, 0, nullptr);
-    
-    SDL_SetTextureBlendMode(this->texture.get(), SDL_BLENDMODE_MUL);
-    SDL_RenderCopy(&renderer, this->texture.get(), nullptr, nullptr);
-
-    SDL_SetRenderTarget(&renderer, nullptr);
-    *this = std::move(canvas);
 }
 
 void TextureManager::loadTexture(const std::string& name, Texture&& texture) {

@@ -29,8 +29,8 @@ void air::renderAirport(const Camera& camera, const AirportData& airport, const 
         perimeter = SDL_Rect { clip.x - 2, clip.y - 2, clip.w + 4, clip.h + 4 };
 
     circle.setColorMod(SDL_BLACK);
-    circle.render(camera.getSDL(), perimeter.x, perimeter.y, &perimeter);
-    country.render(camera.getSDL(), clip.x, clip.y, &clip);
+    camera.render(circle, perimeter.x, perimeter.y, &perimeter);
+    camera.render(country, clip.x, clip.y, &clip);
 
     if((camera.getZoom() > 4 && airport.radius >= 20)
     || (camera.getZoom() > 6 && airport.radius >= 16)
@@ -40,11 +40,9 @@ void air::renderAirport(const Camera& camera, const AirportData& airport, const 
 
         //DRAW BAR
         auto bar = SDL_Rect { clip.x, clip.y + clip.h + 4, clip.w, clip.h/5 };
-        SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0, 0, 255);
-        SDL_RenderFillRect(&camera.getSDL(), &bar);
+        camera.fillRect(bar, SDL_BLACK);
 
         bar = SDL_Rect { bar.x + 1, bar.y + 1, int((bar.w - 2) * fillPercentage), bar.h - 2 };
-        SDL_SetRenderDrawColor(&camera.getSDL(), color.r, color.g, color.b, color.a);
-        SDL_RenderFillRect(&camera.getSDL(), &bar);
+        camera.fillRect(bar, color);
     }
 }

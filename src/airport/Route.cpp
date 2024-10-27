@@ -69,7 +69,7 @@ void air::renderRoutePlanes(const Camera& camera, const Route& route, float fram
         assert(fillPercentage >= 0.0f);
         if(distA > scale * t.getWidth()/2 && distB > scale * t.getWidth()/2) {
             t.setColorMod(FULL_GRADIENT.getColor(fillPercentage));
-            t.renderCenter(camera.getSDL(), p.x, p.y, scale, angle + 180.0f * (plane.speed < 0));
+            camera.renderF(t, p.x, p.y, scale, angle + 180.0f * (plane.speed < 0), true);
         }
     }
 }
