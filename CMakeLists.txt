@@ -32,27 +32,25 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(OpenMP REQUIRED)
 
-if($<CONFIG:Debug>)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mconsole")
-endif()
-
-add_subdirectory(lib/SDL_FontCache)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mconsole ")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME}
+    "src/glad.c"
+    ${SOURCES}
+)
 target_link_libraries(${PROJECT_NAME} 
     SDL2::SDL2main 
     SDL2::SDL2
     SDL2_image::SDL2_image
     SDL2_ttf::SDL2_ttf
     glm::glm
-    SDL_FontCache
     OpenMP::OpenMP_CXX
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} PRIVATE
     "${PROJECT_BINARY_DIR}"
-    "${PROJECT_SOURCE_DIR}/lib/SDL_FontCache"
+    "${PROJECT_SOURCE_DIR}/lib"
 )
 
 set_target_properties(Fly PROPERTIES

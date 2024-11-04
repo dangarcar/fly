@@ -1,7 +1,6 @@
 #include "Player.hpp"
 
 #include <format>
-#include <SDL_FontCache.h>
 
 #define GLM_ENABLE_EXPERIMENTAL 1
 #include <glm/gtx/rotate_vector.hpp>
@@ -40,7 +39,7 @@ void renderClockHand(const Camera& camera, SDL_Point center, int w, int h, float
         p.position = SDL_FPoint {v.x, v.y};
     }
 
-    SDL_RenderGeometry(&camera.getSDL(), nullptr, minuteVertices.data(), minuteVertices.size(), indices, 6);
+    //SDL_RenderGeometry(&camera.getSDL(), nullptr, minuteVertices.data(), minuteVertices.size(), indices, 6); //TODO:
 }
 
 void renderFastForward(int n, const Camera& camera, float x, float y, float w, float h, SDL_Color color) {
@@ -51,7 +50,7 @@ void renderFastForward(int n, const Camera& camera, float x, float y, float w, f
     };
 
     for(int i=0; i<=n; ++i) {
-        SDL_RenderGeometry(&camera.getSDL(), nullptr, triVertices, 3, nullptr, 3);
+        //SDL_RenderGeometry(&camera.getSDL(), nullptr, triVertices, 3, nullptr, 3); //TODO:
         
         for(int j=0; j<3; ++j)
             triVertices[j].position.x += w / n + 6;
@@ -61,12 +60,12 @@ void renderFastForward(int n, const Camera& camera, float x, float y, float w, f
 void Player::render(const Camera& camera, int currentTick) {
     auto screen = camera.getScreenViewportRect();
     auto text = std::format("${}", cash);
-    auto bounds = camera.getTextRenderer().getTextBounds(text, 36);
+    auto bounds = camera.getTextBounds(text, 36);
     
     auto rect = SDL_Rect {screen.w - bounds.w - 202, 0, bounds.w + 192, 92};
     camera.fillRect(rect, SDL_Color{0xE0, 0xE0, 0xE0, SDL_ALPHA_OPAQUE});
 
-    camera.renderText(text, screen.w - bounds.w - 192, 28, 36, FC_ALIGN_LEFT, FC_MakeColor(0, 0, 0, SDL_ALPHA_OPAQUE));
+    camera.renderText(text, screen.w - bounds.w - 192, 28, 36, Aligment::LEFT, SDL_BLACK);
 
     float minuteAngle = 2*M_PI / TICKS_PER_CLOCK_CYCLE * (currentTick % TICKS_PER_CLOCK_CYCLE);
     renderClockHand(camera, SDL_Point(screen.w-56, 46), 2, 30, minuteAngle, SDL_SILVER);

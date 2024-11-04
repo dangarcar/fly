@@ -5,6 +5,8 @@
 
 #include "Scene.h"
 
+#include <glad/glad.h>
+
 int Window::start(bool fullscreen) {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         writeError("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -16,7 +18,7 @@ int Window::start(bool fullscreen) {
         return -1;
     }
 
-    int flags = SDL_WINDOW_SHOWN;
+    int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
     if(fullscreen) {
         SDL_DisplayMode dm;
         SDL_GetDisplayMode(0, 0, &dm);
@@ -67,7 +69,7 @@ void Window::run() {
 
         renderer.clearScreen();
         scene->render(updateTimer.elapsedMillis() / msPerTick);
-        renderer.presentScreen();
+        SDL_GL_SwapWindow(window.get());
     }
 }
 

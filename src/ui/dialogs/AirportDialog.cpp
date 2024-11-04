@@ -21,10 +21,10 @@ void AirportDialog::render(const Renderer& renderer) {
     Dialog::render(renderer);
 
     //RENDER TITLE
-    renderer.renderText(city.name, dialog.x + dialog.w/2, dialog.y + 10, 42, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(city.name, dialog.x + dialog.w/2, dialog.y + 10, 42, Aligment::CENTER, SDL_WHITE);
 
     auto text = std::format("Population: {}", city.population);
-    renderer.renderText(text, dialog.x + 20, dialog.y + 60, 24, FC_ALIGN_LEFT, SDL_WHITE);
+    renderer.renderText(text, dialog.x + 20, dialog.y + 60, 24, Aligment::LEFT, SDL_WHITE);
 
     //RENDER BAR WITH FILLED PERCENTAGE
     auto rect = SDL_Rect { dialog.x + 20, dialog.y + dialog.h - 60, dialog.w - 40, 40 };
@@ -38,14 +38,14 @@ void AirportDialog::render(const Renderer& renderer) {
     renderer.fillRect(rect, fillPercentage<1? SDL_Color{0, 200, 100, 255}:SDL_Color{250, 50, 0, 255});
 
     text = std::format("{}/{}", airport.waiting.size(), air::AIRPORT_CAPACITY_PER_LEVEL[airport.level]);
-    auto textColor = fillPercentage<1? SDL_WHITE : FC_MakeColor(150,0,0,255);
-    renderer.renderText(text, dialog.x + dialog.w - 25, dialog.y + dialog.h - 86, 24, FC_ALIGN_RIGHT, textColor);
+    auto textColor = fillPercentage<1? SDL_WHITE : SDL_Color{150,0,0,255};
+    renderer.renderText(text, dialog.x + dialog.w - 25, dialog.y + dialog.h - 86, 24, Aligment::RIGHT, textColor);
 
     //RENDER TOP DESTINATIONS
     rect = SDL_Rect { dialog.x + dialog.w/2 + 10, dialog.y + 60, dialog.w/2 - 30, 235 };
     renderer.fillRect(rect, SDL_Color{50, 50, 50, SDL_ALPHA_OPAQUE});
 
-    renderer.renderText("Top destinations", dialog.x + 3*dialog.w/4, dialog.y + 67, 32, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText("Top destinations", dialog.x + 3*dialog.w/4, dialog.y + 67, 32, Aligment::CENTER, SDL_WHITE);
 
     auto dest = getFrequentDestinations();
     for(int i=0; i<int(dest.size()); ++i) {
@@ -56,9 +56,9 @@ void AirportDialog::render(const Renderer& renderer) {
                 text = text.substr(0, 16);
             text = text.append("...");
         }
-        renderer.renderText(text, dialog.x + dialog.w/2 + 17, dialog.y + 106 + 26*i, 26, FC_ALIGN_LEFT, SDL_WHITE);
+        renderer.renderText(text, dialog.x + dialog.w/2 + 17, dialog.y + 106 + 26*i, 26, Aligment::LEFT, SDL_WHITE);
         text = std::format("{}", dest[i].second);
-        renderer.renderText(text, dialog.x + dialog.w - 27, dialog.y + 106 + 26*i, 26, FC_ALIGN_RIGHT, SDL_GOLD);
+        renderer.renderText(text, dialog.x + dialog.w - 27, dialog.y + 106 + 26*i, 26, Aligment::RIGHT, SDL_GOLD);
     }
 
     //RENDER LEVEL UPGRADES
@@ -66,7 +66,7 @@ void AirportDialog::render(const Renderer& renderer) {
     t.setColorMod(SDL_GOLD);
     renderer.renderF(t, dialog.x + dialog.w/4, dialog.y + 168, 134.0f / t.getWidth(), 0, true);
     text = std::to_string(airport.level + 1);
-    renderer.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, Aligment::CENTER, SDL_WHITE);
 
     upgradeButton.setDisabled(!canUpgrade());
     if(canUpgrade())

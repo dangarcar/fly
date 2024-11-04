@@ -20,11 +20,11 @@ struct City {
 };
 
 inline int mtsDistance(Coord a, Coord b) {
-    auto sinlat = std::sin( glm::radians(b.lat - a.lat) / 2 );
-    auto sinlon = std::sin( glm::radians(b.lon - a.lon) / 2 );
+    auto sinlat = glm::sin( glm::radians(b.lat - a.lat) / 2 );
+    auto sinlon = glm::sin( glm::radians(b.lon - a.lon) / 2 );
 
-    auto f = sinlat*sinlat + std::cos(glm::radians(a.lat)) * std::cos(glm::radians(b.lat)) * sinlon*sinlon;
-    auto c = 2 * std::atan2(std::sqrt(f), std::sqrt(1 - f));
+    auto f = sinlat*sinlat + glm::cos(glm::radians(a.lat)) * glm::cos(glm::radians(b.lat)) * sinlon*sinlon;
+    auto c = 2 * glm::atan(glm::sqrt(f), glm::sqrt(1 - f));
 
     return EARTH_RADIUS * c;
 }

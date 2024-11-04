@@ -3,54 +3,49 @@
 #include "Utils.h"
 #include "Gradient.h"
 
-SDL_Rect TextRenderer::getTextBounds(const std::string& str, float size) const {
-    int i = std::clamp(0, CACHES_NUMBER, int(std::ceil(std::log2(size))));
-    auto rect = FC_GetBounds(fonts[i].get(), 0, 0, FC_ALIGN_LEFT, {1,1}, str.c_str());
-    float scale = size / (1 << i);
-    
-    rect.w *= scale;
-    rect.h *= scale;
-
-    return rect;
-}
-
-bool TextRenderer::start(SDL_Renderer& renderer) {
-    bool correct = true;
-    for(int i=0; i<=CACHES_NUMBER; ++i) {
-        correct &= FC_LoadFont(fonts[i].get(), &renderer, FONT_SRC, 1 << i, SDL_WHITE, TTF_STYLE_NORMAL);
-    }
-    return correct;
-}
-
-void TextRenderer::render(SDL_Renderer& renderer, const std::string& text, int x, int y, float size, FC_Effect effect) const {
-    int i = std::clamp(0, CACHES_NUMBER, int(std::ceil(std::log2(size))));
-    effect.scale.x = effect.scale.y = size / (1 << i);
-    FC_DrawEffect(fonts[i].get(), &renderer, x, y, effect, text.c_str());
-}
-
-Texture TextRenderer::renderToTexture(SDL_Renderer& renderer, const std::string& str, int size) const {
-    Texture tex;
-    auto rect = getTextBounds(str, size);
-    tex.createBlank(renderer, rect.w, rect.h, SDL_TEXTUREACCESS_TARGET);
-    
-    SDL_SetTextureBlendMode(tex.getTexture(), SDL_BLENDMODE_NONE); 
-    SDL_SetRenderTarget(&renderer, tex.getTexture()); 
-    render(renderer, str, 0, 0, size, FC_MakeEffect(FC_ALIGN_LEFT, {1,1}, SDL_WHITE));
-    SDL_SetRenderTarget(&renderer, nullptr);
-    
-    return tex;
-}
+#include <glad/glad.h>
+#include <SDL_opengl.h>
 
 bool Renderer::start(SDL_Window& window) {
-    renderer.reset(SDL_CreateRenderer(&window, -1, SDL_RENDERER_ACCELERATED));
-    if(!renderer) {
-        writeError("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+    if(SDL_GL_LoadLibrary(nullptr) != 0) {
+        writeError("GL Library could not be loaded! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
 
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+    const auto contextFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | (OPENGL_DEBUG ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OPENGL_MAJOR_VERSION);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, OPENGL_MINOR_VERSION);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+    this->context = SDL_GL_CreateContext(&window);
+    if(!context) {
+        writeError("Context could not be created! SDL_Error: %s\n", SDL_GetError());
+        return false;
+    }
+
+    if(!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+        writeError("GLAD could not be loaded! Error: %s\n", glad_glGetError());
+        return false;
+    }
+
+    writeLog("Vendor:   %s\n", glGetString(GL_VENDOR));
+    writeLog("Renderer: %s\n", glGetString(GL_RENDERER));
+    writeLog("Version:  %s\n", glGetString(GL_VERSION));
     
-    if(!textRenderer.start(*renderer)) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH);
+
+    glViewport(0, 0, width, height);
+
+    textRenderer = TextRenderer(); //Make value
+    if(!textRenderer.value().start()) {
         writeError("Fonts couldn't be loaded from the files");
         return false;
     }
@@ -58,22 +53,19 @@ bool Renderer::start(SDL_Window& window) {
     return true;
 }
 
-void Renderer::renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const {
-    FC_Effect effect;
-    effect.color = color;
-    effect.alignment = align;
-    effect.scale = {1, 1};
-    textRenderer.render(*renderer, str, x, y, scale, effect); 
+void Renderer::clearScreen() {
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const {
-    SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
+void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const { //TODO:
+    /*SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer.get(), color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer.get(), &rect);
+    SDL_RenderFillRect(renderer.get(), &rect);*/
 }
 
-void Renderer::render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode) const {
-	SDL_Rect renderQuad = { x, y, tex.getWidth(), tex.getHeight() };
+void Renderer::render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode) const { //TODO:
+	/*SDL_Rect renderQuad = { x, y, tex.getWidth(), tex.getHeight() };
 
 	if(clip) {
 		renderQuad.w = clip->w;
@@ -81,11 +73,11 @@ void Renderer::render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_Blen
 	}
 
     SDL_SetTextureBlendMode(tex.getTexture(), blendMode);
-    SDL_RenderCopy(renderer.get(), tex.getTexture(), nullptr, &renderQuad);
+    SDL_RenderCopy(renderer.get(), tex.getTexture(), nullptr, &renderQuad);*/
 }
 
-void Renderer::renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre, SDL_BlendMode blendMode) const {
-    float w = tex.getWidth() * scale, h = tex.getHeight() * scale;
+void Renderer::renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre, SDL_BlendMode blendMode) const { //TODO:
+    /*float w = tex.getWidth() * scale, h = tex.getHeight() * scale;
     SDL_FRect renderQuad = { x, y, w, h };
     if(centre)
         renderQuad = { x - w/2 , y - h/2 , w, h };
@@ -93,6 +85,6 @@ void Renderer::renderF(const Texture& tex, float x, float y, float scale, float 
     SDL_FPoint centrePoint = { 0, 0 };        
 
     SDL_SetTextureBlendMode(tex.getTexture(), blendMode); 
-    SDL_RenderCopyExF(renderer.get(), tex.getTexture(), nullptr, &renderQuad, angle, centre? nullptr:&centrePoint, SDL_FLIP_NONE);
+    SDL_RenderCopyExF(renderer.get(), tex.getTexture(), nullptr, &renderQuad, angle, centre? nullptr:&centrePoint, SDL_FLIP_NONE);*/
 }
 

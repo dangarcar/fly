@@ -42,7 +42,7 @@ public:
                 }
 
                 long prev = populations.empty()? 0 : populations.back();
-                populations.push_back(prev + long(std::sqrt(cities[i].population / 1000.0f) * 1000.0f));
+                populations.push_back(prev + long(glm::sqrt(cities[i].population / 1000.0f) * 1000.0f));
 
                 if(!boostedPopsByCountry.contains(cnt))
                     boostedPopsByCountry[cnt] = {};
@@ -55,7 +55,7 @@ public:
                         if(cnt == k)
                             boost += NATIONAL_BOOST;
 
-                        long a = boost * std::log2f(cities[j].population / 1000.0f) * 1000.0f;
+                        long a = boost * glm::log2(cities[j].population / 1000.0f) * 1000.0f;
                         v.push_back(prev + a);
                     }
                 }

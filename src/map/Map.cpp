@@ -1,6 +1,6 @@
 #include "Map.hpp"
 
-#include "../../lib/json.hpp"
+#include <json/json.hpp>
 #include <fstream>
 #include <format>
 
@@ -44,7 +44,7 @@ void Map::load(Camera& camera) {
         c.meshIndex = std::make_pair(polygons.size() - polys.size(), polygons.size());
 
         countries[k] = std::move(c);
-        camera.getTextureManager().loadTexture(camera.getSDL(), k, std::format("./assets/countries/{}.png", k));
+        //camera.getTextureManager().loadTexture(camera.getSDL(), k, std::format("./assets/countries/{}.png", k)); //TODO:
     }
 
     //MESH LOADING
@@ -86,7 +86,7 @@ void Map::projectMap(const Camera& camera) {
 void Map::render(const Camera& camera) {
     camera.fillRect(camera.getScreenViewportRect(), seaColor);
 
-    //Projection calculation in parallel
+    /*//Projection calculation in parallel
     #pragma omp parallel for
     for(int i=0; i<int(polygons.size()); ++i) {
         auto [beg, end] = polygons[i].vertexIndex;
@@ -130,7 +130,7 @@ void Map::render(const Camera& camera) {
             SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0xFF, 0xFF, 0xFF);
             SDL_RenderDrawLinesF(&camera.getSDL(), box.data(), box.size());
         }
-    }
+    }*/
 }
 
 void Map::handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player) {

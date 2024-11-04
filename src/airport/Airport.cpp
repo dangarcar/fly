@@ -36,7 +36,7 @@ void air::renderAirport(const Camera& camera, const AirportData& airport, const 
     || (camera.getZoom() > 6 && airport.radius >= 16)
     || camera.getZoom() > 8) {
         //DRAW NAME
-        camera.renderText(city.name, clip.x + rad, clip.y - rad*1.3, rad*1.3, FC_ALIGN_CENTER, color);
+        camera.renderText(city.name, clip.x + rad, clip.y - rad*1.3, rad*1.3, Aligment::CENTER, color);
 
         //DRAW BAR
         auto bar = SDL_Rect { clip.x, clip.y + clip.h + 4, clip.w, clip.h/5 };

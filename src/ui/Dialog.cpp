@@ -32,5 +32,5 @@ void Button::render(const Renderer& renderer, SDL_Rect parent) {
         c = disabledColor;
     renderer.fillRect(globalRect, c);
     
-    renderer.renderText(text, globalRect.x + globalRect.w/2, globalRect.y + (globalRect.h - fontSize) / 2, fontSize, FC_ALIGN_CENTER, textColor);
+    renderer.renderText(text, globalRect.x + globalRect.w/2, globalRect.y + (globalRect.h - fontSize) / 2, fontSize, Aligment::CENTER, textColor);
 }

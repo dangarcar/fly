@@ -1,6 +1,6 @@
 #include "CitySpawner.hpp"
 
-#include "../../lib/json.hpp"
+#include <json/json.hpp>
 #include <fstream>
 
 #include "../game/Camera.hpp"

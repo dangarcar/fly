@@ -42,16 +42,18 @@ void air::renderRoutePath(const Camera& camera, const Route& route) {
     int n = dist * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
     n += n % 2 + 1;
     auto routeColor = ROUTE_COLOR_BY_LEVEL[route.level];
-    SDL_SetRenderDrawColor(&camera.getSDL(), routeColor.r, routeColor.g, routeColor.b, 0xff);
+    //SDL_SetRenderDrawColor(&camera.getSDL(), routeColor.r, routeColor.g, routeColor.b, 0xff); //TODO:
     glm::vec2 lastProj;
+    
     for(int i=0; i<=n; ++i) {
         auto t = float(i) / n;
         auto proj = route.points[ static_cast<size_t>(t * (route.points.size()-1)) ];
         if(i % 2 == 1) {
             auto lastPoint = camera.projToScreen(lastProj);
             auto p = camera.projToScreen(proj);
-            if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
-                SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y));
+            /*if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
+                SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y)); //TODO:
+            */
         }
         lastProj = proj;
     }
@@ -77,18 +79,18 @@ void air::renderRoutePlanes(const Camera& camera, const Route& route, float fram
 Coord air::getIntermediatePoint(Coord c1, Coord c2, float t) {    
     auto lat1 = glm::radians(c1.lat), lon1 = glm::radians(c1.lon);
     auto lat2 = glm::radians(c2.lat), lon2 = glm::radians(c2.lon);
-    auto sinlat = std::sin((lat1-lat2) / 2);
-    auto sinlon = std::sin((lon1-lon2) / 2);
-    auto tmp = sinlat*sinlat + std::cos(lat1) * std::cos(lat2) * sinlon*sinlon;
-    auto d = 2.0 * std::asin(std::sqrt(tmp));
-    auto A = std::sin((1-t) * d) / std::sin(d);
-    auto B = std::sin(t * d) / std::sin(d);
-    auto x = A * std::cos(lat1) * std::cos(lon1) + B * std::cos(lat2) * std::cos(lon2);
-    auto y = A * std::cos(lat1) * std::sin(lon1) + B * std::cos(lat2) * std::sin(lon2);
-    auto z = A * std::sin(lat1) + B * std::sin(lat2);
+    auto sinlat = glm::sin((lat1-lat2) / 2);
+    auto sinlon = glm::sin((lon1-lon2) / 2);
+    auto tmp = sinlat*sinlat + glm::cos(lat1) * glm::cos(lat2) * sinlon*sinlon;
+    auto d = 2.0 * glm::asin(glm::sqrt(tmp));
+    auto A = glm::sin((1-t) * d) / glm::sin(d);
+    auto B = glm::sin(t * d) / glm::sin(d);
+    auto x = A * glm::cos(lat1) * glm::cos(lon1) + B * glm::cos(lat2) * glm::cos(lon2);
+    auto y = A * glm::cos(lat1) * glm::sin(lon1) + B * glm::cos(lat2) * glm::sin(lon2);
+    auto z = A * glm::sin(lat1) + B * glm::sin(lat2);
     Coord result;
-    result.lat = glm::degrees(std::atan2(z, std::sqrt(x*x + y*y)));
-    result.lon = glm::degrees(std::atan2(y, x));
+    result.lat = glm::degrees(glm::atan(z, glm::sqrt(x*x + y*y)));
+    result.lon = glm::degrees(glm::atan(y, x));
     return result;
 }
 

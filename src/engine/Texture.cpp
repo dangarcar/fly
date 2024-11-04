@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 
-#include "../../lib/json.hpp"
+#include <json/json.hpp>
 
 #include <SDL_image.h>
 #include <fstream>

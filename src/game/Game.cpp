@@ -1,6 +1,6 @@
 #include "Game.hpp"
 
-#include "../../lib/json.hpp"
+#include <json/json.hpp>
 #include <fstream>
 
 #include "../engine/Utils.h"
@@ -74,7 +74,7 @@ void Game::renderDebugInfo() {
     text += std::format("Planes {}\n", player.stats.planes);
     text += std::format("Passengers -> arrived: {}    total: {}\n", player.stats.passengersArrived, player.stats.passengersTotal);
 
-    camera.renderText(text, 0, 0, 32, FC_ALIGN_LEFT, SDL_WHITE);
+    camera.renderText(text, 0, 0, 32, Aligment::LEFT, SDL_WHITE);
 }
 
 void Game::start() {
@@ -82,11 +82,11 @@ void Game::start() {
     std::ifstream file(DEFAULT_GAME_FILE);
     auto data = json::parse(file);
 
-    auto textures = data["textures"];
+    /*auto textures = data["textures"]; ///TODO:
     for(auto& [k, v]: textures.items()) {
         auto path = v.template get<std::string>();
         camera.getTextureManager().loadTexture(camera.getSDL(), k, path);
-    }
+    }*/
 
     map.seaColor = hexCodeToColor(data["SEA_COLOR"].template get<std::string>());
     map.bannedColor = hexCodeToColor(data["BANNED_COLOR"].template get<std::string>());

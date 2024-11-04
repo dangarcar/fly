@@ -30,7 +30,7 @@ public:
 
         auto rect = renderer.getScreenViewportRect();
         renderer.fillRect(rect, SDL_Color{ 0x03, 0x19, 0x40, SDL_ALPHA_OPAQUE});
-        renderer.renderText("LOADING...", rect.w/2, rect.h/2 - 64, 128, FC_ALIGN_CENTER, SDL_WHITE);
+        renderer.renderText("LOADING...", rect.w/2, rect.h/2 - 64, 128, Aligment::CENTER, SDL_WHITE);
     }
 
     long getTicksPerSecond() const override { return 30; }

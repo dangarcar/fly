@@ -44,7 +44,7 @@ void RouteDialog::render(const Renderer& renderer) {
     //RENDER TITLE
     auto nameA = cutNCharacters(cities[route.a].name, 15), nameB = cutNCharacters(cities[route.b].name, 15);
     auto text = std::format("{} - {}", nameA, nameB);
-    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 36, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 36, Aligment::CENTER, SDL_WHITE);
 
     //RENDER PLANES
     auto& t = renderer.getTextureManager().getTexture(air::PLANE_TEXTURE_PER_LEVEL[route.level]);
@@ -98,7 +98,7 @@ void RouteDialog::render(const Renderer& renderer) {
     renderer.fillRect(rect, color);
 
     text = std::format("{}/{}", passengers, total);
-    renderer.renderText(text, dialog.x + dialog.w - 30, dialog.y + dialog.h - 52, 24, FC_ALIGN_RIGHT, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w - 30, dialog.y + dialog.h - 52, 24, Aligment::RIGHT, SDL_WHITE);
 }
 
 bool RouteDialog::handleInput(const InputEvent& event) {

@@ -1,6 +1,6 @@
 #include "LabelManager.hpp"
 
-#include "../../lib/json.hpp"
+#include <json/json.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL 1
 #include <glm/gtx/rotate_vector.hpp>
@@ -24,14 +24,14 @@ void LabelManager::load(Camera& camera) {
         label.coord = {center[0], center[1]};
         auto name = v["name"].template get<std::string>();
 
-        for(int i=0; i<Label::NUMBER_TEXTURE; ++i) {
+        /*for(int i=0; i<Label::NUMBER_TEXTURE; ++i) { //TODO:
             auto size = 2 << i;
             if(size > 2 * Camera::MAX_ZOOM * label.size)
                 break;
             
             label.texture[i] = std::move(camera.getTextRenderer().renderToTexture(camera.getSDL(), name, size));
             label.texture[i].setColorMod(FC_MakeColor(0x60, 0x60, 0x60, 0xFF));
-        }
+        }*/
 
 
         labels[k] = std::move(label);
@@ -41,7 +41,7 @@ void LabelManager::load(Camera& camera) {
 void LabelManager::render(const Camera& camera) {
     for(auto& [k, label]: labels) {
         auto sz = label.size * camera.getZoom();
-        auto textureIndex =  std::clamp(0, Label::NUMBER_TEXTURE - 1, int(std::log2(sz)));
+        auto textureIndex =  std::clamp(0, Label::NUMBER_TEXTURE - 1, int(glm::log2(sz)));
 
         auto& t = label.texture[textureIndex];
         sz /= t.getHeight();

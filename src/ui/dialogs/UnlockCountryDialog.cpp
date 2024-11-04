@@ -34,7 +34,7 @@ void UnlockCountryDialog::render(const Renderer& renderer) {
     noButton.render(renderer, dialog);
 
     auto text = std::format("Buy {}?", countryName);
-    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 32, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 32, Aligment::CENTER, SDL_WHITE);
 
     auto& cir = renderer.getTextureManager().getTexture("CIRCLE");
     cir.setColorMod(SDL_BLACK);
@@ -46,7 +46,7 @@ void UnlockCountryDialog::render(const Renderer& renderer) {
     renderer.render(t, rect.x, rect.y, &rect);
 
     text = std::format("Price: ${}", long(double(DEFAULT_CITY_PRICE) * player.getDifficulty()));
-    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 207, 26, FC_ALIGN_CENTER, SDL_WHITE);
+    renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 207, 26, Aligment::CENTER, SDL_WHITE);
 }
 
 bool UnlockCountryDialog::handleInput(const InputEvent& event) {

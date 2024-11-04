@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <SDL.h>
 
+#include <glm/glm.hpp>
+
 constexpr inline float flerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
@@ -16,7 +18,7 @@ inline float SDL_sqrdistance(SDL_Point a, SDL_Point b) {
 }
 
 inline float SDL_distance(SDL_Point a, SDL_Point b) {
-    return std::sqrt(float((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
+    return glm::sqrt(float((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
 }
 
 class Timer {

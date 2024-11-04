@@ -86,7 +86,7 @@ void StartMenu::render([[maybe_unused]] float frameProgress) {
     auto screen = renderer.getScreenViewportRect();
     renderer.fillRect(screen, SDL_Color{0xb5, 0xc9, 0x9c, SDL_ALPHA_OPAQUE});
 
-    renderer.renderText("AIRPORTS GAME", screen.w/2, 30, 96, FC_ALIGN_CENTER, SDL_BLACK);
+    renderer.renderText("AIRPORTS GAME", screen.w/2, 30, 96, Aligment::CENTER, SDL_BLACK);
 
     startButton.render(renderer, screen);
     loadButton.render(renderer, screen);

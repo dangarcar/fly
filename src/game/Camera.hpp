@@ -54,9 +54,16 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
-    void renderText(const std::string& str, int x, int y, float scale, FC_AlignEnum align, SDL_Color color) const { 
-        renderer.renderText(str, x, y, scale, align, color);
+    void renderText(const std::string& str, int x, int y, float size, Aligment align, SDL_Color color) const { 
+        renderer.renderText(str, x, y, size, align, color);
     }
+    void renderTextRotated(const std::string& str, int x, int y, float size, float angle, SDL_Color color) const {
+        renderer.renderTextRotated(str, x, y, size, angle, color);
+    }
+    SDL_FRect getTextBounds(const std::string& str, float size) const {
+        return renderer.getTextBounds(str, size);
+    }
+
     void fillRect(SDL_Rect rect, SDL_Color color) const { renderer.fillRect(rect, color); }
 
     void render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const {
@@ -66,11 +73,9 @@ public:
         renderer.renderF(tex, x, y, scale, angle, centre, blendMode);
     }
 
-    SDL_Renderer& getSDL() const { return renderer.getSDL(); }
+    //SDL_Renderer& getSDL() const { return renderer.getSDL(); }
     TextureManager& getTextureManager() { return renderer.getTextureManager(); }
     const TextureManager& getTextureManager() const { return renderer.getTextureManager(); }
-    TextRenderer& getTextRenderer() { return renderer.getTextRenderer(); }
-    const TextRenderer& getTextRenderer() const { return renderer.getTextRenderer(); }
 
 private:
     Renderer& renderer;
