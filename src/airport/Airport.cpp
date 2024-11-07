@@ -9,8 +9,8 @@ float air::getRelativeRadius(float radius, float zoom) {
 }
 
 void air::renderAirport(const Camera& camera, const AirportData& airport, const City& city) {
-    auto& circle = camera.getTextureManager().getTexture("CIRCLE");
-    auto& country = camera.getTextureManager().getTexture(city.country);
+    //auto& circle = camera.getTextureManager().getTexture("CIRCLE");
+    //auto& country = camera.getTextureManager().getTexture(city.country);
 
     float fillPercentage = std::min(1.0f, float(airport.waiting.size()) / AIRPORT_CAPACITY_PER_LEVEL[airport.level]);
     auto color = FULL_GRADIENT.getColor(fillPercentage);
@@ -28,9 +28,9 @@ void air::renderAirport(const Camera& camera, const AirportData& airport, const 
     else
         perimeter = SDL_Rect { clip.x - 2, clip.y - 2, clip.w + 4, clip.h + 4 };
 
-    circle.setColorMod(SDL_BLACK);
+    /*circle.setColorMod(SDL_BLACK);
     camera.render(circle, perimeter.x, perimeter.y, &perimeter);
-    camera.render(country, clip.x, clip.y, &clip);
+    camera.render(country, clip.x, clip.y, &clip);*/
 
     if((camera.getZoom() > 4 && airport.radius >= 20)
     || (camera.getZoom() > 6 && airport.radius >= 16)

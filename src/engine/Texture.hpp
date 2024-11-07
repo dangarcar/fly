@@ -6,32 +6,48 @@
 #include <memory>
 #include <filesystem>
 
-class Texture {
+#include "ShaderProgram.hpp"
+
+struct Texture {
+    int width = 0, height = 0;
+    unsigned texture;
+};
+
+/*class Texture {
 public:
-    Texture(): texture(nullptr, &SDL_DestroyTexture) {}
+    //Texture(): texture(nullptr, &SDL_DestroyTexture) {}
+    Texture(std::filesystem::path path);
 
-    bool createBlank(SDL_Renderer& rend, int w, int h, SDL_TextureAccess acc);
-    bool loadFromFile(SDL_Renderer& renderer, const std::filesystem::path& path);
-
-    void setColorMod(SDL_Color color) const { SDL_SetTextureColorMod(texture.get(), color.r, color.g, color.b); }
+    //void setColorMod(SDL_Color color) const { SDL_SetTextureColorMod(texture.get(), color.r, color.g, color.b); }
 
     int getWidth() const { return width; }
     int getHeight() const { return height; }
-    SDL_Texture* getTexture() const { return texture.get(); }
 
 private:
-    std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)> texture;
+    
+};*/
 
-    int width = 0, height = 0;
-};
+class Renderer;
 
 class TextureManager {
 private:
     std::unordered_map<std::string, Texture> textureMap;
 
-public:
-    void loadTexture(const std::string& name, Texture&& texture);
-    bool loadTexture(SDL_Renderer& renderer, const std::string& name, const std::filesystem::path& path);
+    inline static const std::filesystem::path VERTEX_SHADER_SRC = "./src/shaders/texture.vs";
+    inline static const std::filesystem::path FRAGMENT_SHADER_SRC = "./src/shaders/texture.fs";
+    unsigned VAO, VBO, EBO;
+    ShaderProgram shader;
+    int projectionLoc = -1;
 
-    const Texture& getTexture(const std::string& name) const { return textureMap.at(name); }
+public:
+    TextureManager(): shader(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC) {}
+
+    bool start();
+
+    void loadTexture(const std::string& name, std::filesystem::path path);
+
+    void render(const Renderer& r, const std::string& name, float x, float y, SDL_FRect* clip) const;
+    void render(const Renderer& r, const std::string& name, float x, float y, float scale, float angle, bool centre) const;
+
+    Texture getTexture(const std::string& name) const { return textureMap.at(name); }
 };

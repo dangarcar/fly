@@ -17,7 +17,7 @@ class Renderer {
 private:
     //std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> renderer;
     SDL_GLContext context;
-    TextureManager textureManager;
+    //TextureManager textureManager;
     std::optional<TextRenderer> textRenderer;
 
 protected:
@@ -46,8 +46,8 @@ public:
     void render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
     void renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre=false, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
 
-    TextureManager& getTextureManager() { return textureManager; }
-    const TextureManager& getTextureManager() const { return textureManager; }
+    /*TextureManager& getTextureManager() { return textureManager; }
+    const TextureManager& getTextureManager() const { return textureManager; }*/
 
     void clearScreen();
 

@@ -73,9 +73,9 @@ void Player::render(const Camera& camera, int currentTick) {
     float hourAngle = 2*M_PI / (24*TICKS_PER_CLOCK_CYCLE) * (currentTick % (24*TICKS_PER_CLOCK_CYCLE));
     renderClockHand(camera, SDL_Point(screen.w-56, 46), 4, 20, hourAngle, SDL_GOLD);
 
-    auto& t = camera.getTextureManager().getTexture("CLOCK");
+    /*auto& t = camera.getTextureManager().getTexture("CLOCK");
     rect.w = rect.h = 72;
-    camera.render(t, screen.w - 92, 10, &rect);
+    camera.render(t, screen.w - 92, 10, &rect);*/
 
     ffButton = SDL_Rect { screen.w - 172, 20, 60, 52 };
     renderFastForward(fastForwardMultiplier, camera, screen.w - 172, 20, 30, 52, SDL_BLACK);

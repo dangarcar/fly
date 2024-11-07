@@ -63,16 +63,16 @@ void air::renderRoutePlanes(const Camera& camera, const Route& route, float fram
     for(auto& plane: route.planes) {
         auto [proj, angle] = getPointAndAngle(route, std::clamp(plane.t + plane.speed*frameProgress, 0.0f, 1.0f));
         auto p = camera.projToScreen(proj);
-        auto& t = camera.getTextureManager().getTexture(PLANE_TEXTURE_PER_LEVEL[route.level]);
+        //auto& t = camera.getTextureManager().getTexture(PLANE_TEXTURE_PER_LEVEL[route.level]);
         auto scale = getRelativeRadius(AIRPLANE_SCALE, camera.getZoom());
         auto distA = glm::distance(proj, route.points.front()) * camera.getZoom();
         auto distB = glm::distance(proj, route.points.back()) * camera.getZoom();
         auto fillPercentage = std::min(1.0f, float(plane.pass.size()) / PLANE_CAPACITY_PER_LEVEL[route.level]);
         assert(fillPercentage >= 0.0f);
-        if(distA > scale * t.getWidth()/2 && distB > scale * t.getWidth()/2) {
-            t.setColorMod(FULL_GRADIENT.getColor(fillPercentage));
-            camera.renderF(t, p.x, p.y, scale, angle + 180.0f * (plane.speed < 0), true);
-        }
+        /*if(distA > scale * t.getWidth()/2 && distB > scale * t.getWidth()/2) {
+            //t.setColorMod(FULL_GRADIENT.getColor(fillPercentage));
+            //camera.renderF(t, p.x, p.y, scale, angle + 180.0f * (plane.speed < 0), true);
+        }*/
     }
 }
 

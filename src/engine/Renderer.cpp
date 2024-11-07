@@ -41,6 +41,7 @@ bool Renderer::start(SDL_Window& window) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH);
+    glDisable(GL_CULL_FACE);
 
     glViewport(0, 0, width, height);
 
@@ -59,6 +60,8 @@ void Renderer::clearScreen() {
 }
 
 void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const { //TODO:
+    
+
     /*SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer.get(), color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer.get(), &rect);*/

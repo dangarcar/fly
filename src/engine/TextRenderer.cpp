@@ -69,7 +69,6 @@ bool TextRenderer::start() {
         chars[i].elements = indices[i].size();
     }
 
-    shader.use();
     projectionLoc = glGetUniformLocation(shader.getId(), "projection");
     viewLoc = glGetUniformLocation(shader.getId(), "view");
     modelLoc = glGetUniformLocation(shader.getId(), "model");

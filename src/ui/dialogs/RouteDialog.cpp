@@ -47,14 +47,14 @@ void RouteDialog::render(const Renderer& renderer) {
     renderer.renderText(text, dialog.x + dialog.w/2, dialog.y + 10, 36, Aligment::CENTER, SDL_WHITE);
 
     //RENDER PLANES
-    auto& t = renderer.getTextureManager().getTexture(air::PLANE_TEXTURE_PER_LEVEL[route.level]);
+    /*auto& t = renderer.getTextureManager().getTexture(air::PLANE_TEXTURE_PER_LEVEL[route.level]);
     auto planesW = (route.planes.size() - 1) * 100;
     for(int i=0; i<int(route.planes.size()); ++i) {
         auto x = dialog.x + dialog.w/2 - planesW/2 + i*100;
         auto fillPercentage = float(route.planes[i].pass.size()) / air::PLANE_CAPACITY_PER_LEVEL[route.level];
         t.setColorMod(air::FULL_GRADIENT.getColor(fillPercentage));
         renderer.renderF(t, x, dialog.y + 120, 90.0f/t.getWidth(), 0, true);
-    }
+    }*/
 
     //BUY BUTTON
     buyButton.setDisabled(!canBuy());

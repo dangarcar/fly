@@ -74,8 +74,8 @@ public:
     }
 
     //SDL_Renderer& getSDL() const { return renderer.getSDL(); }
-    TextureManager& getTextureManager() { return renderer.getTextureManager(); }
-    const TextureManager& getTextureManager() const { return renderer.getTextureManager(); }
+    //TextureManager& getTextureManager() { return renderer.getTextureManager(); }
+    //const TextureManager& getTextureManager() const { return renderer.getTextureManager(); }
 
 private:
     Renderer& renderer;

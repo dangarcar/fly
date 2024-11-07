@@ -9,9 +9,9 @@
 #include "../engine/Texture.hpp"
 
 struct Label {
-    static constexpr int NUMBER_TEXTURE = 10;
+    //static constexpr int NUMBER_TEXTURE = 10;
+    //std::array<Texture, NUMBER_TEXTURE> texture;
 
-    std::array<Texture, NUMBER_TEXTURE> texture;
     Coord coord;
     float angle;
     float size;
