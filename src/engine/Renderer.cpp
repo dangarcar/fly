@@ -6,10 +6,9 @@
 #include <glad/glad.h>
 #include <SDL_opengl.h>
 
-bool Renderer::start(SDL_Window& window) {
+Renderer::Renderer(int w, int h, SDL_Window& window): width(w), height(h) {
     if(SDL_GL_LoadLibrary(nullptr) != 0) {
         writeError("GL Library could not be loaded! SDL_Error: %s\n", SDL_GetError());
-        return false;
     }
 
     const auto contextFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | (OPENGL_DEBUG ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
@@ -23,15 +22,18 @@ bool Renderer::start(SDL_Window& window) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
+
     this->context = SDL_GL_CreateContext(&window);
     if(!context) {
         writeError("Context could not be created! SDL_Error: %s\n", SDL_GetError());
-        return false;
     }
+
+    SDL_GL_SetSwapInterval(0);
 
     if(!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
         writeError("GLAD could not be loaded! Error: %s\n", glad_glGetError());
-        return false;
     }
 
     writeLog("Vendor:   %s\n", glGetString(GL_VENDOR));
@@ -42,16 +44,19 @@ bool Renderer::start(SDL_Window& window) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH);
     glDisable(GL_CULL_FACE);
+    glEnable(GL_MULTISAMPLE); 
 
     glViewport(0, 0, width, height);
 
     textRenderer = TextRenderer(); //Make value
-    if(!textRenderer.value().start()) {
-        writeError("Fonts couldn't be loaded from the files");
-        return false;
+    if(!textRenderer->start()) {
+        writeError("Fonts couldn't be loaded from the files\n");
     }
 
-    return true;
+    textureManager = TextureManager();
+    if(!textureManager->start()) {
+        writeError("Couldn't create texture manager\n");
+    } 
 }
 
 void Renderer::clearScreen() {
@@ -59,35 +64,19 @@ void Renderer::clearScreen() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const { //TODO:
+void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const {
+    textureManager->fillRect(*this, rect, color);
+}
+
+void Renderer::render(const std::string& tex, float x, float y, std::optional<SDL_FRect> clip, SDL_Color color) const {
+    SDL_FRect* rect = nullptr;
+    if(clip.has_value())
+        rect = &clip.value();
     
-
-    /*SDL_SetRenderDrawBlendMode(renderer.get(), SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer.get(), color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer.get(), &rect);*/
+    textureManager->render(*this, tex, x, y, rect, color);
 }
 
-void Renderer::render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode) const { //TODO:
-	/*SDL_Rect renderQuad = { x, y, tex.getWidth(), tex.getHeight() };
-
-	if(clip) {
-		renderQuad.w = clip->w;
-		renderQuad.h = clip->h;
-	}
-
-    SDL_SetTextureBlendMode(tex.getTexture(), blendMode);
-    SDL_RenderCopy(renderer.get(), tex.getTexture(), nullptr, &renderQuad);*/
-}
-
-void Renderer::renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre, SDL_BlendMode blendMode) const { //TODO:
-    /*float w = tex.getWidth() * scale, h = tex.getHeight() * scale;
-    SDL_FRect renderQuad = { x, y, w, h };
-    if(centre)
-        renderQuad = { x - w/2 , y - h/2 , w, h };
-
-    SDL_FPoint centrePoint = { 0, 0 };        
-
-    SDL_SetTextureBlendMode(tex.getTexture(), blendMode); 
-    SDL_RenderCopyExF(renderer.get(), tex.getTexture(), nullptr, &renderQuad, angle, centre? nullptr:&centrePoint, SDL_FLIP_NONE);*/
+void Renderer::renderExt(const std::string& tex, float x, float y, float scale, float angle, bool centre=false, SDL_Color color) const {
+    textureManager->render(*this, tex, x, y, scale, angle, centre, color);
 }
 

@@ -82,11 +82,11 @@ void Game::start() {
     std::ifstream file(DEFAULT_GAME_FILE);
     auto data = json::parse(file);
 
-    /*auto textures = data["textures"]; ///TODO:
+    auto textures = data["textures"]; ///TODO:
     for(auto& [k, v]: textures.items()) {
         auto path = v.template get<std::string>();
-        camera.getTextureManager().loadTexture(camera.getSDL(), k, path);
-    }*/
+        camera.loadTexture(k, path);
+    }
 
     map.seaColor = hexCodeToColor(data["SEA_COLOR"].template get<std::string>());
     map.bannedColor = hexCodeToColor(data["BANNED_COLOR"].template get<std::string>());

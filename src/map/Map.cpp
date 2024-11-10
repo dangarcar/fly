@@ -2,9 +2,8 @@
 
 #include <json/json.hpp>
 #include <fstream>
-#include <format>
+#include <unordered_map>
 
-#include "../engine/Gradient.h"
 #include "../game/Camera.hpp"
 #include "../Player.hpp"
 #include "../ui/UIManager.hpp"
@@ -14,9 +13,6 @@ BoundingBox createBoundingBox(Coord c1, Coord c2, const Camera& cam);
 SDL_Color getCountryColor(const Map& map, const Country& country);
 
 void Map::load(Camera& camera) {
-    labelManager.load(camera);
-    citySpawner.load(camera);
-
     //COUNTRY MESH
     using json = nlohmann::json;
     std::ifstream countryFile(COUNTRIES_DATA_FILE);
@@ -44,7 +40,7 @@ void Map::load(Camera& camera) {
         c.meshIndex = std::make_pair(polygons.size() - polys.size(), polygons.size());
 
         countries[k] = std::move(c);
-        //camera.getTextureManager().loadTexture(camera.getSDL(), k, std::format("./assets/countries/{}.png", k)); //TODO:
+        camera.loadTexture(k, std::format("./assets/countries/{}.png", k));
     }
 
     //MESH LOADING
@@ -64,6 +60,10 @@ void Map::load(Camera& camera) {
     meshFile.read(reinterpret_cast<char*>(&triangles[0]), triSize * 3 * sizeof(int32_t));
 
     this->projectMap(camera);
+
+    //LOAD SUBCOMPONENTS
+    citySpawner.load(camera);
+    mapRenderer.load(projectedVertices, triangles, polygons, countries);
 }
 
 void Map::projectMap(const Camera& camera) {
@@ -74,48 +74,18 @@ void Map::projectMap(const Camera& camera) {
         projectedVertices[i] = proj.x;
         projectedVertices[i + 1] = proj.y;
     }
-
-    vertexArray = std::vector<SDL_Vertex>(vertices.size() / 2);
-    lineArray.clear();
-    for(auto& p: polygons) {
-        auto [begV, endV] = p.vertexIndex;            
-        lineArray.emplace_back(endV - begV);
-    }
 }
 
 void Map::render(const Camera& camera) {
     camera.fillRect(camera.getScreenViewportRect(), seaColor);
 
-    /*//Projection calculation in parallel
-    #pragma omp parallel for
-    for(int i=0; i<int(polygons.size()); ++i) {
-        auto [beg, end] = polygons[i].vertexIndex;
-        for(int j=beg; j<end; ++j) {
-            SDL_Vertex v;
-            v.color = SDL_GOLD;
-            v.position = camera.projToScreen({projectedVertices[2*j], projectedVertices[2*j + 1]});
-            vertexArray[j] = v;
-            lineArray[i][j - beg] = SDL_Point{int(v.position.x), int(v.position.y)};
-        }
-    }
+    std::unordered_map<std::string, SDL_Color> colors;
+    for(auto& [k, c]: countries)
+        colors[k] = getCountryColor(*this, c);
+    
+    mapRenderer.render(camera, colors);
 
-    //Color without parallelization
-    for(auto& [name, country]: countries) {
-        auto countryColor = getCountryColor(*this, country);
-        auto [beg, end] = country.meshIndex;
-        for(int i=beg; i<end; ++i) {
-            auto [begV, endV] = polygons[i].vertexIndex;
-            for(auto j=begV; j<endV; ++j) {
-                vertexArray[j].color = countryColor;
-            }
-        }
-    }
-
-    SDL_RenderGeometry(&camera.getSDL(), nullptr, vertexArray.data(), vertexArray.size(), triangles.data(), triangles.size());
-
-    labelManager.render(camera);
-
-    SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
+    /*SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
     for(auto& l: lineArray) {
         SDL_RenderDrawLines(&camera.getSDL(), l.data(), l.size());
     }

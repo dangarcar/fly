@@ -1,7 +1,5 @@
 #include "SelectSaveDialog.hpp"
 
-#include "../../scenes/LoadScene.hpp"
-
 bool SelectSaveDialog::handleInput(const InputEvent& event) {
     if(Dialog::handleInput(event))
         return true;

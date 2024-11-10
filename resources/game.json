@@ -4,7 +4,8 @@
         "PLANE0": "./assets/plane0.png",
         "PLANE1": "./assets/plane1.png",
         "PLANE2": "./assets/plane2.png",
-        "CLOCK": "./assets/clock.png"
+        "CLOCK": "./assets/clock.png",
+        "TRIS": "./assets/tris.png"
     },
 
     "SEA_COLOR": "#031940",

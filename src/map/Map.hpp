@@ -5,8 +5,8 @@
 #include <string>
 #include <filesystem>
 
-#include "LabelManager.hpp"
 #include "CitySpawner.hpp"
+#include "MapRenderer.hpp"
 
 #include "../engine/InputEvent.h"
 
@@ -23,7 +23,6 @@ public:
 private:
     inline static const std::filesystem::path COUNTRIES_DATA_FILE = "./resources/countries.json";
     inline static const std::filesystem::path MESH_DATA_FILE = "./resources/mesh.bin";
-    //inline static const std::filesystem::path FLAGS_DATA_FILE = "./resources/flags.json";
 
 public:
     Map() = default;
@@ -50,16 +49,12 @@ private:
     std::vector<float> vertices;
     std::vector<float> projectedVertices;
     std::vector<int32_t> triangles;
+    std::vector<Polygon> polygons;
     std::unordered_map<std::string, Country> countries;
 
-    //CACHED RENDERING ARRAYS
-    std::vector<SDL_Vertex> vertexArray;
-    std::vector<std::vector<SDL_Point>> lineArray;
-    std::vector<Polygon> polygons;
-
     //SYSTEMS
-    LabelManager labelManager;
     CitySpawner citySpawner;
+    MapRenderer mapRenderer;
     
     //MORE DATA
     bool renderBoxes = false;

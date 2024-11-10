@@ -1,8 +1,8 @@
 #include "Window.hpp"
 
-#include <SDL_image.h>
 #include <cassert>
 
+#include "Renderer.hpp"
 #include "Scene.h"
 
 #include <glad/glad.h>
@@ -10,11 +10,6 @@
 int Window::start(bool fullscreen) {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         writeError("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-        return -1;
-    }
-
-    if(!IMG_Init(IMG_INIT_PNG)) {
-        writeError("Image system could not be initialized! SDL_Error: %s\n", SDL_GetError());
         return -1;
     }
 
@@ -34,10 +29,7 @@ int Window::start(bool fullscreen) {
         return -1;
     }
 
-    SDL_Surface* icon = IMG_Load("./assets/icon.ico"); 
-    SDL_SetWindowIcon(window.get(), icon);
-
-    renderer.start(*window);
+    renderer = Renderer(width, height, *window);
 
     return 0;
 }

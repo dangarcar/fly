@@ -2,9 +2,7 @@
 
 #include <SDL.h>
 #include <memory>
-#include <variant>
 
-#include "Utils.h"
 #include "Scene.h"
 #include "Renderer.hpp"
 
@@ -16,7 +14,7 @@ public:
     static constexpr int DEFAULT_SCREEN_HEIGHT = 720;
 
 public:
-    Window(): window(nullptr, &SDL_DestroyWindow), renderer(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT) {}
+    Window(): window(nullptr, &SDL_DestroyWindow) {}
     ~Window() { SDL_Quit(); }
     
     int start(bool fullscreen);

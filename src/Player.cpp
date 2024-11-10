@@ -43,17 +43,10 @@ void renderClockHand(const Camera& camera, SDL_Point center, int w, int h, float
 }
 
 void renderFastForward(int n, const Camera& camera, float x, float y, float w, float h, SDL_Color color) {
-    SDL_Vertex triVertices[3] = {
-        SDL_Vertex { .position = {x - 3*n, y}, .color = color, .tex_coord = {0,0}},
-        SDL_Vertex { .position = {x - 3*n, y + h}, .color = color, .tex_coord = {0,0}},
-        SDL_Vertex { .position = {x - 3*n + w, y + h/2}, .color = color, .tex_coord = {0,0}},
-    };
-
+    SDL_FRect rect = {x - 3*n, y, w, h};
     for(int i=0; i<=n; ++i) {
-        //SDL_RenderGeometry(&camera.getSDL(), nullptr, triVertices, 3, nullptr, 3); //TODO:
-        
-        for(int j=0; j<3; ++j)
-            triVertices[j].position.x += w / n + 6;
+        camera.render("TRIS", rect.x, rect.y, rect, color);
+        rect.x += w / n + 6;
     }
 }
 
@@ -73,9 +66,8 @@ void Player::render(const Camera& camera, int currentTick) {
     float hourAngle = 2*M_PI / (24*TICKS_PER_CLOCK_CYCLE) * (currentTick % (24*TICKS_PER_CLOCK_CYCLE));
     renderClockHand(camera, SDL_Point(screen.w-56, 46), 4, 20, hourAngle, SDL_GOLD);
 
-    /*auto& t = camera.getTextureManager().getTexture("CLOCK");
     rect.w = rect.h = 72;
-    camera.render(t, screen.w - 92, 10, &rect);*/
+    camera.render("CLOCK", screen.w - 92, 10, toFRect(rect));
 
     ffButton = SDL_Rect { screen.w - 172, 20, 60, 52 };
     renderFastForward(fastForwardMultiplier, camera, screen.w - 172, 20, 30, 52, SDL_BLACK);

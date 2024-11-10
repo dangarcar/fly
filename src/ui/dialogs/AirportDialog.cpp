@@ -62,11 +62,9 @@ void AirportDialog::render(const Renderer& renderer) {
     }
 
     //RENDER LEVEL UPGRADES
-    /*auto& t = renderer.getTextureManager().getTexture("CIRCLE");
-    t.setColorMod(SDL_GOLD);
-    renderer.renderF(t, dialog.x + dialog.w/4, dialog.y + 168, 134.0f / t.getWidth(), 0, true);
+    renderer.renderExt("CIRCLE", dialog.x + dialog.w/4.0f, dialog.y + 168, 134.0f, 0, true, SDL_GOLD);
     text = std::to_string(airport.level + 1);
-    renderer.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, Aligment::CENTER, SDL_WHITE);*/
+    renderer.renderText(text, dialog.x + dialog.w/4, dialog.y + 104, 128, Aligment::CENTER, SDL_WHITE);
 
     upgradeButton.setDisabled(!canUpgrade());
     if(canUpgrade())

@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-#include "Texture.hpp"
+#include "TextureManager.hpp"
 #include "TextRenderer.hpp"
 
 constexpr int OPENGL_MAJOR_VERSION = 4;
@@ -17,20 +17,19 @@ class Renderer {
 private:
     //std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)> renderer;
     SDL_GLContext context;
-    //TextureManager textureManager;
+    std::optional<TextureManager> textureManager;
     std::optional<TextRenderer> textRenderer;
 
 protected:
     int width, height;
 
 public:
-    Renderer(int w, int h): width(w), height(h) {}
+    Renderer() {}
+    Renderer(int w, int h, SDL_Window& window);
 
     Renderer(Renderer&&) = default;
     Renderer& operator=(Renderer&& that) = default;
 
-    bool start(SDL_Window& window);
-    
     void renderText(const std::string& str, int x, int y, float size, Aligment align, SDL_Color color) const {
         textRenderer.value().render(*this, str, x, y, size, align, color);
     }
@@ -42,9 +41,11 @@ public:
     }
 
     void fillRect(SDL_Rect rect, SDL_Color color) const;
-    
-    void render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
-    void renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre=false, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const;
+    void render(const std::string& tex, float x, float y, std::optional<SDL_FRect> clip, SDL_Color mod=SDL_WHITE) const;
+    void renderExt(const std::string& tex, float x, float y, float scale, float angle, bool centre, SDL_Color mod=SDL_WHITE) const;
+    void loadTexture(const std::string& name, const std::filesystem::path& path) {
+        textureManager->loadTexture(name, path);
+    }
 
     /*TextureManager& getTextureManager() { return textureManager; }
     const TextureManager& getTextureManager() const { return textureManager; }*/

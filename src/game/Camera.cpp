@@ -1,10 +1,23 @@
 #include "Camera.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
+
+glm::mat4 Camera::projToScreenMatrix() const {
+    glm::mat4 mat(1.0f);
+
+    mat = glm::translate(mat, glm::vec3(-1, 1, 0));
+    mat = glm::scale(mat, glm::vec3(2.0f/width, -2.0f/height, 1));
+    mat = glm::scale(mat, glm::vec3(zoom, zoom, 1));
+    mat = glm::translate(mat, glm::vec3(-pos.x + width/2.0f, -pos.y + height/2.0f, 0));
+
+    return mat;
+}
+
 glm::vec2 Camera::coordsToProj(Coord coords) const {
     glm::vec2 proj;
     const double M_1_2PI = 1.0 / (2.0 * M_PI);
     proj.x = width * M_1_2PI * (M_PI + glm::radians(coords.lon));
-    proj.y = width * M_1_2PI * (M_PI - log(tan(M_PI_4 + glm::radians(coords.lat)/2.0)));
+    proj.y = width * M_1_2PI * (M_PI - glm::log(glm::tan(M_PI_4 + glm::radians(coords.lat)/2.0)));
     return proj;
 }
 
@@ -17,15 +30,15 @@ Coord Camera::projToCoords(glm::vec2 proj) const {
 
 SDL_FPoint Camera::projToScreen(glm::vec2 proj) const {
     SDL_FPoint p;
-    p.x = (proj.x - pos.x + width/2) * zoom; 
-    p.y = (proj.y - pos.y + height/2) * zoom;
+    p.x = (proj.x - pos.x + width/2.0f) * zoom; 
+    p.y = (proj.y - pos.y + height/2.0f) * zoom;
     return p;
 }
 
 glm::vec2 Camera::screenToProj(SDL_Point p) const {
     glm::vec2 proj;
-    proj.x = p.x / zoom + pos.x - width/2; 
-    proj.y = p.y / zoom + pos.y - height/2;
+    proj.x = p.x / zoom + pos.x - width/2.0f; 
+    proj.y = p.y / zoom + pos.y - height/2.0f;
     return proj;
 }
 

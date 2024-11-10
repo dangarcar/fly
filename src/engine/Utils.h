@@ -68,3 +68,11 @@ inline std::string cutNCharacters(std::string s, int n) {
 
     return s;
 }
+
+inline SDL_FRect toFRect(SDL_Rect rect) {
+    return SDL_FRect{float(rect.x), float(rect.y), float(rect.w), float(rect.h)};
+}
+
+inline SDL_Rect toRect(SDL_FRect frect) {
+    return SDL_Rect{int(frect.x), int(frect.y), int(frect.w), int(frect.h)};
+}

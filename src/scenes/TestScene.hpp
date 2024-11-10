@@ -71,8 +71,8 @@ public:
 
         auto rect = SDL_FRect {0.0f, 0.0f, 300.0f, 300.0f};
         manager->render(window.getRenderer(), "HELLO", 200, 200, &rect);
-        manager->render(window.getRenderer(), "HELLO", 600, 200, 0.5f, 0.0f, false);
-        manager->render(window.getRenderer(), "HELLO", 600, 200, 0.5f, 45.0f, false);
+        manager->render(window.getRenderer(), "HELLO", 600, 200, 0.5f, 45.0f, false, SDL_GOLD);
+        manager->fillRect(window.getRenderer(), {20, 20, 200, 200}, SDL_SILVER);
 
         window.getRenderer().renderText("HELLO world!\npatata 231", 640, 0, 50, Aligment::RIGHT, SDL_WHITE);
         window.getRenderer().renderTextRotated("HELLO rotations", 640, 0, 50, 30, SDL_GOLD);

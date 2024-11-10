@@ -4,6 +4,8 @@ project(Fly VERSION 0.0.1)
 include(CTest)
 enable_testing()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_FLAGS "-Wall -Wextra")
 set (CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -23,16 +25,12 @@ FetchContent_MakeAvailable(glm)
 
 if(WIN32)
     set(SDL2_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2/cmake")
-    set(SDL2_image_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2_image/cmake")
-    set(SDL2_ttf_DIR "${PROJECT_SOURCE_DIR}/lib/SDL2_ttf/cmake")
 endif()
 
 find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
 find_package(OpenMP REQUIRED)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mconsole ")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mconsole")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 add_executable(${PROJECT_NAME}
@@ -42,8 +40,6 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} 
     SDL2::SDL2main 
     SDL2::SDL2
-    SDL2_image::SDL2_image
-    SDL2_ttf::SDL2_ttf
     glm::glm
     OpenMP::OpenMP_CXX
 )

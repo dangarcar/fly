@@ -34,6 +34,8 @@ public:
     SDL_FPoint coordsToScreen(Coord coords) const { return projToScreen(coordsToProj(coords)); }
     Coord screenToCoords(SDL_Point p) const { return projToCoords(screenToProj(p)); }
 
+    glm::mat4 projToScreenMatrix() const;
+
     void handleInput(const InputEvent& event);
     void move(glm::vec2 v);
 
@@ -65,12 +67,14 @@ public:
     }
 
     void fillRect(SDL_Rect rect, SDL_Color color) const { renderer.fillRect(rect, color); }
-
-    void render(const Texture& tex, int x, int y, SDL_Rect* clip, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const {
-        renderer.render(tex, x, y, clip, blendMode);
+    void render(const std::string& tex, float x, float y, std::optional<SDL_FRect> clip, SDL_Color mod=SDL_WHITE) const { 
+        renderer.render(tex, x, y, clip, mod);
     }
-    void renderF(const Texture& tex, float x, float y, float scale, float angle, bool centre=false, SDL_BlendMode blendMode=SDL_BLENDMODE_BLEND) const {
-        renderer.renderF(tex, x, y, scale, angle, centre, blendMode);
+    void renderExt(const std::string& tex, float x, float y, float scale, float angle, bool centre, SDL_Color mod=SDL_WHITE) const { 
+        renderer.renderExt(tex, x, y, scale, angle, centre, mod);
+    }
+    void loadTexture(const std::string& name, const std::filesystem::path& path) {
+        renderer.loadTexture(name, path);
     }
 
     //SDL_Renderer& getSDL() const { return renderer.getSDL(); }

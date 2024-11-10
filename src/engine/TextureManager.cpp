@@ -1,4 +1,4 @@
-#include "Texture.hpp"
+#include "TextureManager.hpp"
 
 #include <json/json.hpp>
 #include <fstream>
@@ -42,28 +42,11 @@ bool TextureManager::start() {
     glEnableVertexAttribArray(1);
 
     projectionLoc = glGetUniformLocation(shader.getId(), "projection");
+    modColorLoc = glGetUniformLocation(shader.getId(), "modColor");
+    useTextureLocation = glGetUniformLocation(shader.getId(), "useTexture");
 
-    return projectionLoc != -1;
+    return projectionLoc != -1 && modColorLoc != -1 && useTextureLocation != -1;
 }
-
-/*bool Texture::loadFromFile(std::filesystem::path path) {
-    auto surface = IMG_Load(path.string().c_str());
-    if(!surface) {
-        writeError("Unable to load %s. SDL_Image error: %s", path.c_str(), IMG_GetError());
-        return false;
-    }
-
-    texture.reset(SDL_CreateTextureFromSurface(&renderer, surface));
-    SDL_FreeSurface(surface);
-    if(!texture) {
-        writeError("Unable to create texture %s. SDL error: %s", path.c_str(), SDL_GetError());
-        return false;
-    }
-
-    SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height);
-
-    return true;
-}*/
 
 void TextureManager::loadTexture(const std::string& name, std::filesystem::path path) {
     Texture t;
@@ -92,9 +75,7 @@ void TextureManager::loadTexture(const std::string& name, std::filesystem::path 
     textureMap[name] = t;
 }
 
-void TextureManager::render(const Renderer& r, const std::string& name, float x, float y, SDL_FRect* clip) const {
-    shader.use();
-    
+void TextureManager::render(const Renderer& r, const std::string& name, float x, float y, SDL_FRect* clip, SDL_Color mod) const {    
     auto& t = textureMap.at(name);
     float w = t.width, h = t.height;
     if(clip) {
@@ -102,38 +83,40 @@ void TextureManager::render(const Renderer& r, const std::string& name, float x,
         h = clip->h;
     }
 
-    auto projection = glm::mat4(1.0f);
-    projection = glm::translate(projection, glm::vec3(-1, 1, 0)); //Change center to top-left
-    projection = glm::scale(projection, glm::vec3(w / r.getWidth(), h / r.getHeight(), 1));
-    projection = glm::translate(projection, glm::vec3(1 + 2*x/w, -(1 + 2*y/h), 0));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    glBindTexture(GL_TEXTURE_2D, t.texture);
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    this->renderPriv(r, &t, {x, y, w, h}, 0.0f, mod);
 }
 
-void TextureManager::render(const Renderer& r, const std::string& name, float x, float y, float scale, float angle, bool centre) const {
-    shader.use();
-    
+void TextureManager::render(const Renderer& r, const std::string& name, float x, float y, float scale, float angle, bool centre, SDL_Color mod) const {
     auto& t = textureMap.at(name);
-    float w = t.width * scale;
-    float h = t.height * scale;
+    float w = scale;
+    float h = scale;
 
     if(centre) {
         x -= w/2;
         y -= h/2;
     }
 
+    this->renderPriv(r, &t, {x, y, w, h}, angle, mod);
+}
+
+void TextureManager::fillRect(const Renderer& r, SDL_Rect rect, SDL_Color color) const {
+    this->renderPriv(r, nullptr, toFRect(rect), 0.0f, color);
+}
+
+void TextureManager::renderPriv(const Renderer& r, const Texture* t, SDL_FRect rect, float angle, SDL_Color color) const {
+    shader.use();
+
     auto projection = glm::mat4(1.0f);
     projection = glm::translate(projection, glm::vec3(-1, 1, 0)); //Change center to top-left
-    projection = glm::scale(projection, glm::vec3(w / r.getWidth(), h / r.getHeight(), 1));
-    projection = glm::translate(projection, glm::vec3(1 + 2*x/w, -(1 + 2*y/h), 0));
+    projection = glm::scale(projection, glm::vec3(rect.w / r.getWidth(), rect.h / r.getHeight(), 1));
+    projection = glm::translate(projection, glm::vec3(1 + 2*rect.x/rect.w, -(1 + 2*rect.y/rect.h), 0));
     projection = glm::rotate(projection, glm::radians(-angle), glm::vec3(0, 0, 1));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-    glBindTexture(GL_TEXTURE_2D, t.texture);
+    glUniform4f(modColorLoc, color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
+    glUniform1i(useTextureLocation, t != nullptr);
+
+    if(t) glBindTexture(GL_TEXTURE_2D, t->texture);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

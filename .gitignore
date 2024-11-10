@@ -1,9 +1,11 @@
-build
-release
-out
-saves
-bin
+.vscode/
+.cache/
+compile_commands.json
 
-lib/SDL2
-lib/SDL2_image
-lib/SDL2_ttf
+build/
+release/
+out/
+saves/
+bin/
+
+lib/SDL2/
