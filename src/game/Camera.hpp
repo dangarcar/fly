@@ -34,7 +34,7 @@ public:
     SDL_FPoint coordsToScreen(Coord coords) const { return projToScreen(coordsToProj(coords)); }
     Coord screenToCoords(SDL_Point p) const { return projToCoords(screenToProj(p)); }
 
-    glm::mat4 projToScreenMatrix() const;
+    glm::mat4 projToGLSpaceMatrix() const;
 
     void handleInput(const InputEvent& event);
     void move(glm::vec2 v);

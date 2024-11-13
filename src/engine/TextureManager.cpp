@@ -65,8 +65,7 @@ void TextureManager::loadTexture(const std::string& name, std::filesystem::path 
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t.width, t.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else {
+    } else {
         writeError("Failed to load texture\n");
     }
 

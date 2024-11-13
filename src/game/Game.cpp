@@ -4,7 +4,6 @@
 #include <fstream>
 
 #include "../engine/Utils.h"
-#include "../engine/Window.hpp"
 #include "../ui/dialogs/PauseGameDialog.hpp"
 
 void Game::handleInput(const InputEvent& event) {
@@ -95,6 +94,7 @@ void Game::start() {
     map.hoveredColor = hexCodeToColor(data["HOVERED_COLOR"].template get<std::string>());
 
     map.load(camera);
+    airManager.start(map.getCountries());
 }
 
 GameSave Game::serialize() const {

@@ -28,11 +28,13 @@ namespace air {
         std::vector<air::AirportData> airports;
         std::vector<air::Route> routes;
         std::vector<std::vector<int>> networkAdjList;
-        std::array<std::vector<int>, ROUTE_GRID_HEIGHT*ROUTE_GRID_WIDTH> routeGrids;
+        std::vector<std::vector<int>> routeGrids;
     };
 
     class AirportManager: Serializable<AirportSave> {
     public:
+        void start(const std::unordered_map<std::string, Country>& countries);
+
         bool handleInput(const InputEvent& event, Player& player, UIManager& uiManager);
         void update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager);
         void render(const Camera& camera, float frameProgress);
@@ -60,14 +62,15 @@ namespace air {
         std::vector<AirportData> airports;
         
         std::vector<Route> routes;
-        std::array<std::vector<int>, ROUTE_GRID_HEIGHT*ROUTE_GRID_WIDTH> routeGrids;
+        std::vector<std::vector<int>> routeGrids;
 
         std::vector<std::vector<int>> networkAdjList;
         std::vector<std::vector<int>> parentTree;
 
         AgentSpawner agentSpawner;
-
         CurrentRoute currentRoute;
+
+        AirportRenderer airportRenderer;
 
         int clickedAirport = -1, clickedRoute = -1;
 

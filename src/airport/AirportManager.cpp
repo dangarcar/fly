@@ -1,7 +1,7 @@
 #include "AirportManager.hpp"
 
-#include <format>
 #include <algorithm>
+#include <vector>
 
 #include "../game/Camera.hpp"
 #include "../engine/Utils.h"
@@ -15,6 +15,10 @@
 #include "../ui/dialogs/RouteDialog.hpp"
 
 std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjList);
+
+void air::AirportManager::start(const std::unordered_map<std::string, Country>& countries) {
+    airportRenderer.start(countries);
+}
 
 bool air::AirportManager::handleInput(const InputEvent& event, Player& player, UIManager& uiManager) {
     if(auto* moveevent = std::get_if<MouseMoveEvent>(&event)) {
@@ -60,8 +64,15 @@ bool air::AirportManager::handleInput(const InputEvent& event, Player& player, U
 }
 
 void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager) {
+    for(int i=0; i<1000; ++i) { //FIXME:
+        if(auto c = citySpawner.getRandomCity()) {
+            addAirport(std::move(c.value()), player);
+            updatePaths();
+        }
+    }
+
     //SPAWN CITY
-    while(auto city = citySpawner.getRandomCity()) {    
+    if(auto city = citySpawner.getRandomCity()) {    
         auto value = city.value();        
         addAirport(std::move(value), player);
         updatePaths();
@@ -166,21 +177,22 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
     }
 }
 
-void air::AirportManager::render(const Camera& camera, float frameProgress) {
+void air::AirportManager::render(const Camera& camera, float frameProgress) {    
     for(auto& r: routes) {
         if(r.points.empty())
             r.points = air::getPathProjs(camera, cities[r.a].coord, cities[r.b].coord);
         renderRoutePath(camera, r);
     }
 
-    for(int i=0; i<int(airports.size()); ++i)
-        renderAirport(camera, airports[i], cities[i]);
+    Timer t;
+    airportRenderer.render(camera, this->airports, this->cities);
+    writeLog("%f\n", t.elapsedMillis());
 
     for(const auto& r: routes)
         renderRoutePlanes(camera, r, frameProgress);
 
     if(currentRoute.route.a != -1) {
-        Coord c1 = cities[currentRoute.route.a].coord;
+        /*Coord c1 = cities[currentRoute.route.a].coord;
         Coord c2 = currentRoute.route.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.route.b].coord;
         //SDL_SetRenderDrawColor(&camera.getSDL(), currentRoute.color.r, currentRoute.color.g, currentRoute.color.b, currentRoute.color.a); //TODO:
         int n = float(mtsDistance(c1, c2)) / EARTH_RADIUS * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
@@ -193,12 +205,12 @@ void air::AirportManager::render(const Camera& camera, float frameProgress) {
                 auto lastPoint = camera.coordsToScreen(lastCoord);
                 auto p = camera.coordsToScreen(c);
 
-                /*if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
+                if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
                     SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y)); //TODO:
-                */
+                
             }
             lastCoord = c;
-        }
+        }*/
 
         camera.renderText(std::to_string(currentRoute.price), mousePos.x, mousePos.y - 36, 32, Aligment::CENTER, currentRoute.color);
     }
@@ -354,8 +366,7 @@ std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjLis
     assert(src < n);
 
     std::vector<int> parent(n, -1);
-    bool visited[n];
-    memset(visited, false, n);
+    std::vector<bool> visited(n, false);
     std::queue<int> q;
 
     parent[src] = src;

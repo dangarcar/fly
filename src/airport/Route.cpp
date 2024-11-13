@@ -63,16 +63,17 @@ void air::renderRoutePlanes(const Camera& camera, const Route& route, float fram
     for(auto& plane: route.planes) {
         auto [proj, angle] = getPointAndAngle(route, std::clamp(plane.t + plane.speed*frameProgress, 0.0f, 1.0f));
         auto p = camera.projToScreen(proj);
-        //auto& t = camera.getTextureManager().getTexture(PLANE_TEXTURE_PER_LEVEL[route.level]);
         auto scale = getRelativeRadius(AIRPLANE_SCALE, camera.getZoom());
         auto distA = glm::distance(proj, route.points.front()) * camera.getZoom();
         auto distB = glm::distance(proj, route.points.back()) * camera.getZoom();
         auto fillPercentage = std::min(1.0f, float(plane.pass.size()) / PLANE_CAPACITY_PER_LEVEL[route.level]);
         assert(fillPercentage >= 0.0f);
-        /*if(distA > scale * t.getWidth()/2 && distB > scale * t.getWidth()/2) {
-            //t.setColorMod(FULL_GRADIENT.getColor(fillPercentage));
-            //camera.renderF(t, p.x, p.y, scale, angle + 180.0f * (plane.speed < 0), true);
-        }*/
+        
+        if(distA > scale/2 && distB > scale/2) {
+            auto c = FULL_GRADIENT.getColor(fillPercentage);
+            auto t = PLANE_TEXTURE_PER_LEVEL[route.level];
+            camera.renderExt(t, p.x, p.y, scale, angle + 180.0f * (plane.speed < 0), true, c);
+        }
     }
 }
 
@@ -83,6 +84,7 @@ Coord air::getIntermediatePoint(Coord c1, Coord c2, float t) {
     auto sinlon = glm::sin((lon1-lon2) / 2);
     auto tmp = sinlat*sinlat + glm::cos(lat1) * glm::cos(lat2) * sinlon*sinlon;
     auto d = 2.0 * glm::asin(glm::sqrt(tmp));
+
     auto A = glm::sin((1-t) * d) / glm::sin(d);
     auto B = glm::sin(t * d) / glm::sin(d);
     auto x = A * glm::cos(lat1) * glm::cos(lon1) + B * glm::cos(lat2) * glm::cos(lon2);

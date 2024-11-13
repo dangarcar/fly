@@ -44,12 +44,17 @@ public:
     MapSave serialize() const override;
     void deserialize(const MapSave& save) override;
 
+    std::unordered_map<std::string, Country> getCountries() const {
+        return countries;
+    }
+
 private:
     //DATA
     std::vector<float> vertices;
     std::vector<float> projectedVertices;
     std::vector<int32_t> triangles;
     std::vector<Polygon> polygons;
+    
     std::unordered_map<std::string, Country> countries;
 
     //SYSTEMS
@@ -57,7 +62,6 @@ private:
     MapRenderer mapRenderer;
     
     //MORE DATA
-    bool renderBoxes = false;
     std::string targetCountry;
     SDL_Point mousePos;
 };

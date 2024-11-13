@@ -64,6 +64,14 @@ void Map::load(Camera& camera) {
     //LOAD SUBCOMPONENTS
     citySpawner.load(camera);
     mapRenderer.load(projectedVertices, triangles, polygons, countries);
+
+    //FIXME:
+    for(auto& [k, v]: countries) {
+        if(countries[k].state == CountryState::LOCKED) {
+            countries[k].state = CountryState::UNLOCKED;
+            citySpawner.addCountry(k);
+        }
+    }
 }
 
 void Map::projectMap(const Camera& camera) {
@@ -84,31 +92,9 @@ void Map::render(const Camera& camera) {
         colors[k] = getCountryColor(*this, c);
     
     mapRenderer.render(camera, colors);
-
-    /*SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0, 0, SDL_ALPHA_OPAQUE);
-    for(auto& l: lineArray) {
-        SDL_RenderDrawLines(&camera.getSDL(), l.data(), l.size());
-    }
-
-    //BOX RENDER
-    if(renderBoxes) {
-        for(auto [k, c]: countries) {
-            auto& pol = polygons[c.meshIndex.first];
-            auto x1 = pol.boundingBox.topLeft.x, y1 = pol.boundingBox.topLeft.y;
-            auto x2 = pol.boundingBox.bottomRight.x, y2 = pol.boundingBox.bottomRight.y;
-            std::vector box = { camera.projToScreen({x1, y1}), camera.projToScreen({x1, y2}), camera.projToScreen({x2, y2}), camera.projToScreen({x2, y1}), camera.projToScreen({x1, y1}) };
-            SDL_SetRenderDrawColor(&camera.getSDL(), 0, 0xFF, 0xFF, 0xFF);
-            SDL_RenderDrawLinesF(&camera.getSDL(), box.data(), box.size());
-        }
-    }*/
 }
 
 void Map::handleInput(const InputEvent& event, Camera& camera, UIManager& uiManager, Player& player) {
-    if(auto* keyevent = std::get_if<KeyPressedEvent>(&event)) {
-        if(keyevent->keycode == SDLK_q)
-            renderBoxes = ! renderBoxes;
-    }
-
     if(auto* clickEvent = std::get_if<ClickEvent>(&event)) {
         if(clickEvent->button == SDL_BUTTON_LEFT) {
             if(!targetCountry.empty() && countries[targetCountry].state != CountryState::BANNED)

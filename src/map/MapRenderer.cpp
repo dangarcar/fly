@@ -78,7 +78,7 @@ void MapRenderer::load(
 void MapRenderer::render(const Camera& camera, const std::unordered_map<std::string, SDL_Color>& countryColors) const {
     //RENDER VERTICES
     shader.use();
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projToScreenMatrix()));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projToGLSpaceMatrix()));
     for(int i=0; i<int(renders.size()); ++i) {
         auto r = renders[i];
         

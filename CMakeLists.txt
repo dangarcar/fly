@@ -41,7 +41,7 @@ target_link_libraries(${PROJECT_NAME}
     SDL2::SDL2main 
     SDL2::SDL2
     glm::glm
-    OpenMP::OpenMP_CXX
+    #OpenMP::OpenMP_CXX
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

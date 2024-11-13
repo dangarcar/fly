@@ -2,6 +2,8 @@
 .cache/
 compile_commands.json
 
+*.exe
+
 build/
 release/
 out/

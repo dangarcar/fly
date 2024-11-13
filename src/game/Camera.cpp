@@ -2,7 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-glm::mat4 Camera::projToScreenMatrix() const {
+glm::mat4 Camera::projToGLSpaceMatrix() const {
     glm::mat4 mat(1.0f);
 
     mat = glm::translate(mat, glm::vec3(-1, 1, 0));
@@ -17,14 +17,14 @@ glm::vec2 Camera::coordsToProj(Coord coords) const {
     glm::vec2 proj;
     const double M_1_2PI = 1.0 / (2.0 * M_PI);
     proj.x = width * M_1_2PI * (M_PI + glm::radians(coords.lon));
-    proj.y = width * M_1_2PI * (M_PI - glm::log(glm::tan(M_PI_4 + glm::radians(coords.lat)/2.0)));
+    proj.y = width * M_1_2PI * (M_PI - glm::log(glm::tan(glm::quarter_pi<double>() + glm::radians(coords.lat)/2.0)));
     return proj;
 }
 
 Coord Camera::projToCoords(glm::vec2 proj) const {
     Coord c;
     c.lon = glm::degrees(2.0 * M_PI * proj.x / width - M_PI); 
-    c.lat = glm::degrees(2.0 * (atan(exp(M_PI - 2.0 * M_PI * proj.y / width)) - M_PI_4));
+    c.lat = glm::degrees(2.0 * (atan(exp(M_PI - 2.0 * M_PI * proj.y / width)) - glm::quarter_pi<double>()));
     return c;
 }
 
