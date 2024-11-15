@@ -1,10 +1,12 @@
 #pragma once
 
+#include <filesystem>
 #include <vector>
 #include <glm/glm.hpp>
 
 #include "../game/Types.h"
 #include "../engine/Gradient.h"
+#include "../engine/ShaderProgram.hpp"
 
 class Camera;
 
@@ -55,5 +57,23 @@ namespace air {
     Coord getIntermediatePoint(Coord c1, Coord c2, float t);
     std::vector<glm::vec2> getPathProjs(const Camera& camera, Coord a, Coord b);
     std::pair<glm::vec2, float> getPointAndAngle(const Route& route, float t);
+
+    class RouteRenderer {
+        inline static const std::filesystem::path VERTEX_SHADER_SRC = "./src/shaders/route.vs";
+        inline static const std::filesystem::path FRAGMENT_SHADER_SRC = "./src/shaders/route.fs";
+
+    public:
+        RouteRenderer(): shader(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC) {}
+
+        void start();
+
+        void render(const Camera& camera, Coord c1, Coord c2, float lenght, SDL_Color color) const;
+
+    private:
+        ShaderProgram shader;
+        unsigned VAO, VBO;
+        int projectionLoc = -1, colorLoc = -1, coordsLoc = -1, dLoc = -1, widthLoc = -1;
+
+    };
 
 };

@@ -76,6 +76,9 @@ void air::AirportRenderer::start(const std::unordered_map<std::string, Country>&
 }
 
 void air::AirportRenderer::render(const Camera& camera, const std::vector<AirportData>& airports, const std::vector<City>& cities) const {
+    if(airports.empty())
+        return;
+    
     const glm::vec2 tile(512.0f/sheet.width, 512.0f/sheet.height);
 
     const int mulVertices[] = {
@@ -119,7 +122,8 @@ void air::AirportRenderer::render(const Camera& camera, const std::vector<Airpor
     
     shader.use();
     
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(camera.projToGLSpaceMatrix()));
+    auto projection = camera.projToGLSpaceMatrix();
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     glBindTexture(GL_TEXTURE_2D, sheet.texture);
     glBindVertexArray(VAO);

@@ -1,6 +1,8 @@
 #include "AirportManager.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <thread>
 #include <vector>
 
 #include "../game/Camera.hpp"
@@ -13,10 +15,14 @@
 #include "../ui/UIManager.hpp"
 #include "../ui/dialogs/AirportDialog.hpp"
 #include "../ui/dialogs/RouteDialog.hpp"
+#include "Route.hpp"
 
 std::vector<int> searchPath(int src, const std::vector<std::vector<int>>& adjList);
 
 void air::AirportManager::start(const std::unordered_map<std::string, Country>& countries) {
+    routeGrids.assign(ROUTE_GRID_WIDTH*ROUTE_GRID_HEIGHT, {});
+
+    routeRenderer.start();
     airportRenderer.start(countries);
 }
 
@@ -179,38 +185,20 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
 
 void air::AirportManager::render(const Camera& camera, float frameProgress) {    
     for(auto& r: routes) {
-        if(r.points.empty())
-            r.points = air::getPathProjs(camera, cities[r.a].coord, cities[r.b].coord);
-        renderRoutePath(camera, r);
+        Coord c1 = cities[r.a].coord;
+        Coord c2 = cities[r.b].coord;
+        routeRenderer.render(camera, c1, c2, r.lenght, ROUTE_COLOR_BY_LEVEL[r.level]);
     }
 
-    Timer t;
     airportRenderer.render(camera, this->airports, this->cities);
-    writeLog("%f\n", t.elapsedMillis());
 
     for(const auto& r: routes)
         renderRoutePlanes(camera, r, frameProgress);
 
     if(currentRoute.route.a != -1) {
-        /*Coord c1 = cities[currentRoute.route.a].coord;
+        Coord c1 = cities[currentRoute.route.a].coord;
         Coord c2 = currentRoute.route.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.route.b].coord;
-        //SDL_SetRenderDrawColor(&camera.getSDL(), currentRoute.color.r, currentRoute.color.g, currentRoute.color.b, currentRoute.color.a); //TODO:
-        int n = float(mtsDistance(c1, c2)) / EARTH_RADIUS * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
-        n += n % 2 + 1;
-
-        Coord lastCoord;
-        for(int i=0; i<=n; ++i) {
-            auto c = getIntermediatePoint(c1, c2, float(i)/n);
-            if(i%2 == 1) {
-                auto lastPoint = camera.coordsToScreen(lastCoord);
-                auto p = camera.coordsToScreen(c);
-
-                if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
-                    SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y)); //TODO:
-                
-            }
-            lastCoord = c;
-        }*/
+        routeRenderer.render(camera, c1, c2, mtsDistance(c1, c2), SDL_RED);
 
         camera.renderText(std::to_string(currentRoute.price), mousePos.x, mousePos.y - 36, 32, Aligment::CENTER, currentRoute.color);
     }

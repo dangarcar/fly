@@ -71,6 +71,7 @@ namespace air {
         CurrentRoute currentRoute;
 
         AirportRenderer airportRenderer;
+        RouteRenderer routeRenderer;
 
         int clickedAirport = -1, clickedRoute = -1;
 

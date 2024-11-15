@@ -3,6 +3,12 @@
 #include "Airport.hpp"
 #include "../game/Camera.hpp"
 
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <vector>
+
 int air::getPointGrid(const Camera& camera, glm::vec2 proj) {
     int x = proj.x * ROUTE_GRID_WIDTH / camera.getWidth();
     int y = proj.y * ROUTE_GRID_HEIGHT / camera.getWidth();
@@ -117,4 +123,55 @@ std::pair<glm::vec2, float> air::getPointAndAngle(const Route& route, float t) {
     if(route.points[i1].x > route.points[i2].x)
         angle = 360 - angle;
     return std::make_pair(glm::mix(route.points[i1], route.points[i2], fi - i1), angle);
+}
+
+void air::RouteRenderer::start() {
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    projectionLoc = glGetUniformLocation(shader.getId(), "projection");
+    coordsLoc = glGetUniformLocation(shader.getId(), "coords");
+    colorLoc = glGetUniformLocation(shader.getId(), "color");
+    dLoc = glGetUniformLocation(shader.getId(), "d");
+    widthLoc = glGetUniformLocation(shader.getId(), "width");
+}
+
+void air::RouteRenderer::render(const Camera& camera, Coord c1, Coord c2, float lenght, SDL_Color color) const {    
+    glUniform4f(colorLoc, color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
+
+    Coord radianC1 = {glm::radians(c1.lon), glm::radians(c1.lat)};
+    Coord radianC2 = {glm::radians(c2.lon), glm::radians(c2.lat)};
+    float sinlat = glm::sin((radianC1.lat-radianC2.lat) / 2);
+    float sinlon = glm::sin((radianC1.lon-radianC2.lon) / 2);
+    float tmp = sinlat*sinlat + glm::cos(radianC1.lat) * glm::cos(radianC2.lat) * sinlon*sinlon;
+    float d = 2.0 * glm::asin(glm::sqrt(tmp));
+    
+    glUniform4f(coordsLoc, radianC1.lon, radianC1.lat, radianC2.lon, radianC2.lat);
+    glUniform1f(dLoc, d);
+    glUniform1f(widthLoc, camera.getWidth());
+
+    auto projection = camera.projToGLSpaceMatrix();
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    float dist = lenght / EARTH_RADIUS;
+    int n = dist * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
+    n += n % 2 + 1;
+    std::vector<float> v(n+1); 
+    for(int i=0; i<=n; ++i) {
+        v[i] = float(i) / n;
+    }
+
+    shader.use();
+    glBindVertexArray(VAO);
+
+    glBufferData(GL_ARRAY_BUFFER, v.size()*sizeof(float), &v[0], GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_LINES, 0, v.size());
+
+    glBindVertexArray(0);
 }
