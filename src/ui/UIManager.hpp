@@ -3,17 +3,15 @@
 #include "Dialog.hpp"
 #include <memory>
 #include <list>
-#include <type_traits>
 #include <cassert>
 
 #include "../engine/Renderer.hpp"
 
 class UIManager {
 public:
-    template<typename T, typename ... Args>
-    requires std::is_base_of_v<Dialog, T>
-    void addDialog(Args&&... args) {
-        dialogs.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+    template<typename T>
+    void addDialog(T&& dialog) {
+        dialogs.emplace_back(std::make_unique<T>(dialog));
     }
 
     bool handleInput(const InputEvent& event) {

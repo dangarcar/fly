@@ -32,9 +32,9 @@ public:
     }
     
     void render(float frameProgress) override {
-        Coord c1 = {-150, 30}, c2 = {100, -20};
+        Coord c1 = {-150, 30}, c2 = {10, -20};
 
-        renderer.render(camera, c1, c2, mtsDistance(c1, c2), SDL_RED);
+        renderer.render(camera, c1, c2, mtsDistance(c1, c2), SDL_WHITE);
     }
 
     long getTicksPerSecond() const override { return 30; }

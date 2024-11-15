@@ -1,7 +1,6 @@
 #include "Renderer.hpp"
 
 #include "Utils.h"
-#include "Gradient.h"
 
 #include <glad/glad.h>
 #include <SDL_opengl.h>

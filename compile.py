@@ -2,7 +2,7 @@ import os
 import subprocess
 
 def main():
-    if not os.path.exists('lib/SDL2'):
+    if not os.path.exists('lib/SDL2') and os.name != "Linux":
         print('You must download SDL2 for your system in the lib/ folder')
 
     if not os.path.exists('release'):

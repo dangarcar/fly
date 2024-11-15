@@ -1,12 +1,13 @@
 #include "engine/Window.hpp"
 #include "game/Game.hpp"
+#include "scenes/TestScene.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
     Window window;
     if(window.start(false) != 0)
         return -1;
 
-    auto testScene = std::make_unique<Game>(window);
+    auto testScene = std::make_unique<TestScene>(window);
     testScene->start();
     window.setScene(std::move(testScene));
 

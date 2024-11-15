@@ -1,16 +1,13 @@
 #pragma once
 
 #include <SDL.h>
-
 #include <optional>
-#include <vector>
-#include <memory>
 
 #include "TextureManager.hpp"
 #include "TextRenderer.hpp"
 
 constexpr int OPENGL_MAJOR_VERSION = 4;
-constexpr int OPENGL_MINOR_VERSION = 3;
+constexpr int OPENGL_MINOR_VERSION = 6;
 constexpr bool OPENGL_DEBUG = false;
 
 class Renderer {

@@ -23,7 +23,8 @@ void StartMenu::handleInput(const InputEvent& event) {
             } 
             else if(loadButton.isClickable()) {
                 auto saves = GameSaver::getSaveNames();
-                uiManager.addDialog<SelectSaveDialog>(saveIndex, window, saves, false);
+                SelectSaveDialog dialog(saveIndex, window, saves, false);
+                uiManager.addDialog<SelectSaveDialog>(std::move(dialog));
             } 
             else if(quitButton.isClickable()) {
                 window.kill();

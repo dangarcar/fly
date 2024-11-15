@@ -28,7 +28,7 @@ if(WIN32)
 endif()
 
 find_package(SDL2 REQUIRED)
-find_package(OpenMP REQUIRED)
+#find_package(OpenMP REQUIRED)
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mconsole")
 
@@ -37,8 +37,8 @@ add_executable(${PROJECT_NAME}
     "src/glad.c"
     ${SOURCES}
 )
-target_link_libraries(${PROJECT_NAME} 
-    SDL2::SDL2main 
+target_link_libraries(${PROJECT_NAME}
+    SDL2::SDL2main
     SDL2::SDL2
     glm::glm
     #OpenMP::OpenMP_CXX

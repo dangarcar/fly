@@ -35,7 +35,8 @@ bool PauseGameDialog::handleInput(const InputEvent& event) {
             } 
             else if(saveButton.isClickable()) {
                 auto saves = GameSaver::getSaveNames();
-                uiManager.addDialog<SelectSaveDialog>(saveIndex, game.getWindow(), saves, true);
+                SelectSaveDialog dialog(saveIndex, game.getWindow(), saves, true);
+                uiManager.addDialog<SelectSaveDialog>(std::move(dialog));
             }
             else if(exitButton.isClickable()) {
                 auto startMenu = std::make_unique<StartMenu>(game.getWindow());

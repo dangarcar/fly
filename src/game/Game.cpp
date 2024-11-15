@@ -35,8 +35,10 @@ void Game::update() {
     
     if(uiManager.dialogShown()) 
         return;
-    else if(paused)
-        uiManager.addDialog<PauseGameDialog>(*this, uiManager);
+    else if(paused) {
+        PauseGameDialog dialog(*this, uiManager);
+        uiManager.addDialog(std::move(dialog));
+    }
 
     player.update();
     map.update(camera);

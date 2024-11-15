@@ -1,8 +1,6 @@
 #include "AirportManager.hpp"
 
 #include <algorithm>
-#include <chrono>
-#include <thread>
 #include <vector>
 
 #include "../game/Camera.hpp"
@@ -46,10 +44,12 @@ bool air::AirportManager::handleInput(const InputEvent& event, Player& player, U
     if(auto* clickevent = std::get_if<ClickEvent>(&event)) {
         if(clickevent->button == SDL_BUTTON_LEFT) {   
             if(clickedAirport != -1) {
-                uiManager.addDialog<AirportDialog>(airports[clickedAirport], cities[clickedAirport], player, cities);
+                AirportDialog dialog(airports[clickedAirport], cities[clickedAirport], player, cities);
+                uiManager.addDialog(std::move(dialog));
                 return true;
             } else if(clickedRoute != -1) {
-                uiManager.addDialog<RouteDialog>(clickedRoute, routes[clickedRoute], player, *this, cities);
+                RouteDialog dialog(clickedRoute, routes[clickedRoute], player, *this, cities);
+                uiManager.addDialog(std::move(dialog));
                 return true;
             }
         }

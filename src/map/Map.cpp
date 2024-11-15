@@ -101,7 +101,8 @@ void Map::handleInput(const InputEvent& event, Camera& camera, UIManager& uiMana
                 if(countries[targetCountry].state != CountryState::UNLOCKED) {
                     moveToCountry(countries[targetCountry], camera);
 
-                    uiManager.addDialog<UnlockCountryDialog>(countries[targetCountry].name, targetCountry, *this, player);
+                    UnlockCountryDialog dialog(countries[targetCountry].name, targetCountry, *this, player);
+                    uiManager.addDialog(std::move(dialog));
                 }
         }
     }
