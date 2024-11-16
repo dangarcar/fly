@@ -64,14 +64,6 @@ void Map::load(Camera& camera) {
     //LOAD SUBCOMPONENTS
     citySpawner.load(camera);
     mapRenderer.load(projectedVertices, triangles, polygons, countries);
-
-    //FIXME:
-    for(auto& [k, v]: countries) {
-        if(countries[k].state == CountryState::LOCKED) {
-            countries[k].state = CountryState::UNLOCKED;
-            citySpawner.addCountry(k);
-        }
-    }
 }
 
 void Map::projectMap(const Camera& camera) {

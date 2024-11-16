@@ -1,6 +1,6 @@
 #include "Dialog.hpp"
 
-#include "../game/Camera.hpp"
+#include "../engine/Renderer.hpp"
 
 void Dialog::render(const Renderer& renderer) {
     auto viewport = renderer.getScreenViewportRect();

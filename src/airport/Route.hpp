@@ -46,7 +46,6 @@ namespace air {
         Route(int a, int b): a(a), b(b) {}
     };
 
-    void renderRoutePath(const Camera& camera, const Route& route);
     void renderRoutePlanes(const Camera& camera, const Route& route, float frameProgress);
     bool routeClicked(const Camera& camera, const Route& route, SDL_Point mousePos);
 
@@ -58,21 +57,23 @@ namespace air {
     std::vector<glm::vec2> getPathProjs(const Camera& camera, Coord a, Coord b);
     std::pair<glm::vec2, float> getPointAndAngle(const Route& route, float t);
 
+
     class RouteRenderer {
         inline static const std::filesystem::path VERTEX_SHADER_SRC = "./src/shaders/route.vs";
         inline static const std::filesystem::path FRAGMENT_SHADER_SRC = "./src/shaders/route.fs";
+        static constexpr int POINT_COUNT = 1024;
 
     public:
         RouteRenderer(): shader(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC) {}
 
         void start();
 
-        void render(const Camera& camera, Coord c1, Coord c2, float lenght, SDL_Color color) const;
+        void render(const Camera& camera, const Route& r, Coord c1, Coord c2, SDL_Color color);
 
     private:
-        ShaderProgram shader;
+        int projectionLoc = -1, colorLoc = -1, coordsLoc = -1, dLoc = -1, widthLoc = -1, nLoc = -1;
         unsigned VAO, VBO;
-        int projectionLoc = -1, colorLoc = -1, coordsLoc = -1, dLoc = -1, widthLoc = -1;
+        ShaderProgram shader;
 
     };
 

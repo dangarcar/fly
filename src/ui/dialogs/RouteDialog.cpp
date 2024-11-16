@@ -5,7 +5,7 @@
 #include "../../airport/AirportManager.hpp"
 #include "../../engine/Utils.h"
 
-using air::AirportManager, air::Route, air::Plane;
+using air::AirportManager, air::Route;
 
 bool RouteDialog::canUpgrade() const {
     long upgradePrice = route.planes.size() * air::PLANE_UPGRADE_COST[route.level];

@@ -55,28 +55,33 @@ bool air::AirportManager::handleInput(const InputEvent& event, Player& player, U
         }
     }
 
-    if(auto* keyevent = std::get_if<KeyPressedEvent>(&event)) { //FIXME: debug only
-        if(keyevent->keycode == SDLK_g) {
-            for(auto& v: parentTree) {
-                for(auto e: v)
-                    writeLog("%03d ", e);
-                writeLog("\n");
-            }
-            writeLog("\n");
-        }
-    }
-
     return currentRoute.route.a != -1;
 }
 
 void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Player& player, UIManager& uiManager) {
-    for(int i=0; i<1000; ++i) { //FIXME:
-        if(auto c = citySpawner.getRandomCity()) {
-            addAirport(std::move(c.value()), player);
-            updatePaths();
+    //UPDATE CLICKED AIRPORT
+    clickedAirport = -1;
+    for(size_t i=0; i<airports.size(); ++i) {
+        auto pos = camera.projToScreen(cities[i].proj);
+        auto dist = SDL_distance({int(pos.x), int(pos.y)}, mousePos);
+        if(dist < getRelativeRadius(airports[i].radius, camera.getZoom())) {
+            clickedAirport = i;
+            break;
         }
     }
 
+    //UPDATE CLICKED ROUTE
+    clickedRoute = -1;
+    auto gridIndex = getPointGrid(camera, camera.screenToProj(mousePos));
+    #pragma omp parallel for shared(clickedRoute)
+    for(int i=0; i<int(routes.size()); ++i) {
+        if(std::find(routeGrids[gridIndex].begin(), routeGrids[gridIndex].end(), i) == routeGrids[gridIndex].end())
+            continue;
+
+        if(air::routeClicked(camera, routes[i], mousePos))
+            clickedRoute = i;
+    }
+    
     //SPAWN CITY
     if(auto city = citySpawner.getRandomCity()) {    
         auto value = city.value();        
@@ -109,11 +114,11 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
             p.t += p.speed;
 
             if(p.speed == 0) {
-                if(p.t <= 0.0f && routes[i].lastTakeoffA > planeDistance) {
+                if(p.t <= 0.0f && (routes[i].lastTakeoffA > planeDistance || routes[i].planes.size() == 1)) {
                     routes[i].lastTakeoffA = 0;
                     p.speed = routeSpeed;
                 }
-                else if(p.t >= 1.0f && routes[i].lastTakeoffB > planeDistance) {
+                else if(p.t >= 1.0f && (routes[i].lastTakeoffB > planeDistance || routes[i].planes.size() == 1)) {
                     routes[i].lastTakeoffB = 0;
                     p.speed = -routeSpeed;
                 }
@@ -125,29 +130,6 @@ void air::AirportManager::update(CitySpawner& citySpawner, Camera& camera, Playe
                 p.speed = 0;        
             }
         }
-    }
-
-    //UPDATE CLICKED AIRPORT
-    clickedAirport = -1;
-    for(size_t i=0; i<airports.size(); ++i) {
-        auto pos = camera.projToScreen(cities[i].proj);
-        auto dist = SDL_distance({int(pos.x), int(pos.y)}, mousePos);
-        if(dist < getRelativeRadius(airports[i].radius, camera.getZoom())) {
-            clickedAirport = i;
-            break;
-        }
-    }
-
-    //UPDATE CLICKED ROUTE
-    clickedRoute = -1;
-    auto gridIndex = getPointGrid(camera, camera.screenToProj(mousePos));
-    #pragma omp parallel for shared(clickedRoute)
-    for(int i=0; i<int(routes.size()); ++i) {
-        if(std::find(routeGrids[gridIndex].begin(), routeGrids[gridIndex].end(), i) == routeGrids[gridIndex].end())
-            continue;
-
-        if(air::routeClicked(camera, routes[i], mousePos))
-            clickedRoute = i;
     }
 
     if(leftDown) {
@@ -187,18 +169,22 @@ void air::AirportManager::render(const Camera& camera, float frameProgress) {
     for(auto& r: routes) {
         Coord c1 = cities[r.a].coord;
         Coord c2 = cities[r.b].coord;
-        routeRenderer.render(camera, c1, c2, r.lenght, ROUTE_COLOR_BY_LEVEL[r.level]);
+        routeRenderer.render(camera, r, c1, c2, ROUTE_COLOR_BY_LEVEL[r.level]);
     }
 
     airportRenderer.render(camera, this->airports, this->cities);
 
-    for(const auto& r: routes)
+    for(auto& r: routes) {
+        if(r.points.empty())
+            r.points = getPathProjs(camera, cities[r.a].coord, cities[r.b].coord);
         renderRoutePlanes(camera, r, frameProgress);
+    }
 
     if(currentRoute.route.a != -1) {
         Coord c1 = cities[currentRoute.route.a].coord;
         Coord c2 = currentRoute.route.b==-1? camera.screenToCoords(mousePos) : cities[currentRoute.route.b].coord;
-        routeRenderer.render(camera, c1, c2, mtsDistance(c1, c2), SDL_RED);
+        currentRoute.route.lenght = mtsDistance(c1, c2);
+        routeRenderer.render(camera, currentRoute.route, c1, c2, currentRoute.color);
 
         camera.renderText(std::to_string(currentRoute.price), mousePos.x, mousePos.y - 36, 32, Aligment::CENTER, currentRoute.color);
     }

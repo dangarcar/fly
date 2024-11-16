@@ -1,7 +1,6 @@
 #include "TextureManager.hpp"
 
 #include <json/json.hpp>
-#include <fstream>
 
 #include "Utils.h"
 #include "Renderer.hpp"
@@ -98,8 +97,8 @@ void TextureManager::render(const Renderer& r, const std::string& name, float x,
     this->renderPriv(r, &t, {x, y, w, h}, angle, mod);
 }
 
-void TextureManager::fillRect(const Renderer& r, SDL_Rect rect, SDL_Color color) const {
-    this->renderPriv(r, nullptr, toFRect(rect), 0.0f, color);
+void TextureManager::fillRect(const Renderer& r, SDL_FRect rect, SDL_Color color, float rotation) const {
+    this->renderPriv(r, nullptr, rect, rotation, color);
 }
 
 void TextureManager::renderPriv(const Renderer& r, const Texture* t, SDL_FRect rect, float angle, SDL_Color color) const {

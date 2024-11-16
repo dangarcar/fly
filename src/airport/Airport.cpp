@@ -128,8 +128,8 @@ void air::AirportRenderer::render(const Camera& camera, const std::vector<Airpor
     glBindTexture(GL_TEXTURE_2D, sheet.texture);
     glBindVertexArray(VAO);
     
-    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_DYNAMIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned), &indices[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
 
     glBindVertexArray(0);
@@ -154,9 +154,9 @@ void air::AirportRenderer::renderInfo(const Camera& camera, const AirportData& a
 
         //DRAW BAR
         auto bar = SDL_FRect { clip.x, clip.y + clip.h + 4, clip.w, clip.h/5 };
-        camera.fillRect(toRect(bar), SDL_BLACK);
+        camera.getRenderer().fillRect(bar, SDL_BLACK, 0.0f);
 
         bar = SDL_FRect { bar.x + 1, bar.y + 1, (bar.w - 2) * fillPercentage, bar.h - 2 };
-        camera.fillRect(toRect(bar), color);
+        camera.getRenderer().fillRect(bar, color, 0.0f);
     }
 }

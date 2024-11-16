@@ -27,7 +27,7 @@ struct CitySpawnerSave {
 class CitySpawner: Serializable<CitySpawnerSave> {
 private:
     //The inverse of the probability of a city spawn
-    static constexpr int SPAWN_FREQUENCY = 30; //TODO: must change it probably
+    static constexpr int SPAWN_FREQUENCY = 50; //TODO: must change it probably
     inline static const std::filesystem::path AIRPORTS_DATA_FILE = "./resources/airports.json";
 
 public:

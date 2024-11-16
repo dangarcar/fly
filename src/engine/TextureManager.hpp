@@ -3,7 +3,6 @@
 #include <SDL.h>
 #include <string>
 #include <unordered_map>
-#include <memory>
 #include <filesystem>
 
 #include "ShaderProgram.hpp"
@@ -35,7 +34,7 @@ public:
 
     void render(const Renderer& r, const std::string& name, float x, float y, SDL_FRect* clip, SDL_Color mod=SDL_WHITE) const;
     void render(const Renderer& r, const std::string& name, float x, float y, float scale, float angle, bool centre, SDL_Color mod=SDL_WHITE) const;
-    void fillRect(const Renderer& r, SDL_Rect rect, SDL_Color color) const;
+    void fillRect(const Renderer& r, SDL_FRect rect, SDL_Color color, float rotation) const;
 
     Texture getTexture(const std::string& name) const { return textureMap.at(name); }
 

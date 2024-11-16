@@ -9,7 +9,7 @@
 
 struct CameraSave {
     float zoom;
-    glm::vec2 pos;
+    Coord pos;
 };
 
 class Camera: Serializable<CameraSave> {
@@ -76,10 +76,6 @@ public:
     void loadTexture(const std::string& name, const std::filesystem::path& path) {
         renderer.loadTexture(name, path);
     }
-
-    //SDL_Renderer& getSDL() const { return renderer.getSDL(); }
-    //TextureManager& getTextureManager() { return renderer.getTextureManager(); }
-    //const TextureManager& getTextureManager() const { return renderer.getTextureManager(); }
 
 private:
     Renderer& renderer;

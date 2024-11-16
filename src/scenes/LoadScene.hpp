@@ -4,9 +4,8 @@
 #include "../engine/Gradient.h"
 #include "../engine/Window.hpp"
 
-#include "../game/Game.hpp"
-#include <future>
 #include <functional>
+#include <mutex>
 
 class LoadScene : public Scene {
 public:
@@ -25,7 +24,7 @@ public:
         });
     }
     
-    void render([[maybe_unused]] float frameProgress) {
+    void render([[maybe_unused]] float frameProgress) override {
         Renderer& renderer = window.getRenderer();
 
         auto rect = renderer.getScreenViewportRect();

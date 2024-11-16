@@ -34,8 +34,8 @@ GameSave GameSaver::getSave(int saveIndex) { //TODO:
     game.currentTick = j["currentTick"];
     
     game.camera.zoom = j["zoom"];
-    game.camera.pos.x = j["pos"][0];
-    game.camera.pos.y = j["pos"][1];
+    game.camera.pos.lon = j["pos"][0];
+    game.camera.pos.lat = j["pos"][1];
     
     game.player.cash = j["cash"];
     game.player.difficulty = j["difficulty"];
@@ -92,7 +92,7 @@ GameSave GameSaver::getSave(int saveIndex) { //TODO:
     return game;
 }
 
-void GameSaver::save(const GameSave& game, int number) { //TODO:
+void GameSaver::save(const GameSave& game, int number) {
     assert(number < MAX_SAVES);
     const int TOTAL_COUNTRIES = 178;
 
@@ -120,8 +120,8 @@ void GameSaver::save(const GameSave& game, int number) { //TODO:
     j["currentTick"] = game.currentTick;
     
     j["zoom"] = game.camera.zoom;
-    j["pos"][0] = game.camera.pos.x;
-    j["pos"][1] = game.camera.pos.y;
+    j["pos"][0] = game.camera.pos.lon;
+    j["pos"][1] = game.camera.pos.lat;
     
     j["cash"] = game.player.cash;
     j["difficulty"] = game.player.difficulty;

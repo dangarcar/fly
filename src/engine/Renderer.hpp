@@ -38,6 +38,7 @@ public:
     }
 
     void fillRect(SDL_Rect rect, SDL_Color color) const;
+    void fillRect(SDL_FRect frect, SDL_Color color, float rotation) const;
     void render(const std::string& tex, float x, float y, std::optional<SDL_FRect> clip, SDL_Color mod=SDL_WHITE) const;
     void renderExt(const std::string& tex, float x, float y, float scale, float angle, bool centre, SDL_Color mod=SDL_WHITE) const;
     void loadTexture(const std::string& name, const std::filesystem::path& path) {

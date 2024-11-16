@@ -25,7 +25,7 @@ bool air::routeClicked(const Camera& camera, const Route& route, SDL_Point mouse
         auto [proj, angle] = getPointAndAngle(route, plane.t);
         auto p = camera.projToScreen(proj);
 
-        auto radius = getRelativeRadius(AIRPLANE_SCALE * 128, camera.getZoom());
+        auto radius = getRelativeRadius(AIRPLANE_SCALE, camera.getZoom());
         if(SDL_sqrdistance({int(p.x), int(p.y)}, mousePos) < radius*radius) {
             return true;
         }
@@ -41,28 +41,6 @@ bool air::routeClicked(const Camera& camera, const Route& route, SDL_Point mouse
     }
 
     return false;
-}
-
-void air::renderRoutePath(const Camera& camera, const Route& route) {
-    float dist = route.lenght / EARTH_RADIUS;
-    int n = dist * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
-    n += n % 2 + 1;
-    auto routeColor = ROUTE_COLOR_BY_LEVEL[route.level];
-    //SDL_SetRenderDrawColor(&camera.getSDL(), routeColor.r, routeColor.g, routeColor.b, 0xff); //TODO:
-    glm::vec2 lastProj;
-    
-    for(int i=0; i<=n; ++i) {
-        auto t = float(i) / n;
-        auto proj = route.points[ static_cast<size_t>(t * (route.points.size()-1)) ];
-        if(i % 2 == 1) {
-            auto lastPoint = camera.projToScreen(lastProj);
-            auto p = camera.projToScreen(proj);
-            /*if(std::abs(lastPoint.x - p.x) < camera.getWidth()/2)
-                SDL_RenderDrawLine(&camera.getSDL(), int(p.x), int(p.y), int(lastPoint.x), int(lastPoint.y)); //TODO:
-            */
-        }
-        lastProj = proj;
-    }
 }
 
 void air::renderRoutePlanes(const Camera& camera, const Route& route, float frameProgress) {
@@ -126,11 +104,16 @@ std::pair<glm::vec2, float> air::getPointAndAngle(const Route& route, float t) {
 }
 
 void air::RouteRenderer::start() {
+    float points[POINT_COUNT];
+    for(int i=0; i<POINT_COUNT; ++i)
+        points[i] = i / float(POINT_COUNT-1);
+
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -140,9 +123,12 @@ void air::RouteRenderer::start() {
     colorLoc = glGetUniformLocation(shader.getId(), "color");
     dLoc = glGetUniformLocation(shader.getId(), "d");
     widthLoc = glGetUniformLocation(shader.getId(), "width");
+    nLoc = glGetUniformLocation(shader.getId(), "n");
 }
 
-void air::RouteRenderer::render(const Camera& camera, Coord c1, Coord c2, float lenght, SDL_Color color) const {    
+void air::RouteRenderer::render(const Camera& camera, const Route& r, Coord c1, Coord c2, SDL_Color color) {    
+    shader.use();
+    
     glUniform4f(colorLoc, color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
 
     Coord radianC1 = {glm::radians(c1.lon), glm::radians(c1.lat)};
@@ -159,19 +145,12 @@ void air::RouteRenderer::render(const Camera& camera, Coord c1, Coord c2, float 
     auto projection = camera.projToGLSpaceMatrix();
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-    float dist = lenght / EARTH_RADIUS;
+    float dist = r.lenght / EARTH_RADIUS;
     int n = dist * std::clamp(camera.getZoom(), 2.0f, 20.0f) * 20;
     n += n % 2 + 1;
-    std::vector<float> v(n+1); 
-    for(int i=0; i<=n; ++i) {
-        v[i] = float(i) / n;
-    }
+    glUniform1i(nLoc, n);
 
-    shader.use();
     glBindVertexArray(VAO);
-
-    glBufferData(GL_ARRAY_BUFFER, v.size()*sizeof(float), &v[0], GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_LINES, 0, v.size());
-
+    glDrawArrays(GL_LINE_STRIP, 0, POINT_COUNT);
     glBindVertexArray(0);
 }

@@ -91,14 +91,14 @@ void Camera::move(glm::vec2 v) {
 CameraSave Camera::serialize() const {
     CameraSave save;
 
-    save.pos = this->pos;
+    save.pos = projToCoords(this->pos);
     save.zoom = this->zoom;
 
     return save;
 }
 
 void Camera::deserialize(const CameraSave& save) {
-    this->pos = save.pos;
+    this->pos = coordsToProj(save.pos);
     this->zoom = save.zoom;
 
     this->move({0, 0}); //To move camera if outside boundaries

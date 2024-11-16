@@ -3,7 +3,6 @@
 #include <cstdarg>
 #include <cstdio>
 #include <chrono>
-#include <cmath>
 #include <cstdlib>
 #include <SDL.h>
 

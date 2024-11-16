@@ -3,7 +3,7 @@
 #include "engine/InputEvent.h"
 #include "engine/Serializable.h"
 
-class Camera;
+class Renderer;
 class Game;
 
 struct Stats {
@@ -36,7 +36,7 @@ private:
 
 public:
     bool handleInput(const InputEvent& event);
-    void render(const Camera& camera, int currentTick);
+    void render(const Renderer& renderer, int currentTick);
     void update();
 
     PlayerSave serialize() const override;

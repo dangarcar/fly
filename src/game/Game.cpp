@@ -50,7 +50,7 @@ void Game::render(float frameProgress) {
 
     map.render(camera);
     airManager.render(camera, uiManager.dialogShown()? 0.0f: frameProgress);
-    player.render(camera, currentTick);
+    player.render(camera.getRenderer(), currentTick);
     
     renderDebugInfo();
 
@@ -83,7 +83,7 @@ void Game::start() {
     std::ifstream file(DEFAULT_GAME_FILE);
     auto data = json::parse(file);
 
-    auto textures = data["textures"]; ///TODO:
+    auto textures = data["textures"];
     for(auto& [k, v]: textures.items()) {
         auto path = v.template get<std::string>();
         camera.loadTexture(k, path);

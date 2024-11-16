@@ -64,7 +64,11 @@ void Renderer::clearScreen() {
 }
 
 void Renderer::fillRect(SDL_Rect rect, SDL_Color color) const {
-    textureManager->fillRect(*this, rect, color);
+    textureManager->fillRect(*this, toFRect(rect), color, 0.0f);
+}
+
+void Renderer::fillRect(SDL_FRect rect, SDL_Color color, float rotation) const {
+    textureManager->fillRect(*this, rect, color, rotation);
 }
 
 void Renderer::render(const std::string& tex, float x, float y, std::optional<SDL_FRect> clip, SDL_Color color) const {
